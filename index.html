@@ -2,10 +2,11 @@
 <html>
 
 <head>
-    <title>Proyecto Hirudo</title>
+    <title>Puntos de Donación de Sangre de la Comunidad de Madrid</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Open+Sans:300,400,600" rel="stylesheet">
+    <link rel="icon" type="image/png"  href="/dist/blooddrop.png" />
 
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
@@ -34,14 +35,6 @@
             z-index: 0;
         }
 
-        /* .leaflet-popup-tip,
-        .leaflet-popup-content-wrapper {
-            background: #e93434;
-            color: #ffffff;
-            width: max-content;
-            word-break: break-word;
-            max-width: 1000px;
-        } */
     </style>
 
 </head>
@@ -179,7 +172,7 @@
                     ${tableElements.join('')}
                     </tbody>
                 </table>
-                <img src="./dist/gmaps.png" alt="Link a Google Maps" width="10"><a href="${f.properties.url}">    Ver en Google Maps</a>
+                <img src="/dist/gmaps.png" alt="Link a Google Maps" width="10"><a href="${f.properties.url}">    Ver en Google Maps</a>
                 `
                 l.bindPopup(table);
             }
