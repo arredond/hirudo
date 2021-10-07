@@ -1,0 +1,79 @@
+"""DEPRECATED
+
+Old functions for scraping donation points using Beautiful Soup instead of Selenium.
+
+The switch was made because Request calls needed some complex tokens like __VIEWSTATE
+"""
+
+
+def extraer_detalles_punto_fijo(list_element):
+    link = list_element.find('span', {'class': 'nombre'}).find('a')
+    details = {
+        'name': link.text,
+        'url': urljoin(URL_BASE, link['href']),
+        'municipality': list_element.find('span', {'class': 'municipio'}).text.strip()
+    }
+
+    return details
+
+
+def extraer_detalle_centro(elem):
+    label = elem.label
+    value = elem.span
+    if not label or not value:
+        return None
+
+    return (label.text.strip(':'), value.text.strip().replace('&nbsp', ''))
+
+
+def extraer_lat_lng_centro(html_centro):
+    maps_url = html_centro.find("a", href=lambda href: href and 'maps.google.com' in href)['href']
+    lat, lng = maps_url.split('?q=')[1].split('&')[0].split(',+')
+    
+    return (lat, lng)
+
+
+def extraer_detalles_centro(name, url):
+    r = requests.get(url)
+    html_centro = BeautifulSoup(r.content)
+    id_centro = url.split('ID=')[-1]
+    
+    table = html_centro.find_all('td', {'class': 'columna'})[1]
+    
+    details = {'Nombre': name, 'ID del centro': id_centro, 'URL': url}
+    for field in table.find_all('div', {'class': 'campo'}):
+        detail = extraer_detalle_centro(field)
+        if detail:
+            details[detail[0]] = detail[1]
+    
+    lat, lng = extraer_lat_lng_centro(html_centro)
+    details['latitude'] = lat
+    details['longitude'] = lng
+    
+    return details
+
+
+data = {
+  '__VIEWSTATE': '/wEPDwUKLTUyMTc0NDQ5Nw9kFgJmD2QWAmYPZBYCZg9kFgZmD2QWCAIBDxUCDC9jc3MvY3NzLmNzcxIvaW1nL21vc2NhX2ljby5pY29kAgMPFQYWanMvanF1ZXJ5LTEuMi42Lm1pbi5qcxNqcy9qcXVlcnkuYWhvdmVyLmpzG2pzL2pxdWVyeS5kaW1lbnNpb25zLm1pbi5qcwhqcy9qcy5qcxNqcy9qcXVlcnkucG5nRml4LmpzAS9kAgQPZBYEAgIPFQERL2Nzcy9zZXJ2aWNpby5jc3NkAgMPZBYCZg8VAhEvY3NzL3NlcnZpY2lvLmNzcxovY3NzL1NlcnZpY2lvQ29udGVuaWRvLmNzc2QCBQ8VAw8vY3NzL2Nzc19pZS5jc3MTL2Nzcy9jc3NfaWVfbHQ4LmNzcxAvY3NzL2Nzc19pZTYuY3NzZAIDD2QWAgIBD2QWAgIBD2QWAgIBDxYCHgtfIUl0ZW1Db3VudAIBFgJmD2QWBAIBDw8WBh4EVGV4dAUpTG9jYWxpemFkb3IgZGUgcHVudG9zIGRlIGRvbmFjacOzbiBzYW5ncmUeCENzc0NsYXNzBQxub3Qtc2VsZWN0ZWQeBF8hU0ICAmRkAgMPZBYEZg8VAWBjdGwwMF9jdGwwMF9jdGwwMF9NYXN0ZXJNZW51UHJpbmNpcGFsX0NvbnRlbmVkb3JNZW51UHJpbmNpcGFsX01lbnVfRW50cmFkYXNNZW51X2N0bDAwX21lbnVuaXZlbDJkAgEPFgIfAGZkAgUPZBYCAgEPZBYCAgMPZBYCAgEPZBYCAgMPZBYCAgEPZBYCAgEPZBYGAgMPZBYCZg8PFgQfAgUKcGFuZWxfaW5mbx8DAgJkFgICAQ8PFgQeDUFsdGVybmF0ZVRleHQFDEluZm9ybWFjacOzbh4ISW1hZ2VVcmwFEX4vaW1nL2luZm9fcHEucG5nZGQCBQ8QDxYCHgtfIURhdGFCb3VuZGdkEBUSBVRvZG9zEkFsY2Fsw6EgZGUgSGVuYXJlcwlBbGNvcmPDs24IQXJhbmp1ZXoPQXJnYW5kYSBkZWwgUmV5EENvbGxhZG8gVmlsbGFsYmEHQ29zbGFkYQtGdWVubGFicmFkYQZHZXRhZmUITGVnYW7DqXMGTWFkcmlkC01hamFkYWhvbmRhCU3Ds3N0b2xlcwVQYXJsYRpTYW4gTG9yZW56byBkZSBFbCBFc2NvcmlhbBtTYW4gU2ViYXN0acOhbiBkZSBsb3MgUmV5ZXMSVG9ycmVqw7NuIGRlIEFyZG96CVZhbGRlbW9ybxUSATASQWxjYWzDoSBkZSBIZW5hcmVzCUFsY29yY8OzbghBcmFuanVleg9BcmdhbmRhIGRlbCBSZXkQQ29sbGFkbyBWaWxsYWxiYQdDb3NsYWRhC0Z1ZW5sYWJyYWRhBkdldGFmZQhMZWdhbsOpcwZNYWRyaWQLTWFqYWRhaG9uZGEJTcOzc3RvbGVzBVBhcmxhGlNhbiBMb3JlbnpvIGRlIEVsIEVzY29yaWFsG1NhbiBTZWJhc3Rpw6FuIGRlIGxvcyBSZXllcxJUb3JyZWrDs24gZGUgQXJkb3oJVmFsZGVtb3JvFCsDEmdnZ2dnZ2dnZ2dnZ2dnZ2dnZ2RkAgkPZBYEAgEPDxYCHgdWaXNpYmxlZ2RkAgUPFCsAAg8WBB8GZx8AAh1kZBYCZg9kFjoCBQ9kFgRmDxUCG2RldGFsbGVDZW50cm9zLmFzcHg/SUQ9MjU1NixIb3NwaXRhbCBVbml2ZXJzaXRhcmlvIFByw61uY2lwZSBkZSBBc3R1cmlhc2QCAQ8PFgIfAQUSQWxjYWzDoSBkZSBIZW5hcmVzZGQCBg9kFgRmDxUCG2RldGFsbGVDZW50cm9zLmFzcHg/SUQ9MjU0MStIb3NwaXRhbCBVbml2ZXJzaXRhcmlvIEZ1bmRhY2nDs24gQWxjb3Jjw7NuZAIBDw8WAh8BBQlBbGNvcmPDs25kZAIHD2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yNjY1EUhvc3BpdGFsIGRlbCBUYWpvZAIBDw8WAh8BBQhBcmFuanVlemRkAggPZBYEZg8VAhtkZXRhbGxlQ2VudHJvcy5hc3B4P0lEPTI2NjMUSG9zcGl0YWwgZGVsIFN1cmVzdGVkAgEPDxYCHwEFD0FyZ2FuZGEgZGVsIFJleWRkAgkPZBYEZg8VAhtkZXRhbGxlQ2VudHJvcy5hc3B4P0lEPTMwMjYcSG9zcGl0YWwgR2VuZXJhbCBkZSBWaWxsYWxiYWQCAQ8PFgIfAQUQQ29sbGFkbyBWaWxsYWxiYWRkAgoPZBYEZg8VAhtkZXRhbGxlQ2VudHJvcy5hc3B4P0lEPTI2NjEiSG9zcGl0YWwgVW5pdmVyc2l0YXJpbyBkZWwgSGVuYXJlc2QCAQ8PFgIfAQUHQ29zbGFkYWRkAgsPZBYEZg8VAhtkZXRhbGxlQ2VudHJvcy5hc3B4P0lEPTI1NTUlSG9zcGl0YWwgVW5pdmVyc2l0YXJpbyBkZSBGdWVubGFicmFkYWQCAQ8PFgIfAQULRnVlbmxhYnJhZGFkZAIMD2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yNTU4IEhvc3BpdGFsIFVuaXZlcnNpdGFyaW8gZGUgR2V0YWZlZAIBDw8WAh8BBQZHZXRhZmVkZAIND2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yNTQ0I0hvc3BpdGFsIFVuaXZlcnNpdGFyaW8gU2V2ZXJvIE9jaG9hZAIBDw8WAh8BBQhMZWdhbsOpc2RkAg4PZBYEZg8VAhtkZXRhbGxlQ2VudHJvcy5hc3B4P0lEPTI1NzggQ2VudHJvIEVzcGVjaWFsaWRhZGVzIEFyZ8O8ZWxsZXNkAgEPDxYCHwEFBk1hZHJpZGRkAg8PZBYEZg8VAhtkZXRhbGxlQ2VudHJvcy5hc3B4P0lEPTI1OTEeQ2VudHJvIEVzcGVjaWFsaWRhZGVzIFBvbnRvbmVzZAIBDw8WAh8BBQZNYWRyaWRkZAIQD2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yNTQ2H0hvc3BpdGFsIENsw61uaWNvIGRlIFNhbiBDYXJsb3NkAgEPDxYCHwEFBk1hZHJpZGRkAhEPZBYEZg8VAhtkZXRhbGxlQ2VudHJvcy5hc3B4P0lEPTI1NTIiSG9zcGl0YWwgRnVuZGFjacOzbiBKaW3DqW5leiBEw61hemQCAQ8PFgIfAQUGTWFkcmlkZGQCEg9kFgRmDxUCG2RldGFsbGVDZW50cm9zLmFzcHg/SUQ9MjU1MDFIb3NwaXRhbCBHZW5lcmFsIFVuaXZlcnNpdGFyaW8gR3JlZ29yaW8gTWFyYcOxw7NuZAIBDw8WAh8BBQZNYWRyaWRkZAITD2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yNTQ3LEhvc3BpdGFsIEluZmFudGlsIFVuaXZlcnNpdGFyaW8gTmnDsW8gSmVzw7pzZAIBDw8WAh8BBQZNYWRyaWRkZAIUD2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yNTU3IUhvc3BpdGFsIFVuaXZlcnNpdGFyaW8gMTIgT2N0dWJyZWQCAQ8PFgIfAQUGTWFkcmlkZGQCFQ9kFgRmDxUCG2RldGFsbGVDZW50cm9zLmFzcHg/SUQ9MjU0OCVIb3NwaXRhbCBVbml2ZXJzaXRhcmlvIGRlIGxhIFByaW5jZXNhZAIBDw8WAh8BBQZNYWRyaWRkZAIWD2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yNjYyJUhvc3BpdGFsIFVuaXZlcnNpdGFyaW8gSW5mYW50YSBMZW9ub3JkAgEPDxYCHwEFBk1hZHJpZGRkAhcPZBYEZg8VAhtkZXRhbGxlQ2VudHJvcy5hc3B4P0lEPTI1MzkdSG9zcGl0YWwgVW5pdmVyc2l0YXJpbyBMYSBQYXpkAgEPDxYCHwEFBk1hZHJpZGRkAhgPZBYEZg8VAhtkZXRhbGxlQ2VudHJvcy5hc3B4P0lEPTI1NTklSG9zcGl0YWwgVW5pdmVyc2l0YXJpbyBSYW3Ds24geSBDYWphbGQCAQ8PFgIfAQUGTWFkcmlkZGQCGQ9kFgRmDxUCG2RldGFsbGVDZW50cm9zLmFzcHg/SUQ9MjU0NSVIb3NwaXRhbCBVbml2ZXJzaXRhcmlvIFNhbnRhIENyaXN0aW5hZAIBDw8WAh8BBQZNYWRyaWRkZAIaD2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yNzEyJ0hvc3BpdGFsIFVuaXZlcnNpdGFyaW8gUHVlcnRhIGRlIEhpZXJyb2QCAQ8PFgIfAQULTWFqYWRhaG9uZGFkZAIbD2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yODI5GEhvc3BpdGFsIFJleSBKdWFuIENhcmxvc2QCAQ8PFgIfAQUJTcOzc3RvbGVzZGQCHA9kFgRmDxUCG2RldGFsbGVDZW50cm9zLmFzcHg/SUQ9MjU0MCNIb3NwaXRhbCBVbml2ZXJzaXRhcmlvIGRlIE3Ds3N0b2xlc2QCAQ8PFgIfAQUJTcOzc3RvbGVzZGQCHQ9kFgRmDxUCG2RldGFsbGVDZW50cm9zLmFzcHg/SUQ9MjY2NCdIb3NwaXRhbCBVbml2ZXJzaXRhcmlvIEluZmFudGEgQ3Jpc3RpbmFkAgEPDxYCHwEFBVBhcmxhZGQCHg9kFgRmDxUCG2RldGFsbGVDZW50cm9zLmFzcHg/SUQ9MjU2MBRIb3NwaXRhbCBFbCBFc2NvcmlhbGQCAQ8PFgIfAQUaU2FuIExvcmVuem8gZGUgRWwgRXNjb3JpYWxkZAIfD2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yNjYwJUhvc3BpdGFsIFVuaXZlcnNpdGFyaW8gSW5mYW50YSBTb2bDrWFkAgEPDxYCHwEFG1NhbiBTZWJhc3Rpw6FuIGRlIGxvcyBSZXllc2RkAiAPZBYEZg8VAhtkZXRhbGxlQ2VudHJvcy5hc3B4P0lEPTI4MjgVSG9zcGl0YWwgZGUgVG9ycmVqw7NuZAIBDw8WAh8BBRJUb3JyZWrDs24gZGUgQXJkb3pkZAIhD2QWBGYPFQIbZGV0YWxsZUNlbnRyb3MuYXNweD9JRD0yNjU5Fkhvc3BpdGFsIEluZmFudGEgRWxlbmFkAgEPDxYCHwEFCVZhbGRlbW9yb2RkGAIFHl9fQ29udHJvbHNSZXF1aXJlUG9zdEJhY2tLZXlfXxYCBVBjdGwwMCRjdGwwMCRjdGwwMCRNYXN0ZXJDdWVycG8kTWFzdGVyQ3VlcnBvJENvbnRlbmVkb3JDb250ZW5pZG9TZWNjaW9uJGJ0bkJ1c2NhcgVTY3RsMDAkY3RsMDAkY3RsMDAkTWFzdGVyQ3VlcnBvJE1hc3RlckN1ZXJwbyRDb250ZW5lZG9yQ29udGVuaWRvU2VjY2lvbiRJbWFnZUJ1dHRvbjEFTmN0bDAwJGN0bDAwJGN0bDAwJE1hc3RlckN1ZXJwbyRNYXN0ZXJDdWVycG8kQ29udGVuZWRvckNvbnRlbmlkb1NlY2Npb24kbHZGaWpvcw88KwAKAgc8KwAdAAgCHWTCSM3nyQ1QMcfG3Jidl4JSV95zrw==',
+  '__EVENTVALIDATION': '/wEWFwKbqdSiCAKuw6CxBwL4/M/AAQKFuo+8AwLtx5PCBgKq3t/7DQKZ75SiCQKMtI76AgL41OrCAQLR0YTOCALW3fCNBgKGuIafAwKivZrMDgLk2YKVDAKLnbHwAQL04PaDDALcx4T8AwKI5OL+DwK4pcM5ApOp3agNAqqltdAKArOO8Y8FApWH5sQMdXk5fgOPuoqPmPgUhYDQrsLUKuE=',
+}
+
+response = requests.post(URL_PUNTOS_FIJOS, data=data)
+
+html = BeautifulSoup(response.content)
+lista_centros = html.find_all(attrs={'class': 'ListaCentros'})[0]
+for elem in lista_centros.find_elements_by_tag_name('li'):
+
+puntos_fijos = [extraer_detalles_punto_fijo(elem) for elem in lista_centros.find_all('li')]
+
+centros = []
+for pf in tqdm(puntos_fijos):
+    centros.append(extraer_detalles_centro(pf['name'], pf['url']))
+    
+df_fijos = pd.DataFrame(centros)
+df_fijos_keys = pd.DataFrame({'original': df_fijos.columns, 'db': df_fijos.columns.map(format_column)})
+df_fijos.columns = df_fijos.columns.map(format_column)
+
+# Añadir puntos fijos a mano
+df_fijos = pd.concat([pd.DataFrame(puntos_fijos_no_hospitales), df_fijos], ignore_index=True)
+gdf_fijos = gdf_from_df(df_fijos)

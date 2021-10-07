@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Proyecto Hirudo</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Open+Sans:300,400,600" rel="stylesheet">
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+
+    <!-- Leaflet Locate plugin -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.74.0/dist/L.Control.Locate.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.74.0/dist/L.Control.Locate.min.js" charset="utf-8"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body,
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            z-index: 0;
+        }
+
+        /* .leaflet-popup-tip,
+        .leaflet-popup-content-wrapper {
+            background: #e93434;
+            color: #ffffff;
+            width: max-content;
+            word-break: break-word;
+            max-width: 1000px;
+        } */
+    </style>
+
+</head>
+
+<body>
+
+    <!-- map div -->
+    <div id="map"></div>
+
+    <script>
+        function main() {
+
+            // Fetch data! This is the public API key so it only has read permissions
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYzMzEyNDA0MywiZXhwIjoxOTQ4NzAwMDQzfQ.G3LHvzBbeMhZp9LktL9WcIOPv2Bb9vhQe2CnieQBMEI'
+            const SUPABASE_URL = "https://rniahokoaxvcljohlabg.supabase.co"
+
+            // add map variable
+            const map = L.map('map', {
+                zoomControl: true,
+                center: [40.4, -3.7],
+                zoom: 10
+            });
+
+            // add Voyager Basemap as default but allow usage of Google Maps
+            cartoBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '&copy;<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>'
+            }).addTo(map);
+
+            // keep Google Satellite map for high zoom levels - with labels too
+            googleBasemap = L.tileLayer('https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}', {
+                maxZoom: 18
+            })
+
+            L.control.layers(
+                {
+                    'CARTO Voyager': cartoBasemap,
+                    'Google Maps': googleBasemap
+                }
+            ).addTo(map);
+            L.control.locate().addTo(map);
+
+            // Custom control with image
+            // Kudos to https://stackoverflow.com/questions/46002113/javascript-reactjs-display-image-with-readablestream-as-source
+            const url_niveles_reserva = 'https://www.comunidad.madrid/sites/default/files/styles/imagen_enlace_opcional/public/doc/sanidad/info/niveles_de_reserva_sangre_0.jpg'
+
+            fetch(url_niveles_reserva)
+                .then(response => response.blob())
+                .then(blob => {
+                    console.log(blob);
+                    L.Control.Watermark = L.Control.extend({
+                        onAdd: function(map) {
+                            var img = L.DomUtil.create('img');
+
+                            img.src = URL.createObjectURL(blob);
+                            img.style.width = '300px';
+
+                            return img;
+                        },
+
+                        onRemove: function(map) {
+                            // Nothing to do here
+                        }
+                    });
+
+                    L.control.watermark = function(opts) {
+                        return new L.Control.Watermark(opts);
+                    }
+
+                    L.control.watermark({ position: 'bottomleft' }).addTo(map);
+                })
+                .catch(err => console.log(err))
+
+            // Custom tent icon
+            // TO DO: Attribute the designer
+            // <div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+            const puntosFijosIcon = L.icon({
+                iconUrl: './dist/blooddrop.png',
+                iconSize: [25, 25],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34]
+            });
+
+            const puntosMovilesIcon = L.icon({
+                iconUrl: './dist/blooddrop.png',
+                iconSize: [25, 25],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34]
+            });
+
+            // Wrapper function to fetch geojson data from Supabase
+            async function fetchTable(table) {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+                    headers: {
+                        Apikey: SUPABASE_KEY,
+                        Authorization: SUPABASE_KEY
+                    }
+                })
+                const json = await response.json()
+
+                return json
+            }
+
+            async function fetchGeoJSON(table) {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}_geojson?select=geojson`, {
+                    headers: {
+                        Apikey: SUPABASE_KEY,
+                        Authorization: SUPABASE_KEY
+                    }
+                })
+                const json = await response.json()
+
+                return json[0]['geojson']
+            }
+
+            // Wrapper function for layer popups
+            function removeEmpty(obj) {
+                return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v != null));
+            }
+            function tablePopup(f, l, keyRename, nameField) {
+                let tableElements = []
+                for (const [key, value] of Object.entries(removeEmpty(f.properties))) {
+                    if ([nameField, 'url'].includes(key)) {
+                        continue
+                    }
+                    tableElements.push(`<tr><td><strong>${keyRename[key]}</strong></td><td>${value}</td></tr>`)
+                }
+                const table = `<table>
+                    <thead>
+                        <tr>
+                            <th colspan="2"><h2>${f.properties[name_field]}</h2></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    ${tableElements.join('')}
+                    </tbody>
+                </table>
+                <img src="./dist/gmaps.png" alt="Link a Google Maps" width="10"><a href="${f.properties.url}">    Ver en Google Maps</a>
+                `
+                l.bindPopup(table);
+            }
+
+            // Fetch fixed points
+            fetchGeoJSON('puntos_fijos').then((pfGeoJSON) => {
+                fetchTable('puntos_fijos_keys').then(pfKeys => {
+                    const puntosFijosKeys = pfKeys.reduce((a, v) => ({ ...a, [v['db']]: v['original']}), {}) 
+                    function fijosTablePopup(f, l) {return tablePopup(f, l, puntosFijosKeys, name_field='nombre')};
+                    const puntosFijosLayer = L.geoJSON(pfGeoJSON, {
+                        pointToLayer: function (feature, latlng) {
+                            return L.marker(latlng, {icon: puntosFijosIcon});
+                        },
+                        onEachFeature: fijosTablePopup
+                    }).addTo(map);
+                })
+            });
+
+            // Fetch mobile points
+            fetchGeoJSON('puntos_moviles').then((pmGeoJSON) => {
+                fetchTable('puntos_moviles_keys').then(pmKeys => {
+                    console.log(pmGeoJSON)
+                    const puntosMovilesKeys = pmKeys.reduce((a, v) => ({ ...a, [v['db']]: v['original']}), {}) 
+                    function movilesTablePopup(f, l) {return tablePopup(f, l, puntosMovilesKeys, name_field='nombre')};
+                    const puntosMovilesLayer = L.geoJSON(pmGeoJSON, {
+                        pointToLayer: function (feature, latlng) {
+                            return L.marker(latlng, {icon: puntosMovilesIcon});
+                        },
+                        onEachFeature: movilesTablePopup
+                    }).addTo(map);
+                })
+            });
+
+        };
+
+
+        window.onload = main;
+
+    </script>
+
+</body>
+
+</html>
