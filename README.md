@@ -1,6 +1,6 @@
 # Puntos de Donación de Sangre de la Comunidad de Madrid
 
-## [El Mapa](https://arredond.github.io/geowut/)
+## [El Mapa](https://arredond.github.io/hirudo/)
 
 ## El _qué_
 
@@ -29,5 +29,5 @@ Geocoder (Google) para convertir las direcciones en coordenadas. No tiene mucho 
 
 ## Peticiones / ruegos / dudas
 
-Simplemente abre [un _issue_](https://github.com/arredond/intro-R/issues/new) e intentaré
+Simplemente abre [un _issue_](https://github.com/arredond/hirudo/issues/new) e intentaré
 atenderte lo antes posible.

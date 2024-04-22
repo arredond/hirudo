@@ -6,8 +6,7 @@ import geopandas as gpd
 import pandas as pd
 
 from dotenv import load_dotenv
-from googlemaps import Client
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from unidecode import unidecode
 
 load_dotenv()
@@ -30,7 +29,7 @@ PG_ENGINE = get_pg_engine()
 
 def run_query(sql_query):
     conn = PG_ENGINE.connect()
-    conn.execute(sql_query)
+    conn.execute(text(sql_query))
     conn.close()
 
 
@@ -49,7 +48,7 @@ def from_db(table_or_query):
 
 def format_column(column_name):
     """Format a column name to be a valid PG identifier"""
-    chars_to_remove = "¿?(),."
+    chars_to_remove = "¿?(),.:"
     chars_to_replace = {"/": "_", " ": "_", "%": "pct"}
     for char in chars_to_remove:
         column_name = column_name.replace(char, "")

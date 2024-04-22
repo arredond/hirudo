@@ -1,17 +1,16 @@
 import os
 
 from dotenv import load_dotenv
-from here_location_services import LS
-from googlemaps import Client
 
 load_dotenv()
-
 
 def here_geocode_row(row):
     """Geocode a 'Punto móvil' row
     
     HERE provides a geocoding score that we can use to filter or warn the user
     """
+    from here_location_services import LS
+    
     ls = LS(api_key=os.environ['HERE_API_KEY'])
 
     address1 = row.direccion
@@ -49,11 +48,15 @@ def here_geocode_row(row):
     return (lng, lat)
 
 
-def google_geocode_address(full_address):
+def google_geocode_address(full_address, postal_code=None, locality=None):
     """Geocode an address.
     
-    Google does not provide a score but works much better than competitors
+    Google does not provide a score but works much better than competitors.
+    Component filtering can be used to provide more specific results. See:
+    https://developers.google.com/maps/documentation/geocoding/requests-geocoding#component-filtering
     """
+    from googlemaps import Client
+    
     location_type_scoring = {
         'ROOFTOP': 9,
         'RANGE_INTERPOLATED': 7,
@@ -63,7 +66,13 @@ def google_geocode_address(full_address):
     
     gmaps = Client(os.environ['GOOGLE_MAPS_API_KEY'])
 
-    results = gmaps.geocode(full_address)
+    gmaps_components = {"country": "ES"}
+    if postal_code:
+        gmaps_components["postal_code"] = postal_code
+    if locality:
+        gmaps_components["locality"] = locality
+
+    results = gmaps.geocode(full_address, components=gmaps_components)
     if not results:
         print(f'Geocoding failed for {full_address}. No results found')
         return (None, None, None, None)
