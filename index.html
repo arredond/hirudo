@@ -56,6 +56,13 @@
         // Fetch data! This is the public API key so it only has read permissions
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYzMzEyNDA0MywiZXhwIjoxOTQ4NzAwMDQzfQ.G3LHvzBbeMhZp9LktL9WcIOPv2Bb9vhQe2CnieQBMEI'
         const SUPABASE_URL = "https://rniahokoaxvcljohlabg.supabase.co"
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        // Create a single supabase client for interacting with your database
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+        // Initial date to filter mobile points by
+        const DATE_TO_FILTER = '27/04/2024'
 
         // add map variable
         const map = L.map('map', {
@@ -128,28 +135,24 @@
         });
 
         // Wrapper function to fetch geojson data from Supabase
-        async function fetchTable(table) {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-                headers: {
-                    Apikey: SUPABASE_KEY,
-                    Authorization: SUPABASE_KEY
-                }
-            })
-            const json = await response.json()
-
-            return json
+        async function fetchTable(table, date) {
+            const { data, error } = await supabase
+                .from(table)
+                .select()
+            return data
         }
 
-        async function fetchGeoJSON(table) {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}_geojson?select=geojson`, {
-                headers: {
-                    Apikey: SUPABASE_KEY,
-                    Authorization: SUPABASE_KEY
-                }
-            })
-            const json = await response.json()
+        async function fetchGeoJSON(table, date) {
+            const { data, error } = await supabase
+                .from(`${table}_geojson`)
+                .select('geojson')
+            return data[0]['geojson']
+        }
 
-            return json[0]['geojson']
+        async function fetchPuntosMovilesGeoJSON(date) {
+            const { data, error } = await supabase
+                .rpc('get_puntos_moviles_geojson', { filter_date: date })
+            return data[0]['geojson']
         }
 
         // Wrapper function for layer popups
@@ -194,7 +197,7 @@
         });
 
         // Fetch mobile points
-        fetchGeoJSON('puntos_moviles').then((pmGeoJSON) => {
+        fetchPuntosMovilesGeoJSON(DATE_TO_FILTER).then((pmGeoJSON) => {
             fetchTable('puntos_moviles_keys').then(pmKeys => {
                 console.log(pmGeoJSON)
                 const puntosMovilesKeys = pmKeys.reduce((a, v) => ({ ...a, [v['db']]: v['original']}), {}) 
