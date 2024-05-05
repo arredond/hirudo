@@ -1,0 +1,119 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: auto;
+    width: 100%;
+}
+
+#flex-container {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+}
+
+#flex-container > .vertical-space {
+    height: 5rem;
+}
+
+#flex-container > .title-container {
+    display: flex;
+    height: 7rem;
+    justify-content: center;
+    align-items: center;
+    font-size: 5rem;
+    font-family: 'Montserrat', serif;
+    color: crimson;
+}
+
+#flex-container > .search-container {
+    display: flex;
+    height: 7rem;
+    justify-content: center;
+    align-items: center;
+}
+
+#flex-container > .map-container {
+    height: 30rem;
+}
+
+#flex-container > .calendar-container {
+    height: 12rem;
+    padding-left: 4rem;
+    padding-right: 4rem;
+}
+
+.map-container > .map-item {
+    height: 100%;
+    width: 100%;
+}
+
+.search-container > .search-item {
+    width: 60%;
+    height: 4rem;
+    font-size: 4rem;
+    font-family: 'Montserrat', serif;
+    border-radius: 1rem;
+    border-width: 0.2rem;
+    border-color: crimson;
+    color: crimson;
+}
+
+.calendar-container > .title {
+    color: crimson;
+    font-size: 2rem;
+    font-family: 'Montserrat', serif;
+}
+
+.calendar-container > .date-picker {
+    overflow: auto;
+    white-space: nowrap;
+    padding-top: 1rem;
+}
+
+.date-picker > a {
+    display: inline-block;
+    height: 6rem;
+    width: 6rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    text-align: center;
+    align-content: center;
+    border-radius: 16px;
+    text-decoration: none;
+}
+
+.date-picker > .selected {
+    color: white;
+    background-color: crimson;
+}
+
+.date-picker > .idle {
+    color: crimson;
+    background-color: lightgray;
+}
+
+a > .day {
+    font-size: 2.5rem;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+}
+
+a > .month {
+    font-size: 2rem;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.date-picker > .date-separator {
+    display: inline-block;
+    height: 1rem;
+    width: 1rem;
+    margin: 1rem;
+    background-color: crimson;
+    border-radius: 50%;
+    vertical-align: middle;
+}
