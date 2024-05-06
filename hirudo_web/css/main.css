@@ -94,6 +94,10 @@ body {
     background-color: lightgray;
 }
 
+.date-picker > .idle:hover {
+    background-color: lightpink;
+}
+
 a > .day {
     font-size: 2.5rem;
     align-content: center;

@@ -1,53 +1,57 @@
+import '../libs/dayjs/dayjs.js';
+
 const classNameSelected = "selected";
 const classNameIdle = "idle";
-const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 let dateIds = []
 
-export function populateDatePicker(selectedDay, selectedMonth) {
+export function populateDatePicker(selectedDate) {
     let datePickerView = document.getElementById('date-picker');
 
-    let itemDate = new Date();
+    let itemDate = dayjs().locale('es');
 
     for (let i = 0; i < 7; i++) {
-        let [itemDay, itemMonth] = [itemDate.getDate(), itemDate.getMonth() + 1];
-        let isSelected = itemDay === parseInt(selectedDay) && itemMonth === parseInt(selectedMonth);
-        let dateItemView = buildDateItemView(itemDay, itemMonth, isSelected);
+        let isSelected = itemDate.isSame(selectedDate, 'day');
+        let dateItemView = buildDateItemView(itemDate, isSelected);
         datePickerView.appendChild(dateItemView);
 
-        itemDate.setDate(itemDate.getDate() + 1);
+        itemDate = itemDate.add(1, 'day');
     }
 
     dateIds = Array.from(datePickerView.children).map((item) => item.id);
 }
 
-export function updateSelectedDate(day, month) {
-    let selectedId = getIdForDate(day, month);
+export function updateSelectedDate(selectedDate) {
+    let formattedDate = selectedDate.format('DD/MM/YYYY');
+    let selectedId = getIdForDate(formattedDate);
+    console.log('Selected ID: ' + selectedId);
 
     let datePickerView = document.getElementById('date-picker');
     let dateItems = datePickerView.children;
 
     for (let i = 0; i < dateItems.length; i++) {
+        console.log('Item ID: ' + dateItems[i].id);
         dateItems[i].className = dateItems[i].id === selectedId ? classNameSelected : classNameIdle;
     }
 }
 
-function buildDateItemView(day, month, isSelected) {
-    let id = getIdForDate(day, month);
+function buildDateItemView(date, isSelected) {
+    let formattedDate = date.format('DD/MM/YYYY');
+    let id = getIdForDate(formattedDate);
     let className = isSelected ? classNameSelected : classNameIdle;
     let dateItemView = document.createElement('a');
     dateItemView.id = id;
     dateItemView.className = className;
-    dateItemView.href = `#${day}-${month}`;
+    dateItemView.href = `#${formattedDate}`;
 
     dateItemView.innerHTML = `
-        <div class="month">${monthNames[month - 1]}</div>
-        <div class="day">${day}</div>
+        <div class="month">${date.format('MMM')}</div>
+        <div class="day">${date.format('DD')}</div>
     `;
 
     return dateItemView;
 }
 
 
-function getIdForDate(day, month) {
-    return `date-picker-item-${day}-${month}`;
+function getIdForDate(formattedDate) {
+    return `date-picker-item-${formattedDate}`;
 }

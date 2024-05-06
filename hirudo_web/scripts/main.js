@@ -1,27 +1,26 @@
 import * as bloodPoints from './blood_points.js';
 import * as bloodMap from './blood_map.js';
 import * as datePicker from './date_picker.js';
+import '../libs/dayjs/dayjs.js';
+import customParseFormat from '../libs/dayjs/customParseFormat/custom_parse_format.js'
 
 let fixedPoints = [];
 let mobilePoints = [];
+dayjs.extend(customParseFormat);
 
 async function main() {
     // Setup map
     bloodMap.setupMap();
     
     // Get selected day or today
-    let selectedDay = window.location.hash.substring(1).split("-")
-    let today = new Date();
+    let selectedDate = getSelectedDate();
 
-    let [day, month] = selectedDay.length > 1 ? selectedDay : [today.getDate(), today.getMonth() + 1];
-
-    datePicker.populateDatePicker(day, month);
+    datePicker.populateDatePicker(selectedDate);
     
     // Fetch data
     fixedPoints = await bloodPoints.retrieveFixedBloodPoints();
     
-    let filterDate = `${day}/${month}/${today.getFullYear()}`;
-    
+    let filterDate = selectedDate.format('DD/MM/YYYY');
     mobilePoints = await bloodPoints.retrieveMobileBloodPointsForDate(filterDate);
 
     console.log(fixedPoints);
@@ -34,21 +33,28 @@ async function main() {
 
 async function onHashChanged() {
     // Update date picker
-    let selectedDay = window.location.hash.substring(1).split("-");
-    let today = new Date();
-
-    let [day, month] = selectedDay.length > 1 ? selectedDay : [today.getDate(), today.getMonth() + 1];
+    let selectedDate = getSelectedDate();
     
-    datePicker.updateSelectedDate(day, month);
+    datePicker.updateSelectedDate(selectedDate);
     
     // Update map
-    let filterDate = `${day}/${month}/${today.getFullYear()}`;
+    let filterDate = selectedDate.format('DD/MM/YYYY');
     mobilePoints = await bloodPoints.retrieveMobileBloodPointsForDate(filterDate);
     
     console.log(mobilePoints?.features);
     
     bloodMap.clearMarkers();
     bloodMap.addBloodPoints(mobilePoints, false)
+}
+
+function getSelectedDate() {
+    let selectedDay = window.location.hash.substring(1);
+    let date = dayjs().locale('es');
+
+    if (selectedDay.length > 1) {
+        date = dayjs(selectedDay, 'DD/MM/YYYY').locale('es');
+    }
+    return date;
 }
 
 window.onload = main;
