@@ -14,14 +14,14 @@ const mobilePointLayer = new L.LayerGroup();
 const puntosFijosIcon = L.icon({
     iconUrl: './dist/blooddrop.png',
     iconSize: [25, 25],
-    iconAnchor: [12, 41],
+    iconAnchor: [12.5, 12.5],
     popupAnchor: [1, -34]
 });
 
 const puntosMovilesIcon = L.icon({
     iconUrl: './dist/directions_bus_filled.svg',
     iconSize: [25, 25],
-    iconAnchor: [12, 41],
+    iconAnchor: [12.5, 12.5],
     popupAnchor: [1, -34]
 });
 
