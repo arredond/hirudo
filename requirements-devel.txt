@@ -1,11 +1,11 @@
+beautifulsoup4
 dotenv
 GeoAlchemy2
 geopandas
 googlemaps
 here_location_services
+lxml
 pandas
 psycopg2
-selenium
 sqlalchemy
-tqdm
 unidecode

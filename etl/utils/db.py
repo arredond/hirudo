@@ -5,45 +5,42 @@ import os
 import geopandas as gpd
 import pandas as pd
 
-from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
-from unidecode import unidecode
 
-load_dotenv()
+from sqlalchemy import create_engine
+from unidecode import unidecode
 
 
 def get_pg_engine():
-    connection_string = 'postgresql://{user}:{password}@{host}:{port}/{db}'.format(
-        user=os.environ['PG_USER'],
-        password=os.environ['PG_PASSWORD'],
-        host=os.environ['PG_HOST'],
-        port=os.environ['PG_PORT'],
-        db=os.environ['PG_DATABASE']
+    """Connect to a PG database from env variables"""
+    # pylint: disable=consider-using-f-string
+    connection_string = "postgresql://{user}:{password}@{host}:{port}/{db}".format(
+        user=os.environ.get("PG_USER", "postgres.rniahokoaxvcljohlabg"),
+        password=os.environ["PG_PASSWORD"],
+        host=os.environ.get("PG_HOST", "aws-0-eu-west-1.pooler.supabase.com"),
+        port=os.environ.get("PG_PORT", 5432),
+        db=os.environ.get("PG_DATABASE", "postgres"),
     )
-    
+
     return create_engine(connection_string)
 
 
-PG_ENGINE = get_pg_engine()
-
-
-def run_query(sql_query):
-    conn = PG_ENGINE.connect()
-    conn.execute(text(sql_query))
-    conn.close()
-
-
-def to_db(df, table_name):
-    if isinstance(df, gpd.GeoDataFrame):
-        df.to_postgis(table_name, PG_ENGINE, if_exists='replace', index=False)
-    elif isinstance(df, pd.DataFrame):
-        df.to_sql(table_name, PG_ENGINE, if_exists='replace', index=False)
+def to_db(dataframe: gpd.GeoDataFrame | pd.DataFrame, table_name: str):
+    """Upload a (Geo)DataFrame to a table in the database, replacing contents if necessary"""
+    pg_engine = get_pg_engine()
+    if isinstance(dataframe, gpd.GeoDataFrame):
+        dataframe.to_postgis(table_name, pg_engine, if_exists="replace", index=False)
+    elif isinstance(dataframe, pd.DataFrame):
+        dataframe.to_sql(table_name, pg_engine, if_exists="replace", index=False)
     else:
-        raise ValueError(f'"df" must be a DataFrame or GeoDataFrame, received "{type(df)}" instead')
+        raise ValueError(
+            f'dataframe must be a DataFrame or GeoDataFrame, received "{type(dataframe)}" instead'
+        )
 
 
 def from_db(table_or_query):
-    return pd.read_sql(table_or_query, PG_ENGINE)
+    """Read a table from the database into a Pandas DataFrame"""
+    pg_engine = get_pg_engine()
+    return pd.read_sql(table_or_query, pg_engine)
 
 
 def format_column(column_name):
@@ -54,21 +51,24 @@ def format_column(column_name):
         column_name = column_name.replace(char, "")
     for original_char, new_char in chars_to_replace.items():
         column_name = column_name.replace(original_char, new_char)
-        
+
     # Multiple underscores into a single one
-    column_name = '_'.join([part for part in column_name.split('_') if part != ''])
+    column_name = "_".join([part for part in column_name.split("_") if part != ""])
 
     column_name = unidecode(column_name.lower())
     return column_name
 
 
-def gdf_from_df(df):
+def gdf_from_df(dataframe):
     """Construct a GeoDataFrame from a Pandas' DataFrame
-    
+
     Assume the original DataFrame contains point information
     in fields `latitude` and `longitude`"""
-    gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df['longitude'], df['latitude']))
-    gdf = gdf.drop(columns=['latitude', 'longitude'])
+    gdf = gpd.GeoDataFrame(
+        dataframe,
+        geometry=gpd.points_from_xy(dataframe["longitude"], dataframe["latitude"]),
+    )
+    gdf = gdf.drop(columns=["latitude", "longitude"])
     gdf = gdf.set_crs(epsg=4326)
-    
+
     return gdf

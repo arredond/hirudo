@@ -1,3 +1,4 @@
+-- DEPRECATED: create a GeoJSON view of a table
 DROP VIEW IF EXISTS {t}_geojson;
 CREATE OR REPLACE VIEW {t}_geojson AS (
 	SELECT

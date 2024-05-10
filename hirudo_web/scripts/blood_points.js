@@ -17,7 +17,7 @@ async function fetchKeys(table) {
 
 async function fetchFixedPointsGeoJSON() {
     const { data, error } = await supabase
-        .from(`puntos_fijos_geojson`)
+        .rpc(`get_puntos_fijos_geojson`)
         .select('geojson')
         return data[0]['geojson']
 }

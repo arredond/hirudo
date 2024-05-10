@@ -1,0 +1,9 @@
+beautifulsoup4
+GeoAlchemy2
+geopandas
+googlemaps
+lxml
+pandas
+psycopg2
+sqlalchemy
+unidecode

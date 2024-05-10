@@ -1,0 +1,47 @@
+[
+    {
+        "nombre": "Centro de Transfusión de la Comunidad de Madrid",
+        "id_del_centro": null,
+        "url": null,
+        "horario_de_donaciones": "De 8:30 a 21 horas, de lunes a sábado (excepto festivos).",
+        "ubicacion_de_las_salas_de_donacion": null,
+        "observaciones": "Cuenta con párking para donantes. Medios de transporte: Autobuses: 71, 130, 8. Metro: Valdebernardo (Línea 9)",
+        "informacion_al_donante": "Tlfno: 900 303 530",
+        "direccion_postal": "esquina con Avenida de las Comunidades, Av. de la Democracia, s/n",
+        "municipio": "Madrid",
+        "codigo_postal": "28032",
+        "informacion_general": "900 303 530",
+        "latitude": 40.396334,
+        "longitude": -3.615422
+    },
+    {
+        "nombre": "Unidad móvil de la Puerta del Sol",
+        "id_del_centro": null,
+        "url": null,
+        "horario_de_donaciones": "De lunes a viernes de 11 a 21 h. Sábados, domingos y festivos de 10 a 21h.",
+        "ubicacion_de_las_salas_de_donacion": null,
+        "observaciones": null,
+        "informacion_al_donante": null,
+        "direccion_postal": "Prta. del Sol, s/n",
+        "municipio": "Madrid",
+        "codigo_postal": "28013",
+        "informacion_general": null,
+        "latitude": 40.416806,
+        "longitude": -3.703911
+    },
+    {
+        "nombre": "Unidad de Extracción de Sangre de Cruz Roja",
+        "id_del_centro": null,
+        "url": null,
+        "horario_de_donaciones": "De lunes a viernes. De 9 a 20:30 h. (excepto festivos).",
+        "ubicacion_de_las_salas_de_donacion": null,
+        "observaciones": null,
+        "informacion_al_donante": "Tlfno: 900 303 530",
+        "direccion_postal": "c/ Juan Montalvo, nº 3.",
+        "municipio": "Madrid",
+        "codigo_postal": "28040",
+        "informacion_general": null,
+        "latitude": 40.447684,
+        "longitude": -3.709592
+    }
+]
