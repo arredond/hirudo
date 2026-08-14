@@ -1,0 +1,22 @@
+[project]
+name = "hirudo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "bs4>=0.0.2",
+    "dotenv>=0.9.9",
+    "geoalchemy2>=0.20.0",
+    "geopandas>=1.1.4",
+    "googlemaps>=4.10.0",
+    "here-location-services>=0.4.0",
+    "html5lib>=1.1",
+    "lxml>=6.1.1",
+    "pandas>=3.0.5",
+    "psycopg2-binary>=2.9.12",
+    "python-dotenv>=1.2.2",
+    "sqlalchemy>=2.0.52",
+    "tqdm>=4.70.0",
+    "unidecode>=1.4.0",
+]

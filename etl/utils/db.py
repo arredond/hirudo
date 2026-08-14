@@ -6,22 +6,26 @@ import geopandas as gpd
 import pandas as pd
 
 
-from sqlalchemy import create_engine
-from unidecode import unidecode
+import sqlalchemy
+import unidecode
+import dotenv
+
+
+dotenv.load_dotenv()
 
 
 def get_pg_engine():
     """Connect to a PG database from env variables"""
     # pylint: disable=consider-using-f-string
     connection_string = "postgresql://{user}:{password}@{host}:{port}/{db}".format(
-        user=os.environ.get("PG_USER", "postgres.rniahokoaxvcljohlabg"),
+        user=os.environ["PG_USER"],
         password=os.environ["PG_PASSWORD"],
-        host=os.environ.get("PG_HOST", "aws-0-eu-west-1.pooler.supabase.com"),
-        port=os.environ.get("PG_PORT", 5432),
-        db=os.environ.get("PG_DATABASE", "postgres"),
+        host=os.environ["PG_HOST"],
+        port=os.environ["PG_PORT"],
+        db=os.environ["PG_DATABASE"],
     )
 
-    return create_engine(connection_string)
+    return sqlalchemy.create_engine(connection_string)
 
 
 def to_db(dataframe: gpd.GeoDataFrame | pd.DataFrame, table_name: str):
@@ -55,7 +59,7 @@ def format_column(column_name):
     # Multiple underscores into a single one
     column_name = "_".join([part for part in column_name.split("_") if part != ""])
 
-    column_name = unidecode(column_name.lower())
+    column_name = unidecode.unidecode(column_name.lower())
     return column_name
 
 

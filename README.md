@@ -31,3 +31,7 @@ Geocoder (Google) para convertir las direcciones en coordenadas. No tiene mucho 
 
 Simplemente abre [un _issue_](https://github.com/arredond/hirudo/issues/new) e intentaré
 atenderte lo antes posible.
+
+## Desarrollo local
+
+python3 -m http.server 8000

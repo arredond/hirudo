@@ -1,8 +1,8 @@
 import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
 
 // Fetch data! This is the public API key so it only has read permissions
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYzMzEyNDA0MywiZXhwIjoxOTQ4NzAwMDQzfQ.G3LHvzBbeMhZp9LktL9WcIOPv2Bb9vhQe2CnieQBMEI';
-const SUPABASE_URL = "https://rniahokoaxvcljohlabg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_GYgKDp3djbq9SvNm71FZZQ_cBl2AaN5"
+const SUPABASE_URL = "https://tasrhjtpqshgxfofwery.supabase.co"
 
 // Create a single supabase client for interacting with your database
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
