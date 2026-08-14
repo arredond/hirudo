@@ -16,6 +16,7 @@ dependencies = [
     "pandas>=3.0.5",
     "psycopg2-binary>=2.9.12",
     "python-dotenv>=1.2.2",
+    "ruff>=0.16.3",
     "sqlalchemy>=2.0.52",
     "tqdm>=4.70.0",
     "unidecode>=1.4.0",

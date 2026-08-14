@@ -1,4 +1,5 @@
 """Full process for running in a Google Cloud Function"""
+
 import json
 
 import pandas as pd

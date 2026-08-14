@@ -1,4 +1,5 @@
 """Geocoding utils"""
+
 import os
 
 import pandas as pd
@@ -44,7 +45,7 @@ def here_geocode_row(row):
     best_result = results_df.loc[results_df["score"].idxmax()]
     if best_result["score"] <= 0.7:
         print(
-            f'Warning. Geocoding for {best_result["full_address"]} received low score of {score}.',
+            f"Warning. Geocoding for {best_result['full_address']} received low score of {score}.",
             "You may want to double check these results",
         )
 

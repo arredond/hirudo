@@ -1,4 +1,5 @@
 """Crawl Community of Madrid pages and retrieve fixed and mobile spots"""
+
 import urllib.parse
 
 from io import StringIO
@@ -84,7 +85,12 @@ def pedir_html_puntos(url: str) -> str:
         "ctl00$ContenedorContenidoSeccion$cbxMunicipio": 0,
         "ctl00$ContenedorContenidoSeccion$btnBuscar": "Buscar",
     }
-    internal_code_keys = ["__VIEWSTATE", "__VIEWSTATEGENERATOR", "__VIEWSTATEENCRYPTED", "__EVENTVALIDATION"]
+    internal_code_keys = [
+        "__VIEWSTATE",
+        "__VIEWSTATEGENERATOR",
+        "__VIEWSTATEENCRYPTED",
+        "__EVENTVALIDATION",
+    ]
     for k in internal_code_keys:
         data[k] = r1_html.find("input", {"id": k}).attrs["value"]
 
