@@ -59,7 +59,7 @@ export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, on
   }
 
   return (
-    <div className="w-[560px] shrink-0 flex flex-col border-r border-gray-200 bg-white overflow-hidden">
+    <div className="fixed inset-0 z-40 md:relative md:inset-auto md:z-auto md:w-[560px] md:shrink-0 flex flex-col border-r border-gray-200 bg-white overflow-hidden">
       <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-gray-700">

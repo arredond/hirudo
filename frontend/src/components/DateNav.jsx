@@ -15,8 +15,8 @@ export default function DateNav({ selectedDate, onSelectDate, showOnlyFixed, onT
   const isActive = day => selectedDate && day.isSame(selectedDate, 'day')
 
   return (
-    <nav className="flex items-end justify-between px-8 border-b border-gray-200 shrink-0">
-      <div className="flex items-end gap-6">
+    <nav className="flex flex-col md:flex-row md:items-end md:justify-between border-b border-gray-200 shrink-0">
+      <div className="flex items-end gap-4 md:gap-6 px-4 md:px-8 overflow-x-auto shrink-0">
         <Tab top="Abierto" bottom="ahora" active={isAbiertoAhora} onClick={() => onSelectDate(null)} />
         {days.map((day, i) => (
           <Tab
@@ -29,7 +29,7 @@ export default function DateNav({ selectedDate, onSelectDate, showOnlyFixed, onT
         ))}
       </div>
 
-      <div className="pb-3">
+      <div className="px-4 md:px-8 py-2 md:pb-3 flex justify-end border-t border-gray-100 md:border-t-0">
         <button
           onClick={onToggleFixed}
           className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
@@ -52,7 +52,7 @@ function Tab({ top, bottom, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center py-3 border-b-2 -mb-px transition-colors ${
+      className={`flex flex-col items-center py-3 border-b-2 -mb-px transition-colors shrink-0 ${
         active
           ? 'border-red-600 text-red-600'
           : 'border-transparent text-gray-500 hover:text-gray-800'

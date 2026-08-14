@@ -33,7 +33,7 @@ export default function Popup({ point, onClose }) {
   const fullAddress = [address, locality, zipCode].filter(Boolean).join(', ')
 
   return (
-    <div className="absolute bottom-6 right-6 z-20 bg-white rounded-2xl shadow-xl w-80 overflow-hidden">
+    <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 bg-white rounded-2xl shadow-xl overflow-hidden">
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div>
