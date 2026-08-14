@@ -35,6 +35,8 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: frontend
+        env:
+          VITE_BASE_URL: /hirudo/
 
       - uses: actions/upload-pages-artifact@v3
         with:
