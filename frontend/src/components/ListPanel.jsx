@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import PointCard from './PointCard'
 
 function haversine(lat1, lng1, lat2, lng2) {
@@ -45,6 +45,15 @@ export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, on
       selectedRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' })
     }
   }, [selectedPoint])
+
+  // useLayoutEffect runs before paint, avoiding scroll-anchoring interference.
+  // String key ensures reliable primitive comparison when refPoint object changes.
+  const refPointKey = refPoint ? `${refPoint.lat.toFixed(4)},${refPoint.lng.toFixed(4)}` : null
+  useLayoutEffect(() => {
+    if (!locationGranted && selectedPoint && scrollRef.current) {
+      scrollRef.current.scrollTop = 0
+    }
+  }, [refPointKey])
 
   const all = [...mobilePoints, ...fixedPoints]
 

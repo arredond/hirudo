@@ -23,9 +23,12 @@ Entrando en la tercera década del siglo XXI, nos vamos mereciendo un mapa.
 
 ## El _cómo_
 
-Usamos [Supabase](https://supabase.io/) como _backend_ y [Leaflet](https://leafletjs.com/)
-para el _front_, además de un poco de código en Python para extraer los datos y un
-Geocoder (Google) para convertir las direcciones en coordenadas. No tiene mucho más.
+Usamos [Supabase](https://supabase.io/) como _backend_, [MapLibre GL](https://maplibre.org/)
+para el mapa y [React](https://react.dev/) + [Vite](https://vitejs.dev/) para el _front_,
+además de un poco de código en Python para extraer los datos y Google Maps para geocodificar
+las direcciones de los puntos móviles.
+
+El ETL se ejecuta como un job en [Google Cloud Run](https://cloud.google.com/run).
 
 ## Peticiones / ruegos / dudas
 
@@ -34,4 +37,25 @@ atenderte lo antes posible.
 
 ## Desarrollo local
 
-python3 -m http.server 8000
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**ETL:**
+```bash
+cp .env.example .env  # rellenar variables de entorno
+uv run python etl/main.py
+```
+
+Los tests del ETL (unitarios, sin red):
+```bash
+uv run python -m pytest etl/tests/
+```
+
+Tests de integración (tocan las URLs reales de la Comunidad de Madrid):
+```bash
+uv run python -m pytest etl/tests/ -m integration
+```

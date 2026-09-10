@@ -1,0 +1,44 @@
+[
+    {
+        "name": "Centro de Transfusión de la Comunidad de Madrid",
+        "plasma": true,
+        "aferesis": true,
+        "medula": true
+    },
+    {
+        "name": "Hospital Universitario del Henares",
+        "plasma": true,
+        "aferesis": false,
+        "medula": false
+    },
+    {
+        "name": "Hospital Universitario Infanta Sofía",
+        "plasma": true,
+        "aferesis": false,
+        "medula": false
+    },
+    {
+        "name": "Hospital Universitario Príncipe de Asturias",
+        "plasma": true,
+        "aferesis": false,
+        "medula": false
+    },
+    {
+        "name": "Hospital Universitario Ramón y Cajal",
+        "plasma": true,
+        "aferesis": false,
+        "medula": false
+    },
+    {
+        "name": "Hospital Universitario de Móstoles",
+        "plasma": true,
+        "aferesis": false,
+        "medula": false
+    },
+    {
+        "name": "Hospital Universitario La Paz",
+        "plasma": true,
+        "aferesis": false,
+        "medula": false
+    }
+]

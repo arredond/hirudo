@@ -10,10 +10,10 @@ export function useBloodPoints(selectedDate) {
   useEffect(() => {
     fetchFixedPoints().then(geojson => {
       const features = geojson?.features ?? []
-      // Deduplicate by nombre — the DB can have duplicate rows from past ETL runs
+      // Deduplicate by name — the DB can have duplicate rows from past ETL runs
       const seen = new Set()
       setFixedPoints(features.filter(f => {
-        const key = f.properties?.nombre
+        const key = f.properties?.name
         if (seen.has(key)) return false
         seen.add(key)
         return true

@@ -4,14 +4,8 @@ import os
 
 import geopandas as gpd
 import pandas as pd
-
-
 import sqlalchemy
 import unidecode
-import dotenv
-
-
-dotenv.load_dotenv()
 
 
 def get_pg_engine():
@@ -36,7 +30,7 @@ def to_db(dataframe: gpd.GeoDataFrame | pd.DataFrame, table_name: str):
     elif isinstance(dataframe, pd.DataFrame):
         dataframe.to_sql(table_name, pg_engine, if_exists="replace", index=False)
     else:
-        raise ValueError(
+        raise TypeError(
             f'dataframe must be a DataFrame or GeoDataFrame, received "{type(dataframe)}" instead'
         )
 
