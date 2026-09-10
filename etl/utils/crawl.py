@@ -11,6 +11,16 @@ URL_BASE = "https://donarsangre.sanidadmadrid.org/"
 URL_FIXED_POINTS = urllib.parse.urljoin(URL_BASE, "fijos.aspx")
 URL_MOBILE_POINTS = urllib.parse.urljoin(URL_BASE, "moviles.aspx")
 
+# The "Semáforo de necesidades" component on the national donation site renders
+# each blood type with a Bulma background class that encodes how urgently that
+# type is needed. Mapping to (status, level) with level 1 = most urgent.
+URL_BLOOD_LEVELS = "https://www.donarsangre.org/"
+BLOOD_LEVEL_STATUS = {
+    "has-background-danger": ("urgent", 1),
+    "has-background-warning": ("soon", 2),
+    "has-background-success": ("stable", 3),
+}
+
 SESSION = requests.Session()
 
 
@@ -119,6 +129,38 @@ def scrape_fixed_points() -> pd.DataFrame:
             raise
 
     return pd.DataFrame(fixed_points)
+
+
+def scrape_blood_levels() -> pd.DataFrame:
+    """Scrape the "Semáforo de necesidades" blood-reserve levels.
+
+    Reads the semáforo component on https://www.donarsangre.org/ and returns a
+    DataFrame with one row per blood type and columns:
+    blood_type, status ('urgent'/'soon'/'stable'), level (1-3, 1 = most urgent),
+    and label (the original Spanish phrase shown on the site).
+    """
+    html = SESSION.get(URL_BLOOD_LEVELS).text
+    soup = BeautifulSoup(html, features="lxml")
+
+    blood_levels = []
+    for item in soup.find("ul", {"class": "semafor-list"}).find_all("li"):
+        heading = item.find("h3")
+        background_class = next(
+            css_class
+            for css_class in heading["class"]
+            if css_class in BLOOD_LEVEL_STATUS
+        )
+        status, level = BLOOD_LEVEL_STATUS[background_class]
+        blood_levels.append(
+            {
+                "blood_type": heading.text.strip(),
+                "status": status,
+                "level": level,
+                "label": item.find("p").text.strip(),
+            }
+        )
+
+    return pd.DataFrame(blood_levels)
 
 
 def gmaps_url_from_coords(row) -> str:

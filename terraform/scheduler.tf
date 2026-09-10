@@ -5,7 +5,12 @@ resource "google_cloud_run_v2_job_iam_member" "scheduler_can_run" {
   member   = "serviceAccount:${google_service_account.scheduler_invoker.email}"
 }
 
-resource "google_cloud_scheduler_job" "etl_weekly" {
+moved {
+  from = google_cloud_scheduler_job.etl_weekly
+  to   = google_cloud_scheduler_job.etl_daily
+}
+
+resource "google_cloud_scheduler_job" "etl_daily" {
   name      = "${var.job_name}-schedule"
   region    = var.scheduler_region
   schedule  = var.schedule

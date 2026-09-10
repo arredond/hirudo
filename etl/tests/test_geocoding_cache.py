@@ -5,7 +5,6 @@ import pytest
 
 from main import geocode_mobile_points
 
-
 CACHE_COLS = ["address", "longitude", "latitude", "location_type", "score"]
 
 
@@ -24,7 +23,13 @@ def _cache(*rows):
     """Build a geocoding cache DataFrame from (address, lng, lat, score) tuples."""
     return pd.DataFrame(
         [
-            {"address": a, "longitude": lng, "latitude": lat, "location_type": "ROOFTOP", "score": s}
+            {
+                "address": a,
+                "longitude": lng,
+                "latitude": lat,
+                "location_type": "ROOFTOP",
+                "score": s,
+            }
             for a, lng, lat, s in rows
         ],
         columns=CACHE_COLS,
@@ -61,7 +66,9 @@ def test_fully_cached_makes_no_api_calls(mocker):
 def test_partially_cached_geocodes_only_missing(mocker):
     # lugar is cached, direccion is not
     cache = _cache((LUGAR_ADDR, -3.70, 40.41, 9))
-    mock_geocode = mocker.patch("main.geocode_address", return_value=(-3.71, 40.42, "ROOFTOP", 9))
+    mock_geocode = mocker.patch(
+        "main.geocode_address", return_value=(-3.71, 40.42, "ROOFTOP", 9)
+    )
     mocker.patch("main.to_db")
 
     geocode_mobile_points(_mobile_df(), cache)
@@ -71,7 +78,9 @@ def test_partially_cached_geocodes_only_missing(mocker):
 
 
 def test_nothing_cached_geocodes_all_unique_addresses(mocker):
-    mock_geocode = mocker.patch("main.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9))
+    mock_geocode = mocker.patch(
+        "main.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9)
+    )
     mocker.patch("main.to_db")
 
     geocode_mobile_points(_mobile_df(), _empty_cache())
@@ -85,7 +94,9 @@ def test_nothing_cached_geocodes_all_unique_addresses(mocker):
 def test_same_address_in_lugar_and_direccion_geocoded_once(mocker):
     """When lugar and direccion resolve to the same address string, geocode only once."""
     df = _mobile_df(lugar=["Plaza Mayor, 1"], direccion=["Plaza Mayor, 1"])
-    mock_geocode = mocker.patch("main.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9))
+    mock_geocode = mocker.patch(
+        "main.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9)
+    )
     mocker.patch("main.to_db")
 
     geocode_mobile_points(df, _empty_cache())
@@ -99,7 +110,7 @@ def test_same_address_in_lugar_and_direccion_geocoded_once(mocker):
 
 
 def test_new_geocoding_results_saved_to_db(mocker):
-    mock_geocode = mocker.patch("main.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9))
+    mocker.patch("main.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9))
     mock_to_db = mocker.patch("main.to_db")
 
     geocode_mobile_points(_mobile_df(), _empty_cache())
@@ -129,8 +140,8 @@ def test_cache_not_saved_when_nothing_new(mocker):
 
 def test_direccion_used_when_higher_score(mocker):
     cache = _cache(
-        (LUGAR_ADDR, -3.70, 40.41, 4),   # APPROXIMATE
-        (DIR_ADDR,   -3.80, 40.50, 9),   # ROOFTOP
+        (LUGAR_ADDR, -3.70, 40.41, 4),  # APPROXIMATE
+        (DIR_ADDR, -3.80, 40.50, 9),  # ROOFTOP
     )
     mocker.patch("main.geocode_address")
     mocker.patch("main.to_db")
@@ -143,8 +154,8 @@ def test_direccion_used_when_higher_score(mocker):
 
 def test_lugar_used_when_higher_score(mocker):
     cache = _cache(
-        (LUGAR_ADDR, -3.70, 40.41, 9),   # ROOFTOP
-        (DIR_ADDR,   -3.80, 40.50, 4),   # APPROXIMATE
+        (LUGAR_ADDR, -3.70, 40.41, 9),  # ROOFTOP
+        (DIR_ADDR, -3.80, 40.50, 4),  # APPROXIMATE
     )
     mocker.patch("main.geocode_address")
     mocker.patch("main.to_db")
@@ -158,7 +169,7 @@ def test_lugar_used_when_higher_score(mocker):
 def test_lugar_used_when_scores_equal(mocker):
     cache = _cache(
         (LUGAR_ADDR, -3.70, 40.41, 7),
-        (DIR_ADDR,   -3.80, 40.50, 7),
+        (DIR_ADDR, -3.80, 40.50, 7),
     )
     mocker.patch("main.geocode_address")
     mocker.patch("main.to_db")
@@ -171,7 +182,7 @@ def test_lugar_used_when_scores_equal(mocker):
 def test_lugar_used_when_direccion_score_is_none(mocker):
     cache = _cache(
         (LUGAR_ADDR, -3.70, 40.41, 7),
-        (DIR_ADDR,   None, None, None),
+        (DIR_ADDR, None, None, None),
     )
     mocker.patch("main.geocode_address")
     mocker.patch("main.to_db")
@@ -187,11 +198,13 @@ def test_lugar_used_when_direccion_score_is_none(mocker):
 
 
 def test_multiple_rows_each_get_coords(mocker):
-    df = pd.DataFrame({
-        "lugar": ["Plaza Mayor, 1", "Gran Vía, 10"],
-        "localidad": ["Madrid", "Madrid"],
-        "direccion": ["Calle Mayor, 5", "Calle Alcalá, 2"],
-    })
+    df = pd.DataFrame(
+        {
+            "lugar": ["Plaza Mayor, 1", "Gran Vía, 10"],
+            "localidad": ["Madrid", "Madrid"],
+            "direccion": ["Calle Mayor, 5", "Calle Alcalá, 2"],
+        }
+    )
     addr_lugar_1 = "Plaza Mayor, 1, Madrid, Community of Madrid, Spain"
     addr_dir_1 = "Calle Mayor, 5, Madrid, Community of Madrid, Spain"
     addr_lugar_2 = "Gran Vía, 10, Madrid, Community of Madrid, Spain"
@@ -199,9 +212,9 @@ def test_multiple_rows_each_get_coords(mocker):
 
     cache = _cache(
         (addr_lugar_1, -3.70, 40.41, 9),
-        (addr_dir_1,   -3.71, 40.42, 4),
+        (addr_dir_1, -3.71, 40.42, 4),
         (addr_lugar_2, -3.72, 40.43, 6),
-        (addr_dir_2,   -3.73, 40.44, 9),
+        (addr_dir_2, -3.73, 40.44, 9),
     )
     mocker.patch("main.geocode_address")
     mocker.patch("main.to_db")

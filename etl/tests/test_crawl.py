@@ -4,13 +4,15 @@ import responses
 from bs4 import BeautifulSoup
 from utils.crawl import (
     URL_BASE,
+    URL_BLOOD_LEVELS,
     extract_fixed_point_details,
     extract_fixed_point_general,
     extract_gmaps_lat_lon,
     gmaps_url_from_coords,
+    scrape_blood_levels,
 )
 
-from tests.conftest import DETAIL_PAGE_HTML, LIST_PAGE_HTML
+from tests.conftest import DETAIL_PAGE_HTML, LIST_PAGE_HTML, SEMAFORO_PAGE_HTML
 
 # ---------------------------------------------------------------------------
 # extract_gmaps_lat_lon
@@ -114,6 +116,64 @@ def test_gmaps_url_from_coords():
     assert "40.32246" in url
     assert "-3.76751" in url
     assert url.startswith("https://www.google.com/maps")
+
+
+# ---------------------------------------------------------------------------
+# scrape_blood_levels (uses mocked HTTP)
+# ---------------------------------------------------------------------------
+
+
+@responses.activate
+def test_scrape_blood_levels_maps_background_classes():
+    responses.add(responses.GET, URL_BLOOD_LEVELS, body=SEMAFORO_PAGE_HTML, status=200)
+
+    df = scrape_blood_levels()
+
+    assert list(df.columns) == ["blood_type", "status", "level", "label"]
+    assert len(df) == 3
+
+    by_type = df.set_index("blood_type")
+    assert by_type.loc["0-", "status"] == "urgent"
+    assert by_type.loc["0-", "level"] == 1
+    assert by_type.loc["0-", "label"] == "Dona hoy"
+    assert by_type.loc["A+", "status"] == "soon"
+    assert by_type.loc["A+", "level"] == 2
+    assert by_type.loc["AB+", "status"] == "stable"
+    assert by_type.loc["AB+", "level"] == 3
+
+
+@responses.activate
+def test_scrape_blood_levels_one_row_per_list_item():
+    responses.add(responses.GET, URL_BLOOD_LEVELS, body=SEMAFORO_PAGE_HTML, status=200)
+
+    df = scrape_blood_levels()
+
+    # No duplicates, one row per <li> in the semáforo list
+    assert df["blood_type"].is_unique
+    assert set(df["blood_type"]) == {"0-", "A+", "AB+"}
+
+
+@responses.activate
+def test_scrape_blood_levels_flattens_and_strips_text():
+    """Blood type and label come from tags with surrounding whitespace and
+    nested markup (<strong>); both must be flattened to clean text."""
+    html = """
+    <html><body><ul class="semafor-list">
+      <li>
+        <h3 class="is-flex has-background-warning has-text-black rounded">
+            B+
+        </h3>
+        <p class="is-size-10">Dona en los <strong>próximos días</strong></p>
+      </li>
+    </ul></body></html>
+    """
+    responses.add(responses.GET, URL_BLOOD_LEVELS, body=html, status=200)
+
+    df = scrape_blood_levels()
+
+    assert df.loc[0, "blood_type"] == "B+"
+    assert df.loc[0, "label"] == "Dona en los próximos días"
+    assert df.loc[0, "status"] == "soon"
 
 
 # ---------------------------------------------------------------------------

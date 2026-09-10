@@ -12,12 +12,23 @@ main.run_etl()
 import logging
 
 import pandas as pd
-from utils.crawl import gmaps_url_from_coords, scrape_fixed_points, scrape_mobile_points
+from utils.crawl import (
+    gmaps_url_from_coords,
+    scrape_blood_levels,
+    scrape_fixed_points,
+    scrape_mobile_points,
+)
 from utils.db import format_column, from_db, gdf_from_df, to_db
 from utils.geocode import build_full_address, geocode_address
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger(__name__)
+
+# Every output table this ETL writes covers a single Comunidad Autónoma. Stamp
+# the region on each row so future runs can add other regions without a schema
+# change (the app filters by it). The geocoding_cache is keyed by full address
+# strings that already name the region, so it is left unstamped.
+REGION = "Comunidad de Madrid"
 
 
 def process_fixed_points():
@@ -32,6 +43,7 @@ def process_fixed_points():
 
     other_donations.columns = other_donations.columns.map(format_column)
     df = pd.merge(df, other_donations, on="name", how="left")
+    df["region"] = REGION
 
     to_db(gdf_from_df(df), "puntos_fijos")
     log.info("Fixed points: uploaded %d rows", len(df))
@@ -120,13 +132,38 @@ def process_mobile_points():
 
     df = geocode_mobile_points(df, geocoding_cache)
 
-    output_cols = ["name", "localidad", "direccion", "fecha", "horario", "url"]
+    output_cols = [
+        "name",
+        "localidad",
+        "direccion",
+        "fecha",
+        "horario",
+        "url",
+        "region",
+    ]
     df["name"] = "Equipo móvil en " + df["lugar"]
     df["url"] = df.apply(gmaps_url_from_coords, axis=1)
+    df["region"] = REGION
     gdf = gdf_from_df(df)[output_cols + ["geometry"]]
 
     to_db(gdf, "puntos_moviles")
     log.info("Mobile points: uploaded %d rows", len(gdf))
+
+
+def process_blood_levels():
+    """Scrape and append blood-reserve levels (the "semáforo de necesidades").
+
+    Unlike the other tables, blood_levels is append-only so we keep a history of
+    reserve levels over time. Create the table manually first with
+    sql/create_blood_levels_table.sql.
+    """
+    df = scrape_blood_levels()
+    df["region"] = REGION
+    df["source"] = "donarsangre.org"
+    df["updated_at"] = pd.Timestamp.now(tz="UTC")
+
+    to_db(df, "blood_levels", if_exists="append")
+    log.info("Blood levels: appended %d rows", len(df))
 
 
 def run_etl():
@@ -136,6 +173,8 @@ def run_etl():
     log.info("Fixed points done")
     process_mobile_points()
     log.info("Mobile points done")
+    process_blood_levels()
+    log.info("Blood levels done")
     log.info("ETL complete")
 
 

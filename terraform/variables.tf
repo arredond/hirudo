@@ -48,7 +48,7 @@ variable "scheduler_region" {
 variable "schedule" {
   description = "Cron schedule (Cloud Scheduler syntax, in schedule_timezone) for running the ETL"
   type        = string
-  default     = "0 6 * * 1" # Mondays 06:00
+  default     = "0 6 * * *" # Daily 06:00
 }
 
 variable "schedule_timezone" {

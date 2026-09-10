@@ -22,13 +22,23 @@ def get_pg_engine():
     return sqlalchemy.create_engine(connection_string)
 
 
-def to_db(dataframe: gpd.GeoDataFrame | pd.DataFrame, table_name: str):
-    """Upload a (Geo)DataFrame to a table in the database, replacing contents if necessary"""
+def to_db(
+    dataframe: gpd.GeoDataFrame | pd.DataFrame,
+    table_name: str,
+    if_exists: str = "replace",
+):
+    """Upload a (Geo)DataFrame to a table in the database.
+
+    ``if_exists`` is passed straight through to pandas: ``"replace"`` (the
+    default) drops and recreates the table, ``"append"`` adds rows to an
+    existing table — used for tables that keep a history, such as
+    ``blood_levels``.
+    """
     pg_engine = get_pg_engine()
     if isinstance(dataframe, gpd.GeoDataFrame):
-        dataframe.to_postgis(table_name, pg_engine, if_exists="replace", index=False)
+        dataframe.to_postgis(table_name, pg_engine, if_exists=if_exists, index=False)
     elif isinstance(dataframe, pd.DataFrame):
-        dataframe.to_sql(table_name, pg_engine, if_exists="replace", index=False)
+        dataframe.to_sql(table_name, pg_engine, if_exists=if_exists, index=False)
     else:
         raise TypeError(
             f'dataframe must be a DataFrame or GeoDataFrame, received "{type(dataframe)}" instead'

@@ -19,6 +19,7 @@ uv run ruff check etl/
   ```python
   # good
   from utils import crawl
+
   crawl.scrape_fixed_points()
 
   # avoid
@@ -31,6 +32,8 @@ uv run ruff check etl/
 
 - The ETL is a single callable function (`run_etl`) designed to run as a Cloud Run job. Keep it that way.
 - It is fine to drop and recreate DB tables entirely on each run. Do not add migration logic or column-mapping tracking tables.
+- Exception: `blood_levels` is append-only to keep a history of reserve levels. The ETL calls `to_db(..., if_exists="append")`; the table is created by hand via `sql/create_blood_levels_table.sql`.
+- Every output table carries a `region` column (Comunidad Autónoma) set from the `REGION` constant in `main.py`. The ETL currently covers `"Comunidad de Madrid"` only; the column exists so other regions can be added later without a schema change.
 - The geocoding cache is stored in the DB and must be checked before any Google Maps API call to avoid redundant spend. Collect all unique addresses across all address fields first, subtract the cached set, then geocode only the remainder.
 
 ## Tests

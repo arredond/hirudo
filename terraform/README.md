@@ -9,7 +9,7 @@ built automatically from GitHub via Cloud Build:
   not by Terraform — see below)
 - The Cloud Run Job itself
 - Cloud Build GitHub connection + trigger (`cloudbuild.yaml` at repo root)
-- Cloud Scheduler job that runs the ETL weekly
+- Cloud Scheduler job that runs the ETL daily (`var.schedule`, 06:00 Europe/Madrid)
 
 ## First-time setup
 
@@ -20,6 +20,8 @@ built automatically from GitHub via Cloud Build:
      `arredond/hirudo`.
    - Find the installation ID: `https://github.com/settings/installations`
      → open "Google Cloud Build" → the URL's trailing number.
+     For `arredond/hirudo` this is `160560634` (also kept in the gitignored
+     `terraform/terraform.tfvars`).
    - Create a GitHub PAT (classic, scopes `repo`, `read:user`, `read:org` —
      or an equivalent fine-grained token scoped to this repo).
 
