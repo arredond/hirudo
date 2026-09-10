@@ -1,0 +1,10 @@
+.git
+.env
+.ipynb_checkpoints
+__pycache__
+.DS_Store
+backups
+frontend
+hirudo_web
+etl/tests
+*.ipynb

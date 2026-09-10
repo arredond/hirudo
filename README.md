@@ -28,7 +28,12 @@ para el mapa y [React](https://react.dev/) + [Vite](https://vitejs.dev/) para el
 además de un poco de código en Python para extraer los datos y Google Maps para geocodificar
 las direcciones de los puntos móviles.
 
-El ETL se ejecuta como un job en [Google Cloud Run](https://cloud.google.com/run).
+El ETL se ejecuta como un job en [Google Cloud Run](https://cloud.google.com/run), programado
+mediante Cloud Scheduler para actualizar los datos todos los lunes a las 6:00 (hora de Madrid).
+Cada `push` a `main` reconstruye y despliega una nueva imagen automáticamente vía Cloud Build.
+Toda la infraestructura (el job, sus permisos, los secretos, el trigger de Cloud Build y el
+propio scheduler) está definida como código en [`terraform/`](terraform/) — nada se configura
+a mano en la consola de GCP salvo la conexión inicial con GitHub.
 
 ## Peticiones / ruegos / dudas
 
@@ -59,3 +64,8 @@ Tests de integración (tocan las URLs reales de la Comunidad de Madrid):
 ```bash
 uv run python -m pytest etl/tests/ -m integration
 ```
+
+## Infraestructura
+
+Ver [`terraform/README.md`](terraform/README.md) para el setup inicial (una sola vez) y cómo
+aplicar cambios a la infraestructura.

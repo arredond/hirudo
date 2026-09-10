@@ -1,0 +1,32 @@
+# Invoked by the Cloud Build trigger (see terraform/cloudbuild.tf) on every
+# push to the deploy branch. Builds the ETL image, pushes it to Artifact
+# Registry, and repoints the Cloud Run Job at the new image.
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/etl:$SHORT_SHA
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/etl:$SHORT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - jobs
+      - update
+      - ${_JOB_NAME}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/etl:$SHORT_SHA
+      - --region=${_REGION}
+      - --service-account=${_SA_EMAIL}
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/etl:$SHORT_SHA
+
+options:
+  logging: CLOUD_LOGGING_ONLY
