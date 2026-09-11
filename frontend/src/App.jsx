@@ -14,11 +14,13 @@ import { getOpenStatus } from './lib/openingHours'
 dayjs.locale('es')
 
 export default function App() {
-  const [selectedDate, setSelectedDate] = useState(dayjs())
+  // Defaults: "Abierto ahora" tab (selectedDate = null, see DateNav) and only the
+  // "Sangre" filter chip on.
+  const [selectedDate, setSelectedDate] = useState(null)
   const [selectedPoint, setSelectedPoint] = useState(null)
   const [showList, setShowList] = useState(false)
   const [showOnlyFixed, setShowOnlyFixed] = useState(false)
-  const [donationTypes, setDonationTypes] = useState({ medula: false, sangre: true, plasma: true })
+  const [donationTypes, setDonationTypes] = useState({ medula: false, sangre: true, plasma: false })
   const [userLocation, setUserLocation] = useState(null)
   const [mapCenter, setMapCenter] = useState({ lat: 40.4, lng: -3.7 })
 

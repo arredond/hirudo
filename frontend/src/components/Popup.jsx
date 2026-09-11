@@ -42,7 +42,7 @@ export default function Popup({ point, onClose }) {
     .map(([type]) => type)
 
   return (
-    <div className={`absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 bg-white rounded-2xl shadow-xl overflow-hidden ${closedPermanently ? 'opacity-75 grayscale' : ''} ${closedTemporarily ? 'opacity-75' : ''}`}>
+    <div className={`absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 bg-white rounded-2xl shadow-xl overflow-hidden ${closedTemporarily ? 'opacity-75' : ''}`}>
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -51,7 +51,7 @@ export default function Popup({ point, onClose }) {
             </p>
             <h2 className="text-base font-semibold text-gray-900 leading-snug">{name}</h2>
             {closedPermanently ? (
-              <p className="text-xs font-medium text-gray-500 mt-0.5">Cerrado permanentemente</p>
+              <p className="text-xs font-medium text-red-600 mt-0.5">Cerrado permanentemente</p>
             ) : (
               <div className="mt-0.5">
                 <OpenStatusBadge openingHours={openingHours} />

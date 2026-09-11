@@ -35,7 +35,7 @@ export default function PointCard({ point, isSelected, onClick, distanceKm, item
             </div>
           )}
           {closedPermanently ? (
-            <p className="mt-1.5 text-xs font-medium text-gray-500">Cerrado permanentemente</p>
+            <p className="mt-1.5 text-xs font-medium text-red-600">Cerrado permanentemente</p>
           ) : (
             <>
               {hours && (

@@ -39,14 +39,21 @@ function makeMarkerEl(isFixed, isSelected) {
   return el
 }
 
-function applyMarkerStyle(el, isFixed, isSelected, isClosed, isClosedTemporarily) {
+// maplibregl.Marker manages `element.style.opacity` itself — its _updateOpacity()
+// resets it on every position update (pan, zoom, addTo, setLngLat), silently
+// overwriting any opacity we set directly on the element. Driving opacity through
+// marker.setOpacity() instead updates the Marker's own internal state, so the
+// value survives future position updates. `filter` isn't touched by maplibre, so
+// that's still safe to set directly on the element.
+function applyMarkerStyle(marker, isFixed, isSelected, isClosed, isClosedTemporarily) {
+  const el = marker.getElement()
   const border = isSelected ? '#dc2626' : isClosedTemporarily ? '#d97706' : '#111827'
   const bg = isSelected ? '#dc2626' : '#ffffff'
   const color = isSelected ? '#ffffff' : isClosedTemporarily ? '#d97706' : '#111827'
   el.style.borderColor = border
   el.style.background = bg
-  el.style.opacity = isClosed ? '0.45' : isClosedTemporarily ? '0.7' : '1'
   el.style.filter = isClosed ? 'grayscale(1)' : 'none'
+  marker.setOpacity(isClosed ? '0.45' : isClosedTemporarily ? '0.7' : '1')
   const svg = el.querySelector('svg')
   if (isFixed) {
     svg.setAttribute('stroke', color)
@@ -64,12 +71,12 @@ function buildMarkers(features, isFixed, map, onSelect, selectedPoint) {
     // data refetch — so a rebuild never silently drops the selected marker's style.
     const isSelected = feature === selectedPoint
     const el = makeMarkerEl(isFixed, isSelected)
-    applyMarkerStyle(el, isFixed, isSelected, isClosed, isClosedTemporarily)
     el.addEventListener('click', e => {
       e.stopPropagation()
       onSelect(feature)
     })
     const marker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map)
+    applyMarkerStyle(marker, isFixed, isSelected, isClosed, isClosedTemporarily)
     return { marker, feature, el, isFixed, isClosed, isClosedTemporarily }
   })
 }
@@ -133,8 +140,8 @@ export default function MapView({ fixedPoints, mobilePoints, selectedPoint, onSe
   // Update marker styles when selection changes without recreating markers
   useEffect(() => {
     const all = [...fixedRef.current, ...mobileRef.current]
-    all.forEach(({ feature, el, isFixed, isClosed, isClosedTemporarily }) => {
-      applyMarkerStyle(el, isFixed, feature === selectedPoint, isClosed, isClosedTemporarily)
+    all.forEach(({ feature, marker, isFixed, isClosed, isClosedTemporarily }) => {
+      applyMarkerStyle(marker, isFixed, feature === selectedPoint, isClosed, isClosedTemporarily)
     })
     if (selectedPoint && mapRef.current) {
       const [lng, lat] = selectedPoint.geometry.coordinates
