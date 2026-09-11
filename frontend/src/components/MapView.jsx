@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import maplibregl from 'maplibre-gl'
-import { isPermanentlyClosed } from '../lib/openingHours'
+import { isPermanentlyClosed, isTemporarilyClosed } from '../lib/openingHours'
 
 const MADRID_CENTER = [-3.7, 40.4]
 const INITIAL_ZOOM = 10
@@ -39,13 +39,13 @@ function makeMarkerEl(isFixed, isSelected) {
   return el
 }
 
-function applyMarkerStyle(el, isFixed, isSelected, isClosed) {
-  const border = isSelected ? '#dc2626' : '#111827'
+function applyMarkerStyle(el, isFixed, isSelected, isClosed, isClosedTemporarily) {
+  const border = isSelected ? '#dc2626' : isClosedTemporarily ? '#d97706' : '#111827'
   const bg = isSelected ? '#dc2626' : '#ffffff'
-  const color = isSelected ? '#ffffff' : '#111827'
+  const color = isSelected ? '#ffffff' : isClosedTemporarily ? '#d97706' : '#111827'
   el.style.borderColor = border
   el.style.background = bg
-  el.style.opacity = isClosed ? '0.45' : '1'
+  el.style.opacity = isClosed ? '0.45' : isClosedTemporarily ? '0.7' : '1'
   el.style.filter = isClosed ? 'grayscale(1)' : 'none'
   const svg = el.querySelector('svg')
   if (isFixed) {
@@ -55,18 +55,22 @@ function applyMarkerStyle(el, isFixed, isSelected, isClosed) {
   }
 }
 
-function buildMarkers(features, isFixed, map, onSelect) {
+function buildMarkers(features, isFixed, map, onSelect, selectedPoint) {
   return features.map(feature => {
     const [lng, lat] = feature.geometry.coordinates
     const isClosed = isPermanentlyClosed(feature.properties?.opening_hours)
-    const el = makeMarkerEl(isFixed, false)
-    applyMarkerStyle(el, isFixed, false, isClosed)
+    const isClosedTemporarily = isTemporarilyClosed(feature.properties?.opening_hours)
+    // Respect the current selection when (re)building — e.g. after a legitimate
+    // data refetch — so a rebuild never silently drops the selected marker's style.
+    const isSelected = feature === selectedPoint
+    const el = makeMarkerEl(isFixed, isSelected)
+    applyMarkerStyle(el, isFixed, isSelected, isClosed, isClosedTemporarily)
     el.addEventListener('click', e => {
       e.stopPropagation()
       onSelect(feature)
     })
     const marker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map)
-    return { marker, feature, el, isFixed, isClosed }
+    return { marker, feature, el, isFixed, isClosed, isClosedTemporarily }
   })
 }
 
@@ -117,20 +121,20 @@ export default function MapView({ fixedPoints, mobilePoints, selectedPoint, onSe
   useEffect(() => {
     if (!mapRef.current) return
     fixedRef.current.forEach(({ marker }) => marker.remove())
-    fixedRef.current = buildMarkers(fixedPoints, true, mapRef.current, onSelectPoint)
+    fixedRef.current = buildMarkers(fixedPoints, true, mapRef.current, onSelectPoint, selectedPoint)
   }, [fixedPoints])
 
   useEffect(() => {
     if (!mapRef.current) return
     mobileRef.current.forEach(({ marker }) => marker.remove())
-    mobileRef.current = buildMarkers(mobilePoints, false, mapRef.current, onSelectPoint)
+    mobileRef.current = buildMarkers(mobilePoints, false, mapRef.current, onSelectPoint, selectedPoint)
   }, [mobilePoints])
 
   // Update marker styles when selection changes without recreating markers
   useEffect(() => {
     const all = [...fixedRef.current, ...mobileRef.current]
-    all.forEach(({ feature, el, isFixed, isClosed }) => {
-      applyMarkerStyle(el, isFixed, feature === selectedPoint, isClosed)
+    all.forEach(({ feature, el, isFixed, isClosed, isClosedTemporarily }) => {
+      applyMarkerStyle(el, isFixed, feature === selectedPoint, isClosed, isClosedTemporarily)
     })
     if (selectedPoint && mapRef.current) {
       const [lng, lat] = selectedPoint.geometry.coordinates

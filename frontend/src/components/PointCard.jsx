@@ -1,15 +1,16 @@
 import { getPointInfo } from '../lib/pointHelpers'
-import { isPermanentlyClosed } from '../lib/openingHours'
+import { isPermanentlyClosed, isTemporarilyClosed } from '../lib/openingHours'
 import OpenStatusBadge from './OpenStatusBadge'
 
 export default function PointCard({ point, isSelected, onClick, distanceKm, itemRef }) {
   const { isMobile, name, address, locality, hours, openingHours, mapsUrl } = getPointInfo(point)
   const closedPermanently = isPermanentlyClosed(openingHours)
+  const closedTemporarily = isTemporarilyClosed(openingHours)
 
   return (
     <div
       ref={itemRef}
-      className={`px-6 py-4 cursor-pointer transition-colors ${isSelected ? 'bg-red-50' : 'hover:bg-gray-50'} ${closedPermanently ? 'opacity-50 grayscale' : ''}`}
+      className={`px-6 py-4 cursor-pointer transition-colors ${isSelected ? 'bg-red-50' : 'hover:bg-gray-50'} ${closedTemporarily ? 'opacity-60' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-4">
@@ -57,7 +58,7 @@ export default function PointCard({ point, isSelected, onClick, distanceKm, item
             target="_blank"
             rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}
-            className="shrink-0 self-center border border-gray-300 text-gray-700 rounded-xl px-3 py-1.5 text-xs font-medium hover:bg-gray-100 transition-colors whitespace-nowrap"
+            className="shrink-0 self-center border-2 border-gray-900 text-gray-900 rounded-full px-5 py-2.5 text-sm font-medium hover:bg-gray-900 hover:text-white transition-colors whitespace-nowrap"
           >
             Cómo llegar
           </a>

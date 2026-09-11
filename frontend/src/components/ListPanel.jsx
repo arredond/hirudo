@@ -15,24 +15,24 @@ function haversine(lat1, lng1, lat2, lng2) {
 function LocationTooltip() {
   const [open, setOpen] = useState(false)
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 transition-colors"
-        aria-label="Información sobre distancias"
-      >
+    <button
+      onClick={() => setOpen(v => !v)}
+      className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 transition-colors"
+      aria-label="Información sobre distancias"
+    >
+      <span className="relative shrink-0 leading-none">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
         </svg>
-        Distancia aproximada
-      </button>
-      {open && (
-        <div className="absolute left-0 top-6 z-30 w-64 bg-gray-900 text-white text-xs rounded-xl p-3 shadow-xl leading-relaxed">
-          Las distancias se calculan desde el centro del mapa. Para medidas más precisas, comparte tu ubicación cuando el navegador te lo solicite.
-          <div className="absolute -top-1.5 left-3 w-3 h-3 bg-gray-900 rotate-45" />
-        </div>
-      )}
-    </div>
+        {open && (
+          <div className="absolute left-0 top-6 z-30 w-56 bg-gray-900 text-white text-xs font-normal normal-case rounded-xl p-3 shadow-xl leading-relaxed text-left">
+            Las distancias se calculan desde el centro del mapa. Para medidas más precisas, comparte tu ubicación cuando el navegador te lo solicite.
+            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-gray-900 rotate-45" />
+          </div>
+        )}
+      </span>
+      Distancia aproximada
+    </button>
   )
 }
 
@@ -68,7 +68,7 @@ export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, on
   }
 
   return (
-    <div className="fixed inset-0 z-40 md:relative md:inset-auto md:z-auto md:w-[560px] md:shrink-0 flex flex-col border-r border-gray-200 bg-white overflow-hidden">
+    <div className="fixed inset-0 z-40 md:relative md:inset-auto md:z-auto md:w-[var(--list-width,420px)] md:flex-1 md:min-h-0 flex flex-col bg-white overflow-hidden md:rounded-2xl md:shadow-xl">
       <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-gray-700">

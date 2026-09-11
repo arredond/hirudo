@@ -1,6 +1,8 @@
 import { getPointInfo } from '../lib/pointHelpers'
-import { isPermanentlyClosed } from '../lib/openingHours'
+import { isPermanentlyClosed, isTemporarilyClosed } from '../lib/openingHours'
 import OpenStatusBadge from './OpenStatusBadge'
+
+const DONATION_TYPE_LABELS = { plasma: 'Plasma', sangre: 'Sangre', medula: 'Médula' }
 
 function Row({ icon, children }) {
   return (
@@ -30,13 +32,17 @@ const InfoIcon = () => (
 )
 
 export default function Popup({ point, onClose }) {
-  const { isMobile, name, address, locality, hours, openingHours, mapsUrl, infoUrl, roomLocation, donorInfo, notes, zipCode } = getPointInfo(point)
+  const { isMobile, name, address, locality, hours, openingHours, mapsUrl, infoUrl, roomLocation, donorInfo, notes, zipCode, donationTypes } = getPointInfo(point)
   const closedPermanently = isPermanentlyClosed(openingHours)
+  const closedTemporarily = isTemporarilyClosed(openingHours)
 
   const fullAddress = [address, locality, zipCode].filter(Boolean).join(', ')
+  const activeDonationTypes = Object.entries(donationTypes)
+    .filter(([, active]) => active)
+    .map(([type]) => type)
 
   return (
-    <div className={`absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 bg-white rounded-2xl shadow-xl overflow-hidden ${closedPermanently ? 'opacity-75 grayscale' : ''}`}>
+    <div className={`absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 bg-white rounded-2xl shadow-xl overflow-hidden ${closedPermanently ? 'opacity-75 grayscale' : ''} ${closedTemporarily ? 'opacity-75' : ''}`}>
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -49,6 +55,18 @@ export default function Popup({ point, onClose }) {
             ) : (
               <div className="mt-0.5">
                 <OpenStatusBadge openingHours={openingHours} />
+              </div>
+            )}
+            {activeDonationTypes.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {activeDonationTypes.map(type => (
+                  <span
+                    key={type}
+                    className="text-xs font-medium text-gray-600 bg-gray-100 rounded-full px-2.5 py-0.5"
+                  >
+                    {DONATION_TYPE_LABELS[type]}
+                  </span>
+                ))}
               </div>
             )}
           </div>
