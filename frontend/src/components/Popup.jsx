@@ -1,4 +1,6 @@
 import { getPointInfo } from '../lib/pointHelpers'
+import { isPermanentlyClosed } from '../lib/openingHours'
+import OpenStatusBadge from './OpenStatusBadge'
 
 function Row({ icon, children }) {
   return (
@@ -28,12 +30,13 @@ const InfoIcon = () => (
 )
 
 export default function Popup({ point, onClose }) {
-  const { isMobile, name, address, locality, hours, mapsUrl, infoUrl, roomLocation, donorInfo, notes, zipCode } = getPointInfo(point)
+  const { isMobile, name, address, locality, hours, openingHours, mapsUrl, infoUrl, roomLocation, donorInfo, notes, zipCode } = getPointInfo(point)
+  const closedPermanently = isPermanentlyClosed(openingHours)
 
   const fullAddress = [address, locality, zipCode].filter(Boolean).join(', ')
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div className={`absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 bg-white rounded-2xl shadow-xl overflow-hidden ${closedPermanently ? 'opacity-75 grayscale' : ''}`}>
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -41,6 +44,13 @@ export default function Popup({ point, onClose }) {
               {isMobile ? 'Punto móvil' : 'Punto fijo'}
             </p>
             <h2 className="text-base font-semibold text-gray-900 leading-snug">{name}</h2>
+            {closedPermanently ? (
+              <p className="text-xs font-medium text-gray-500 mt-0.5">Cerrado permanentemente</p>
+            ) : (
+              <div className="mt-0.5">
+                <OpenStatusBadge openingHours={openingHours} />
+              </div>
+            )}
           </div>
           <button
             onClick={onClose}

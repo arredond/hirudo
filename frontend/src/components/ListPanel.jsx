@@ -92,7 +92,7 @@ export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, on
         )}
         {withDistance.map(({ point, dist }, i) => (
           <PointCard
-            key={point.properties.nombre + i}
+            key={point.properties.name + i}
             point={point}
             isSelected={point === selectedPoint}
             distanceKm={dist}

@@ -4,11 +4,12 @@ export function getPointInfo(point) {
   return {
     isMobile,
     name: isMobile
-      ? (p.nombre ?? '').replace(/^Equipo m[oó]vil en /i, '')
-      : (p.nombre ?? ''),
+      ? (p.name ?? '').replace(/^Equipo m[oó]vil en /i, '')
+      : (p.name ?? ''),
     address: isMobile ? p.direccion : p.direccion_postal,
     locality: isMobile ? p.localidad : p.municipio,
     hours: isMobile ? p.horario : p.horario_de_donaciones,
+    openingHours: p.opening_hours,
     mapsUrl: isMobile ? p.url : p.gmaps_url,
     infoUrl: isMobile ? null : p.url,
     // Fixed-point extras shown in popup

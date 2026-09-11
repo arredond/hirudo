@@ -1,12 +1,15 @@
 import { getPointInfo } from '../lib/pointHelpers'
+import { isPermanentlyClosed } from '../lib/openingHours'
+import OpenStatusBadge from './OpenStatusBadge'
 
 export default function PointCard({ point, isSelected, onClick, distanceKm, itemRef }) {
-  const { isMobile, name, address, locality, hours, mapsUrl } = getPointInfo(point)
+  const { isMobile, name, address, locality, hours, openingHours, mapsUrl } = getPointInfo(point)
+  const closedPermanently = isPermanentlyClosed(openingHours)
 
   return (
     <div
       ref={itemRef}
-      className={`px-6 py-4 cursor-pointer transition-colors ${isSelected ? 'bg-red-50' : 'hover:bg-gray-50'}`}
+      className={`px-6 py-4 cursor-pointer transition-colors ${isSelected ? 'bg-red-50' : 'hover:bg-gray-50'} ${closedPermanently ? 'opacity-50 grayscale' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-4">
@@ -30,16 +33,25 @@ export default function PointCard({ point, isSelected, onClick, distanceKm, item
               <span>{[address, locality].filter(Boolean).join(', ')}</span>
             </div>
           )}
-          {hours && (
-            <div className="flex items-start gap-1.5 mt-1 text-xs text-gray-500">
-              <svg className="shrink-0 mt-0.5 text-gray-400" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
-              </svg>
-              <span>{hours}</span>
-            </div>
+          {closedPermanently ? (
+            <p className="mt-1.5 text-xs font-medium text-gray-500">Cerrado permanentemente</p>
+          ) : (
+            <>
+              {hours && (
+                <div className="flex items-start gap-1.5 mt-1 text-xs text-gray-500">
+                  <svg className="shrink-0 mt-0.5 text-gray-400" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
+                  </svg>
+                  <span>{hours}</span>
+                </div>
+              )}
+              <div className="mt-1.5">
+                <OpenStatusBadge openingHours={openingHours} />
+              </div>
+            </>
           )}
         </div>
-        {mapsUrl && (
+        {mapsUrl && !closedPermanently && (
           <a
             href={mapsUrl}
             target="_blank"

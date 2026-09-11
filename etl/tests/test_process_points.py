@@ -21,6 +21,8 @@ def test_process_fixed_points_stamps_region(mocker):
 
     mocker.patch("main.pd.read_json", side_effect=[manual_points, other_donations])
     mocker.patch("main.scrape_fixed_points", return_value=scraped)
+    mocker.patch("main.open", mocker.mock_open())
+    mocker.patch("main.json.load", return_value={})
     mock_to_db = mocker.patch("main.to_db")
 
     main.process_fixed_points()

@@ -9,6 +9,7 @@ import main
 main.run_etl()
 """
 
+import json
 import logging
 
 import pandas as pd
@@ -20,6 +21,7 @@ from utils.crawl import (
 )
 from utils.db import format_column, from_db, gdf_from_df, to_db
 from utils.geocode import build_full_address, geocode_address
+from utils.opening_hours import parse_mobile_hours
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger(__name__)
@@ -31,15 +33,34 @@ log = logging.getLogger(__name__)
 REGION = "Comunidad de Madrid"
 
 
+def opening_hours_for_fixed_point(row, lookup):
+    """Look up a fixed point's hand-built OSM opening_hours string.
+
+    Keyed by center_id where available, else by name (for the manual
+    non-hospital entries, which have no center_id). Logs a warning and
+    returns None for anything missing from the lookup, so it surfaces for a
+    manual update rather than silently going unset.
+    """
+    hours = lookup.get(row.get("center_id")) or lookup.get(row["name"])
+    if hours is None:
+        log.warning("No opening_hours lookup entry for fixed point: %s", row["name"])
+    return hours
+
+
 def process_fixed_points():
     """Scrape, enrich, and upload fixed donation points."""
     manual_points = pd.read_json("utils/puntos_fijos_no_hospitales.json")
     other_donations = pd.read_json("utils/puntos_fijos_otras_donaciones.json")
+    with open("utils/opening_hours_fijos.json", encoding="utf-8") as f:
+        opening_hours_lookup = json.load(f)
 
     df = scrape_fixed_points()
     df.columns = df.columns.map(format_column)
     df = pd.concat([manual_points, df], ignore_index=True)
     df["gmaps_url"] = df.apply(gmaps_url_from_coords, axis=1)
+    df["opening_hours"] = df.apply(
+        opening_hours_for_fixed_point, lookup=opening_hours_lookup, axis=1
+    )
 
     other_donations.columns = other_donations.columns.map(format_column)
     df = pd.merge(df, other_donations, on="name", how="left")
@@ -138,10 +159,14 @@ def process_mobile_points():
         "direccion",
         "fecha",
         "horario",
+        "opening_hours",
         "url",
         "region",
     ]
     df["name"] = "Equipo móvil en " + df["lugar"]
+    df["opening_hours"] = df.apply(
+        lambda row: parse_mobile_hours(row["fecha"], row["horario"]), axis=1
+    )
     df["url"] = df.apply(gmaps_url_from_coords, axis=1)
     df["region"] = REGION
     gdf = gdf_from_df(df)[output_cols + ["geometry"]]

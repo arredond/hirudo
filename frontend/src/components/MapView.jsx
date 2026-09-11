@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import maplibregl from 'maplibre-gl'
+import { isPermanentlyClosed } from '../lib/openingHours'
 
 const MADRID_CENTER = [-3.7, 40.4]
 const INITIAL_ZOOM = 10
@@ -38,12 +39,14 @@ function makeMarkerEl(isFixed, isSelected) {
   return el
 }
 
-function applyMarkerStyle(el, isFixed, isSelected) {
+function applyMarkerStyle(el, isFixed, isSelected, isClosed) {
   const border = isSelected ? '#dc2626' : '#111827'
   const bg = isSelected ? '#dc2626' : '#ffffff'
   const color = isSelected ? '#ffffff' : '#111827'
   el.style.borderColor = border
   el.style.background = bg
+  el.style.opacity = isClosed ? '0.45' : '1'
+  el.style.filter = isClosed ? 'grayscale(1)' : 'none'
   const svg = el.querySelector('svg')
   if (isFixed) {
     svg.setAttribute('stroke', color)
@@ -55,13 +58,15 @@ function applyMarkerStyle(el, isFixed, isSelected) {
 function buildMarkers(features, isFixed, map, onSelect) {
   return features.map(feature => {
     const [lng, lat] = feature.geometry.coordinates
+    const isClosed = isPermanentlyClosed(feature.properties?.opening_hours)
     const el = makeMarkerEl(isFixed, false)
+    applyMarkerStyle(el, isFixed, false, isClosed)
     el.addEventListener('click', e => {
       e.stopPropagation()
       onSelect(feature)
     })
     const marker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map)
-    return { marker, feature, el, isFixed }
+    return { marker, feature, el, isFixed, isClosed }
   })
 }
 
@@ -124,8 +129,8 @@ export default function MapView({ fixedPoints, mobilePoints, selectedPoint, onSe
   // Update marker styles when selection changes without recreating markers
   useEffect(() => {
     const all = [...fixedRef.current, ...mobileRef.current]
-    all.forEach(({ feature, el, isFixed }) => {
-      applyMarkerStyle(el, isFixed, feature === selectedPoint)
+    all.forEach(({ feature, el, isFixed, isClosed }) => {
+      applyMarkerStyle(el, isFixed, feature === selectedPoint, isClosed)
     })
     if (selectedPoint && mapRef.current) {
       const [lng, lat] = selectedPoint.geometry.coordinates

@@ -13,6 +13,7 @@ dependencies = [
     "here-location-services>=0.4.0",
     "html5lib>=1.1",
     "lxml>=6.1.1",
+    "opening-hours-py>=2.1.4",
     "pandas>=3.0.5",
     "psycopg2-binary>=2.9.12",
     "python-dotenv>=1.2.2",

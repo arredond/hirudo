@@ -7,6 +7,8 @@ import MapView from './components/MapView'
 import ListPanel from './components/ListPanel'
 import Popup from './components/Popup'
 import { useBloodPoints } from './hooks/useBloodPoints'
+import { useNowTick } from './hooks/useNowTick'
+import { getOpenStatus } from './lib/openingHours'
 
 dayjs.locale('es')
 
@@ -19,8 +21,18 @@ export default function App() {
   const [mapCenter, setMapCenter] = useState({ lat: 40.4, lng: -3.7 })
 
   const { fixedPoints, mobilePoints, loadingMobile } = useBloodPoints(selectedDate)
+  const now = useNowTick()
 
-  const visibleMobilePoints = showOnlyFixed ? [] : mobilePoints
+  // The "Abierto ahora" tab selects selectedDate = null (see DateNav) — when
+  // active, only show points that are actually open right now.
+  const showOnlyOpenNow = selectedDate === null
+  const filterByOpenNow = features =>
+    showOnlyOpenNow
+      ? features.filter(f => getOpenStatus(f.properties?.opening_hours, now)?.isOpen === true)
+      : features
+
+  const visibleFixedPoints = filterByOpenNow(fixedPoints)
+  const visibleMobilePoints = filterByOpenNow(showOnlyFixed ? [] : mobilePoints)
 
 
   return (
@@ -35,7 +47,7 @@ export default function App() {
       <div className="flex flex-1 overflow-hidden">
         {showList && (
           <ListPanel
-            fixedPoints={fixedPoints}
+            fixedPoints={visibleFixedPoints}
             mobilePoints={visibleMobilePoints}
             selectedPoint={selectedPoint}
             onSelectPoint={setSelectedPoint}
@@ -46,7 +58,7 @@ export default function App() {
         )}
         <div className="flex-1 relative">
           <MapView
-            fixedPoints={fixedPoints}
+            fixedPoints={visibleFixedPoints}
             mobilePoints={visibleMobilePoints}
             selectedPoint={selectedPoint}
             onSelectPoint={setSelectedPoint}
