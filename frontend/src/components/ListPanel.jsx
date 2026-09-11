@@ -1,5 +1,21 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import PointCard from './PointCard'
+import { getPointInfo } from '../lib/pointHelpers'
+
+// Accent-insensitive, case-insensitive match against name/address/locality.
+function normalize(str) {
+  return (str ?? '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+}
+
+function matchesQuery(point, query) {
+  if (!query) return true
+  const { name, address, locality } = getPointInfo(point)
+  const haystack = normalize([name, address, locality].filter(Boolean).join(' '))
+  return haystack.includes(normalize(query))
+}
 
 function haversine(lat1, lng1, lat2, lng2) {
   const R = 6371
@@ -37,6 +53,7 @@ function LocationTooltip() {
 }
 
 export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, onSelectPoint, onClose, refPoint, locationGranted }) {
+  const [query, setQuery] = useState('')
   const scrollRef = useRef(null)
   const selectedRef = useRef(null)
 
@@ -45,6 +62,10 @@ export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, on
       selectedRef.current.scrollIntoView({ block: 'center', behavior: 'smooth' })
     }
   }, [selectedPoint])
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
+  }, [query])
 
   // useLayoutEffect runs before paint, avoiding scroll-anchoring interference.
   // String key ensures reliable primitive comparison when refPoint object changes.
@@ -55,7 +76,7 @@ export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, on
     }
   }, [refPointKey])
 
-  const all = [...mobilePoints, ...fixedPoints]
+  const all = [...mobilePoints, ...fixedPoints].filter(point => matchesQuery(point, query))
 
   const withDistance = all.map(point => {
     const [lng, lat] = point.geometry.coordinates
@@ -86,9 +107,46 @@ export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, on
           Ocultar lista
         </button>
       </div>
+      <div className="px-6 py-3 border-b border-gray-100">
+        <div className="relative">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Buscar por nombre o dirección"
+            className="w-full pl-9 pr-9 py-2 text-sm bg-gray-100 rounded-full outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              aria-label="Borrar búsqueda"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
       <div ref={scrollRef} className="overflow-y-auto flex-1">
         {withDistance.length === 0 && (
-          <p className="text-sm text-gray-400 text-center mt-12">No hay puntos para esta fecha.</p>
+          <p className="text-sm text-gray-400 text-center mt-12">
+            {query ? 'No se han encontrado puntos.' : 'No hay puntos para esta fecha.'}
+          </p>
         )}
         {withDistance.map(({ point, dist }, i) => (
           <PointCard
