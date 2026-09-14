@@ -142,7 +142,7 @@ export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, on
           )}
         </div>
       </div>
-      <div ref={scrollRef} className="overflow-y-auto flex-1">
+      <div ref={scrollRef} className="overflow-y-auto flex-1 pb-[env(safe-area-inset-bottom)]">
         {withDistance.length === 0 && (
           <p className="text-sm text-gray-400 text-center mt-12">
             {query ? 'No se han encontrado puntos.' : 'No hay puntos para esta fecha.'}

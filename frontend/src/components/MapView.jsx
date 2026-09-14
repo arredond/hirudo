@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import maplibregl from 'maplibre-gl'
 import { isPermanentlyClosed, isTemporarilyClosed } from '../lib/openingHours'
 
@@ -81,11 +81,30 @@ function buildMarkers(features, isFixed, map, onSelect, selectedPoint) {
   })
 }
 
-export default function MapView({ fixedPoints, mobilePoints, selectedPoint, onSelectPoint, onUserLocation, onCenterChange }) {
+const MapView = forwardRef(function MapView(
+  { fixedPoints, mobilePoints, selectedPoint, onSelectPoint, onUserLocation, onCenterChange, focusCompanion },
+  ref
+) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const fixedRef = useRef([])
   const mobileRef = useRef([])
+
+  // Exposed so App can zoom/pan the map to a set of coordinates from outside —
+  // e.g. fitting the viewport to the points left over after a donation-type
+  // filter, which can otherwise sit outside the current view unnoticed.
+  useImperativeHandle(ref, () => ({
+    fitToCoords(coords, options = {}) {
+      const map = mapRef.current
+      if (!map || coords.length === 0) return
+      if (coords.length === 1) {
+        map.flyTo({ center: coords[0], zoom: options.maxZoom ?? 14, duration: 600 })
+        return
+      }
+      const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]))
+      map.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 600, ...options })
+    },
+  }))
 
   useEffect(() => {
     const map = new maplibregl.Map({
@@ -94,7 +113,13 @@ export default function MapView({ fixedPoints, mobilePoints, selectedPoint, onSe
       center: MADRID_CENTER,
       zoom: INITIAL_ZOOM,
     })
-    map.addControl(new maplibregl.NavigationControl(), 'top-right')
+    // Zoom +/- (and the compass) are skipped on mobile: pinch-to-zoom already
+    // covers it there, and the buttons only add to an already-tight top-right
+    // corner shared with the date tabs. Geolocate stays — it's the only way to
+    // trigger it, there's no touch-gesture equivalent.
+    if (window.innerWidth >= 768) {
+      map.addControl(new maplibregl.NavigationControl(), 'top-right')
+    }
     const geolocate = new maplibregl.GeolocateControl({
       positionOptions: { enableHighAccuracy: true },
       trackUserLocation: true,
@@ -143,11 +168,29 @@ export default function MapView({ fixedPoints, mobilePoints, selectedPoint, onSe
     all.forEach(({ feature, marker, isFixed, isClosed, isClosedTemporarily }) => {
       applyMarkerStyle(marker, isFixed, feature === selectedPoint, isClosed, isClosedTemporarily)
     })
-    if (selectedPoint && mapRef.current) {
-      const [lng, lat] = selectedPoint.geometry.coordinates
+    if (!selectedPoint || !mapRef.current) return
+    const [lng, lat] = selectedPoint.geometry.coordinates
+    // focusCompanion (e.g. the user's own location, for the médula auto-select —
+    // see App.jsx) asks to frame the selection together with another coordinate
+    // instead of just flying to it. Handled here rather than via a separate
+    // imperative call from App so it can't race the plain flyTo below.
+    if (focusCompanion) {
+      const bounds = new maplibregl.LngLatBounds([lng, lat], [lng, lat]).extend([focusCompanion.lng, focusCompanion.lat])
+      // Reserve room for the Popup that's about to open over the selected point —
+      // it's a bottom sheet on mobile (Popup.jsx: bottom-4 left-4 right-4) and a
+      // card pinned to the right on desktop (md:right-6 md:w-80) — so the fitted
+      // bounds don't end up centered right where it's about to sit.
+      const isDesktopPopup = window.innerWidth >= 768 // matches Popup's own md: breakpoint
+      const padding = isDesktopPopup
+        ? { top: 60, bottom: 60, left: 60, right: 380 }
+        : { top: 60, bottom: 280, left: 60, right: 60 }
+      mapRef.current.fitBounds(bounds, { padding, maxZoom: 15, duration: 500 })
+    } else {
       mapRef.current.flyTo({ center: [lng, lat], zoom: 14, offset: [0, 80], duration: 500 })
     }
-  }, [selectedPoint])
+  }, [selectedPoint, focusCompanion])
 
   return <div ref={containerRef} className="w-full h-full" />
-}
+})
+
+export default MapView

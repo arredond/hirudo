@@ -42,7 +42,7 @@ export default function Popup({ point, onClose }) {
     .map(([type]) => type)
 
   return (
-    <div className={`absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 bg-white rounded-2xl shadow-xl overflow-hidden ${closedTemporarily ? 'opacity-75' : ''}`}>
+    <div className={`absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 max-h-[calc(100%-2rem)] overflow-y-auto bg-white rounded-2xl shadow-xl ${closedTemporarily ? 'opacity-75' : ''}`}>
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div>

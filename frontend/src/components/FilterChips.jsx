@@ -1,9 +1,21 @@
-export default function FilterChips({ donationTypes, onToggleDonationType, showOnlyFixed, onToggleFixed }) {
+export default function FilterChips({ donationType, onSelectDonationType, counts, showOnlyFixed, onToggleFixed }) {
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      <Chip label="Médula" checked={donationTypes.medula} onClick={() => onToggleDonationType('medula')} />
-      <Chip label="Sangre" checked={donationTypes.sangre} onClick={() => onToggleDonationType('sangre')} />
-      <Chip label="Plasma" checked={donationTypes.plasma} onClick={() => onToggleDonationType('plasma')} />
+    <div className="flex flex-wrap items-center justify-center md:justify-end gap-2">
+      <Chip
+        label={`Sangre (${counts.sangre})`}
+        checked={donationType === 'sangre'}
+        onClick={() => onSelectDonationType('sangre')}
+      />
+      <Chip
+        label={`Médula (${counts.medula})`}
+        checked={donationType === 'medula'}
+        onClick={() => onSelectDonationType('medula')}
+      />
+      <Chip
+        label={`Plasma (${counts.plasma})`}
+        checked={donationType === 'plasma'}
+        onClick={() => onSelectDonationType('plasma')}
+      />
       <Chip label="Solo puntos fijos" checked={showOnlyFixed} onClick={onToggleFixed} />
     </div>
   )

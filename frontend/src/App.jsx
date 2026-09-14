@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useLayoutEffect } from 'react'
+import { useState, useMemo, useRef, useLayoutEffect, useEffect } from 'react'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import Header from './components/Header'
@@ -14,13 +14,17 @@ import { getOpenStatus } from './lib/openingHours'
 dayjs.locale('es')
 
 export default function App() {
-  // Defaults: "Abierto ahora" tab (selectedDate = null, see DateNav) and only the
-  // "Sangre" filter chip on.
+  // Defaults: "Abierto ahora" tab (selectedDate = null, see DateNav) and the
+  // "Sangre" filter chip.
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedPoint, setSelectedPoint] = useState(null)
   const [showList, setShowList] = useState(false)
   const [showOnlyFixed, setShowOnlyFixed] = useState(false)
-  const [donationTypes, setDonationTypes] = useState({ medula: false, sangre: true, plasma: false })
+  // Single-select, not independent toggles: every point takes whole blood, but
+  // plasma/médula are only taken at a handful of points, so showing "sangre OR
+  // plasma OR médula" together read as noise in practice. One donation type is
+  // active at a time, radio-style.
+  const [donationType, setDonationType] = useState('sangre')
   const [userLocation, setUserLocation] = useState(null)
   const [mapCenter, setMapCenter] = useState({ lat: 40.4, lng: -3.7 })
 
@@ -32,6 +36,7 @@ export default function App() {
   // addresses, buttons, ...) is wide enough that giving it a relative/auto width
   // instead would make IT dictate the shared column's width. See ListPanel.jsx.
   const dateNavRef = useRef(null)
+  const mapViewRef = useRef(null)
   const [listWidth, setListWidth] = useState(null)
   useLayoutEffect(() => {
     const el = dateNavRef.current
@@ -43,10 +48,6 @@ export default function App() {
     return () => observer.disconnect()
   }, [])
 
-  function toggleDonationType(type) {
-    setDonationTypes(types => ({ ...types, [type]: !types[type] }))
-  }
-
   // The "Abierto ahora" tab selects selectedDate = null (see DateNav) — when
   // active, only show points that are actually open right now.
   const showOnlyOpenNow = selectedDate === null
@@ -55,48 +56,86 @@ export default function App() {
       ? features.filter(f => getOpenStatus(f.properties?.opening_hours, now)?.isOpen === true)
       : features
 
-  // A point supports "sangre" (whole blood) implicitly unless plasma/médula flags
-  // say otherwise — see getPointInfo in lib/pointHelpers.js.
+  // Every point takes "sangre" (whole blood) implicitly; plasma/médula are only
+  // taken where the corresponding flag is set — see getPointInfo in lib/pointHelpers.js.
   const filterByDonationType = features =>
-    features.filter(f => {
-      const p = f.properties ?? {}
-      return (
-        donationTypes.sangre ||
-        (donationTypes.plasma && Boolean(p.plasma)) ||
-        (donationTypes.medula && Boolean(p.medula))
-      )
-    })
+    donationType === 'sangre' ? features : features.filter(f => Boolean(f.properties?.[donationType]))
 
   // Bucketed to the minute, and only ticking at all while "Abierto ahora" is
   // active, so the memos below don't get invalidated by the clock when the
   // open-now filter isn't even in play.
   const openNowMinute = showOnlyOpenNow ? Math.floor(now.getTime() / 60_000) : null
 
+  // Everything below the date/"solo puntos fijos" filters but above the
+  // donation-type filter — shared by the visible points (further narrowed to
+  // the selected type) and the per-type counts shown on the chips (which need
+  // every type's count regardless of which one is currently selected).
+  const openNowFixedPoints = useMemo(
+    () => filterByOpenNow(fixedPoints),
+    [fixedPoints, showOnlyOpenNow, openNowMinute]
+  )
+  const openNowMobilePoints = useMemo(
+    () => filterByOpenNow(showOnlyFixed ? [] : mobilePoints),
+    [mobilePoints, showOnlyOpenNow, openNowMinute, showOnlyFixed]
+  )
+
+  const donationTypeCounts = useMemo(() => {
+    const all = [...openNowFixedPoints, ...openNowMobilePoints]
+    return {
+      sangre: all.length,
+      plasma: all.filter(f => Boolean(f.properties?.plasma)).length,
+      medula: all.filter(f => Boolean(f.properties?.medula)).length,
+    }
+  }, [openNowFixedPoints, openNowMobilePoints])
+
   // Memoized so MapView's marker-rebuild effects (keyed on these arrays) don't fire
   // on every render — e.g. after a flyTo's moveend updates mapCenter — which was
   // resetting the selected marker's red highlight before its own effect could reapply it.
   const visibleFixedPoints = useMemo(
-    () => filterByDonationType(filterByOpenNow(fixedPoints)),
-    [fixedPoints, showOnlyOpenNow, openNowMinute, donationTypes]
+    () => filterByDonationType(openNowFixedPoints),
+    [openNowFixedPoints, donationType]
   )
   const visibleMobilePoints = useMemo(
-    () => filterByDonationType(filterByOpenNow(showOnlyFixed ? [] : mobilePoints)),
-    [mobilePoints, showOnlyOpenNow, openNowMinute, donationTypes, showOnlyFixed]
+    () => filterByDonationType(openNowMobilePoints),
+    [openNowMobilePoints, donationType]
   )
 
+  // Plasma/médula points are a handful out of the full list — easy to miss if the
+  // map happens to be zoomed into an area that doesn't include any of them. Médula
+  // is taken at exactly one point (see puntos_fijos_otras_donaciones.json), so
+  // rather than just fitting it like any other single marker, select it
+  // automatically; MapView frames it together with userLocation via focusCompanion
+  // below (whenever it's known — including if it resolves after this selection).
+  useEffect(() => {
+    if (donationType !== 'medula') return
+    const centro = fixedPoints.find(f => Boolean(f.properties?.medula))
+    if (centro) setSelectedPoint(centro)
+  }, [donationType, fixedPoints])
+
+  // Plasma: just zoom out to fit whatever's currently visible, once, right when
+  // the filter is picked — deliberately not re-fit on every later points update
+  // while it stays selected, so it doesn't fight the user's own panning/zooming.
+  useEffect(() => {
+    if (donationType !== 'plasma') return
+    const coords = [...visibleFixedPoints, ...visibleMobilePoints].map(f => f.geometry.coordinates)
+    mapViewRef.current?.fitToCoords(coords)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [donationType])
 
   return (
     <div className="flex flex-col h-screen bg-white">
-      <Header />
+      <Header hideOnMobile={showList} />
       <div className="flex flex-1 overflow-hidden relative">
         <div className="flex-1 relative">
           <MapView
+            ref={mapViewRef}
             fixedPoints={visibleFixedPoints}
             mobilePoints={visibleMobilePoints}
             selectedPoint={selectedPoint}
             onSelectPoint={setSelectedPoint}
             onUserLocation={setUserLocation}
             onCenterChange={setMapCenter}
+            focusCompanion={donationType === 'medula' ? userLocation : null}
           />
           {selectedPoint && (
             <Popup point={selectedPoint} onClose={() => setSelectedPoint(null)} />
@@ -107,7 +146,10 @@ export default function App() {
             right — all overlaid on top of the full-width map. */}
         <div className="absolute inset-4 z-10 flex flex-col md:flex-row md:items-start md:justify-between gap-3 pointer-events-none">
           <div
-            className="flex flex-col gap-3 pointer-events-auto min-w-0 h-full"
+            // max-w leaves clearance on mobile for the map's own geolocate button,
+            // which sits in the same top-right corner (see MapView.jsx) — DateNav's
+            // own overflow-x-auto lets its tabs scroll instead of running under it.
+            className="flex flex-col gap-3 pointer-events-auto min-w-0 max-w-[calc(100%-3.5rem)] md:max-w-none md:h-full"
             style={listWidth ? { '--list-width': `${listWidth}px` } : undefined}
           >
             <DateNav ref={dateNavRef} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
@@ -135,10 +177,14 @@ export default function App() {
               </button>
             )}
           </div>
-          <div className="pointer-events-auto">
+          {/* Mobile: pinned to the bottom edge instead of flowing after the date
+              tabs, which was crowding the middle of the map. Desktop keeps its
+              spot at the top, opposite the date tabs (see the md: overrides). */}
+          <div className="pointer-events-auto fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-10 md:static md:inset-auto md:bottom-auto md:z-auto">
             <FilterChips
-              donationTypes={donationTypes}
-              onToggleDonationType={toggleDonationType}
+              donationType={donationType}
+              onSelectDonationType={setDonationType}
+              counts={donationTypeCounts}
               showOnlyFixed={showOnlyFixed}
               onToggleFixed={() => setShowOnlyFixed(v => !v)}
             />
