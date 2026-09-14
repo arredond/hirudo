@@ -54,7 +54,9 @@ export default function App() {
   const showOnlyOpenNow = selectedDate === null
   const filterByOpenNow = features =>
     showOnlyOpenNow
-      ? features.filter(f => getOpenStatus(f.properties?.opening_hours, now)?.isOpen === true)
+      ? features.filter(
+          f => getOpenStatus(f.properties?.opening_hours, now, f.properties?.region)?.isOpen === true
+        )
       : features
 
   // Every point takes "sangre" (whole blood) by default; plasma/médula are only

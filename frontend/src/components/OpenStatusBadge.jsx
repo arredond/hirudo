@@ -2,8 +2,8 @@ import { useOpeningStatus } from '../hooks/useOpeningStatus'
 
 // Renders nothing for permanently closed points (that's handled separately via
 // greyed-out styling) or when opening_hours is missing/unparseable.
-export default function OpenStatusBadge({ openingHours }) {
-  const status = useOpeningStatus(openingHours)
+export default function OpenStatusBadge({ openingHours, region }) {
+  const status = useOpeningStatus(openingHours, region)
   if (!status || status.permanentlyClosed) return null
 
   if (status.temporarilyClosed) {

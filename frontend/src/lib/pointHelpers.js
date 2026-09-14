@@ -14,6 +14,10 @@ export function getPointInfo(point) {
     locality: p.localidad,
     hours: p.horario,
     openingHours: p.opening_hours,
+    // The point's own region (e.g. "Comunidad de Madrid") — passed to
+    // OpenStatusBadge so opening_hours.js resolves "PH" against the right
+    // CCAA's public holidays instead of a fixed one (see lib/openingHours.js).
+    region: p.region,
     mapsUrl: isMobile ? p.url : p.gmaps_url,
     infoUrl: isMobile ? null : p.url,
     // Fixed-point extras shown in popup — Comunidad de Madrid only, no

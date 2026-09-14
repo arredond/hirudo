@@ -32,7 +32,7 @@ const InfoIcon = () => (
 )
 
 export default function Popup({ point, onClose }) {
-  const { isMobile, name, address, locality, hours, openingHours, mapsUrl, infoUrl, roomLocation, donorInfo, notes, zipCode, donationTypes } = getPointInfo(point)
+  const { isMobile, name, address, locality, hours, openingHours, region, mapsUrl, infoUrl, roomLocation, donorInfo, notes, zipCode, donationTypes } = getPointInfo(point)
   const closedPermanently = isPermanentlyClosed(openingHours)
   const closedTemporarily = isTemporarilyClosed(openingHours)
 
@@ -54,7 +54,7 @@ export default function Popup({ point, onClose }) {
               <p className="text-xs font-medium text-red-600 mt-0.5">Cerrado permanentemente</p>
             ) : (
               <div className="mt-0.5">
-                <OpenStatusBadge openingHours={openingHours} />
+                <OpenStatusBadge openingHours={openingHours} region={region} />
               </div>
             )}
             {activeDonationTypes.length > 0 && (

@@ -3,7 +3,7 @@ import { isPermanentlyClosed, isTemporarilyClosed } from '../lib/openingHours'
 import OpenStatusBadge from './OpenStatusBadge'
 
 export default function PointCard({ point, isSelected, onClick, distanceKm, itemRef }) {
-  const { isMobile, name, address, locality, hours, openingHours, mapsUrl } = getPointInfo(point)
+  const { isMobile, name, address, locality, hours, openingHours, region, mapsUrl } = getPointInfo(point)
   const closedPermanently = isPermanentlyClosed(openingHours)
   const closedTemporarily = isTemporarilyClosed(openingHours)
 
@@ -47,7 +47,7 @@ export default function PointCard({ point, isSelected, onClick, distanceKm, item
                 </div>
               )}
               <div className="mt-1.5">
-                <OpenStatusBadge openingHours={openingHours} />
+                <OpenStatusBadge openingHours={openingHours} region={region} />
               </div>
             </>
           )}
