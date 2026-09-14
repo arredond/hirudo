@@ -7,8 +7,21 @@ const STATUS_COLOR = {
 }
 
 export default function BloodLevelBadges({ region }) {
-  const bloodLevels = useBloodLevels(region)
-  if (bloodLevels.length === 0) return null
+  const { bloodLevels, hasLoaded } = useBloodLevels(region)
+
+  // Still loading, or no region resolved yet — say nothing rather than
+  // flash a "no data" message that a moment later turns out to be wrong.
+  if (!hasLoaded) return null
+
+  // Loaded, but genuinely nothing for this region (e.g. Castilla-La Mancha,
+  // which has no blood-levels source at all — see REGION_CLM in etl/main.py).
+  if (bloodLevels.length === 0) {
+    return (
+      <p className="max-w-[200px] shrink-0 text-right text-xs italic text-gray-500 sm:max-w-xs sm:text-sm">
+        En este momento no disponemos de niveles de donación para {region}.
+      </p>
+    )
+  }
 
   return (
     <div className="flex items-center gap-1 sm:gap-2 shrink-0">

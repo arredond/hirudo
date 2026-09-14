@@ -8,12 +8,18 @@ import { fetchBloodLevels } from '../lib/supabase'
 // the letter before this lookup runs (see the "0" -> "O" replace below).
 const BLOOD_TYPE_ORDER = ['O+', 'A+', 'AB+', 'B+', 'O-', 'A-', 'AB-', 'B-']
 
+// hasLoaded distinguishes "still fetching" from "fetched, and this region
+// genuinely has no rows" (e.g. Castilla-La Mancha, which has no blood-levels
+// source at all — see REGION_CLM in etl/main.py) — both look like an empty
+// bloodLevels array otherwise, but the UI wants to tell them apart.
 export function useBloodLevels(region) {
   const [bloodLevels, setBloodLevels] = useState([])
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
     if (!region) return
     let cancelled = false
+    setHasLoaded(false)
     fetchBloodLevels(region).then(rows => {
       if (cancelled) return
       // Rows come back most-recent-first; keep only the latest row per blood_type.
@@ -25,6 +31,7 @@ export function useBloodLevels(region) {
       setBloodLevels(
         BLOOD_TYPE_ORDER.map(bloodType => latestByType.get(bloodType)).filter(Boolean)
       )
+      setHasLoaded(true)
     })
     // Guards against an earlier region's slower response landing after a
     // later one's, e.g. when the user pans between regions in quick succession.
@@ -33,5 +40,5 @@ export function useBloodLevels(region) {
     }
   }, [region])
 
-  return bloodLevels
+  return { bloodLevels, hasLoaded }
 }

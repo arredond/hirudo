@@ -141,3 +141,132 @@ CYL_HOME_PAGE_HTML = """
 </div>
 </body></html>
 """
+
+# Trimmed from
+# https://sanidad.castillalamancha.es/ciudadanos/hazte-donante-sangre/puntos-fijos-de-donacion
+# — a Drupal Views accordion, one row per fixed point. Includes a repeated
+# locality (Toledo) and an address with no trailing period (Ciudad Real) —
+# both real edge cases the source data has.
+CLM_FIXED_POINTS_HTML = """
+<html><body>
+<div class="views-row">
+  <div class="views-field views-field-title views-accordion-header">
+    <span class="field-content">ALBACETE</span>
+  </div>
+  <div class="views-field views-field-field-direccion">
+    <div class="field-content"><p><strong>Dirección:</strong>
+      Hospital General Universitario. C/. Hermanos Falcó, 37.</p></div>
+  </div>
+  <div class="views-field views-field-body">
+    <div class="field-content">
+      <p><strong>Horario</strong></p>
+      <p>Lunes a viernes de 8:30 a 14:00 h.</p>
+    </div>
+  </div>
+  <div class="views-field views-field-field-telefonos-contacto">
+    <div class="field-content"><p><strong>Teléfono:</strong> 967 24 30 72</p></div>
+  </div>
+</div>
+<div class="views-row">
+  <div class="views-field views-field-title views-accordion-header">
+    <span class="field-content">CIUDAD REAL</span>
+  </div>
+  <div class="views-field views-field-field-direccion">
+    <div class="field-content"><p><strong>Dirección:</strong>
+      Hospital General Universitario de Ciudad Real</p></div>
+  </div>
+  <div class="views-field views-field-body">
+    <div class="field-content">
+      <p><strong>Horario</strong></p>
+      <p>Lunes a Viernes de 9:00 horas a 14:30 horas</p>
+    </div>
+  </div>
+  <div class="views-field views-field-field-telefonos-contacto">
+    <div class="field-content"><p><strong>Teléfono:</strong> 926 213 446</p></div>
+  </div>
+</div>
+<div class="views-row">
+  <div class="views-field views-field-title views-accordion-header">
+    <span class="field-content">TOLEDO</span>
+  </div>
+  <div class="views-field views-field-field-direccion">
+    <div class="field-content"><p><strong>Dirección:</strong>
+      Hospital Universitario de Toledo - Servicio de Transfusión.</p></div>
+  </div>
+  <div class="views-field views-field-body">
+    <div class="field-content">
+      <p><strong>Horario</strong></p>
+      <p>Lunes a viernes, de 9:00 a 14:00 h.</p>
+    </div>
+  </div>
+  <div class="views-field views-field-field-telefonos-contacto">
+    <div class="field-content"><p><strong>Teléfono:</strong> 925 26 92 00</p></div>
+  </div>
+</div>
+<div class="views-row">
+  <div class="views-field views-field-title views-accordion-header">
+    <span class="field-content">TOLEDO</span>
+  </div>
+  <div class="views-field views-field-field-direccion">
+    <div class="field-content"><p><strong>Dirección:</strong>
+      Centro San Ildefonso. Avenida Barber 26, Toledo</p></div>
+  </div>
+  <div class="views-field views-field-body">
+    <div class="field-content">
+      <p><strong>Horario</strong></p>
+      <p>Lunes a viernes, de 9:00 a 14:30 h.</p>
+      <p>WhatsApp: 656 555 781</p>
+      <p>Email: donasangretoledo1@gmail.com</p>
+    </div>
+  </div>
+  <div class="views-field views-field-field-telefonos-contacto">
+    <div class="field-content"><p><strong>Teléfono:</strong> 656 555 781</p></div>
+  </div>
+</div>
+</body></html>
+"""
+
+# Trimmed from
+# https://sanidad.castillalamancha.es/ciudadanos/hazte-donante-sangre/colectas-donantes-de-sangre/toledo
+# — a Drupal Views table, page 1 of 2 (has a pager-next link to page 2).
+CLM_MOBILE_PAGE1_HTML = """
+<html><body>
+<table class="views-table cols-5">
+  <thead><tr><th>Día</th><th>Horario</th><th>Localidad</th>
+    <th>Lugar de la Colecta</th><th>Tipo de donación</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="date-display-single">Lunes, 14 Septiembre, 2026</span></td>
+      <td>17:00-20:30</td>
+      <td>PUEBLA DE MONTALBAN,LA</td>
+      <td>Centro de Salud</td>
+      <td>SANGRE</td>
+    </tr>
+  </tbody>
+</table>
+<ul class="pager clearfix">
+  <li class="pager-next"><a href="/ciudadanos/hazte-donante-sangre/colectas-donantes-de-sangre/toledo?page=1">&rsaquo;</a></li>
+</ul>
+</body></html>
+"""
+
+CLM_MOBILE_PAGE2_HTML = """
+<html><body>
+<table class="views-table cols-5">
+  <thead><tr><th>Día</th><th>Horario</th><th>Localidad</th>
+    <th>Lugar de la Colecta</th><th>Tipo de donación</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="date-display-single">Martes, 15 Septiembre, 2026</span></td>
+      <td>16:00-20:00</td>
+      <td>CONSUEGRA</td>
+      <td>(SÓLO PLASMA) Centro de Salud</td>
+      <td>PLASMA</td>
+    </tr>
+  </tbody>
+</table>
+<ul class="pager clearfix">
+  <li class="pager-current last">2</li>
+</ul>
+</body></html>
+"""

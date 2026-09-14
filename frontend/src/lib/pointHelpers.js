@@ -22,11 +22,14 @@ export function getPointInfo(point) {
     donorInfo: p.informacion_al_donante,
     notes: p.observaciones,
     zipCode: p.codigo_postal,
-    // Every point accepts whole-blood ("sangre") donation; plasma/médula are only
-    // available at the fixed points listed in puntos_fijos_otras_donaciones.json.
+    // Every point accepts whole-blood ("sangre") donation by default; plasma/
+    // médula are only available where the corresponding flag is set. Only
+    // Castilla-La Mancha's mobile points ever mark a point sangre: false (a
+    // plasma-only stop) — everywhere else the field is simply absent, so the
+    // default stays permissive (matches App.jsx's donation-type filter).
     donationTypes: {
       plasma: Boolean(p.plasma),
-      sangre: true,
+      sangre: p.sangre !== false,
       medula: Boolean(p.medula),
     },
   }

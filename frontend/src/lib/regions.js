@@ -1,13 +1,13 @@
 import { haversine } from './geo'
 import regionBoundaries from '../data/regionBoundaries.json'
 
-// Every region the ETL covers (etl/main.py: REGION_MADRID, REGION_CYL) —
-// also the option list for the header's region dropdown.
-export const REGIONS = ['Comunidad de Madrid', 'Castilla y León']
+// Every region the ETL covers (etl/main.py: REGION_MADRID, REGION_CYL,
+// REGION_CLM) — also the option list for the header's region dropdown.
+export const REGIONS = ['Comunidad de Madrid', 'Castilla y León', 'Castilla-La Mancha']
 
-// regionBoundaries.json holds just these two regions' real polygons, trimmed
+// regionBoundaries.json holds just these regions' real polygons, trimmed
 // from codeforgermany/click_that_hood's spain-communities.geojson (public
-// domain-ish community dataset) down to ~15KB. An earlier version of this
+// domain-ish community dataset) down to ~24KB. An earlier version of this
 // module guessed the region from whichever fixed point was nearest instead —
 // but that's biased by point *density*, not the real border: Madrid's 32
 // fixed points vs. Castilla y León's 10, spread over a much bigger area,

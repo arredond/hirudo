@@ -13,7 +13,7 @@ import json
 import logging
 
 import pandas as pd
-from utils.crawl import castilla_y_leon, crawl, madrid
+from utils.crawl import castilla_la_mancha, castilla_y_leon, crawl, madrid
 from utils.db import format_column, from_db, gdf_from_df, to_db
 from utils.geocode import build_full_address, geocode_address
 from utils.opening_hours import parse_mobile_hours
@@ -28,6 +28,7 @@ log = logging.getLogger(__name__)
 # address strings that already name the region, so it is left unstamped.
 REGION_MADRID = "Comunidad de Madrid"
 REGION_CYL = "Castilla y León"
+REGION_CLM = "Castilla-La Mancha"
 
 # Fixed points carry a handful of concepts every region has, under whatever
 # name that region's own source happens to spell them with. Renaming them to
@@ -58,12 +59,21 @@ def opening_hours_for_fixed_point(row, lookup):
     return hours
 
 
+def load_opening_hours_fijos() -> dict:
+    """Load the hand-built OSM opening_hours lookup for fixed points.
+
+    Shared by every region's fixed points (see opening_hours_for_fixed_point) —
+    it's one file keyed by center_id where available, else by name.
+    """
+    with open("utils/opening_hours_fijos.json", encoding="utf-8") as f:
+        return json.load(f)
+
+
 def scrape_fixed_points_madrid() -> pd.DataFrame:
     """Scrape and enrich Comunidad de Madrid's fixed donation points."""
     manual_points = pd.read_json("utils/puntos_fijos_no_hospitales.json")
     other_donations = pd.read_json("utils/puntos_fijos_otras_donaciones.json")
-    with open("utils/opening_hours_fijos.json", encoding="utf-8") as f:
-        opening_hours_lookup = json.load(f)
+    opening_hours_lookup = load_opening_hours_fijos()
 
     df = madrid.scrape_fixed_points()
     df.columns = df.columns.map(format_column)
@@ -92,17 +102,12 @@ def scrape_fixed_points_cyl() -> pd.DataFrame:
     df.columns = df.columns.map(format_column)
     df = df.rename(columns=CYL_LOCATION_COLUMN_ALIASES)
     df["localidad"] = df["localidad"].str.title()
+    opening_hours_lookup = load_opening_hours_fijos()
+    df["opening_hours"] = df.apply(
+        opening_hours_for_fixed_point, lookup=opening_hours_lookup, axis=1
+    )
     df["region"] = REGION_CYL
     return df
-
-
-def process_fixed_points():
-    """Scrape, enrich, and upload fixed donation points for every region."""
-    df = pd.concat(
-        [scrape_fixed_points_madrid(), scrape_fixed_points_cyl()], ignore_index=True
-    )
-    to_db(gdf_from_df(df), "puntos_fijos")
-    log.info("Fixed points: uploaded %d rows", len(df))
 
 
 def refresh_geocoding_cache(
@@ -239,6 +244,44 @@ def load_geocoding_cache() -> pd.DataFrame:
         )
 
 
+def scrape_fixed_points_clm() -> pd.DataFrame:
+    """Scrape Castilla-La Mancha's fixed donation points.
+
+    Unlike Castilla y León, there's no Google Maps link on the source page at
+    all, so every point goes through the regular geocoding cache (see
+    geocode_points) rather than a free coordinate shortcut.
+    """
+    df = castilla_la_mancha.scrape_fixed_points()
+    df.columns = df.columns.map(format_column)
+    df["full_address"] = df.apply(
+        lambda row: build_full_address(
+            row["direccion"] or row["localidad"], row["localidad"], REGION_CLM
+        ),
+        axis=1,
+    )
+    df = geocode_points(df, load_geocoding_cache(), "full_address")
+    opening_hours_lookup = load_opening_hours_fijos()
+    df["opening_hours"] = df.apply(
+        opening_hours_for_fixed_point, lookup=opening_hours_lookup, axis=1
+    )
+    df["region"] = REGION_CLM
+    return df
+
+
+def process_fixed_points():
+    """Scrape, enrich, and upload fixed donation points for every region."""
+    df = pd.concat(
+        [
+            scrape_fixed_points_madrid(),
+            scrape_fixed_points_cyl(),
+            scrape_fixed_points_clm(),
+        ],
+        ignore_index=True,
+    )
+    to_db(gdf_from_df(df), "puntos_fijos")
+    log.info("Fixed points: uploaded %d rows", len(df))
+
+
 def scrape_mobile_points_madrid() -> pd.DataFrame:
     """Scrape and geocode Comunidad de Madrid's mobile donation points."""
     df = madrid.scrape_mobile_points()
@@ -334,10 +377,75 @@ def scrape_mobile_points_cyl() -> pd.DataFrame:
     return df[output_cols + ["latitude", "longitude"]]
 
 
+def scrape_mobile_points_clm() -> pd.DataFrame:
+    """Scrape and geocode Castilla-La Mancha's mobile donation points.
+
+    There's no street address at all here — only a locality and a venue
+    label ("Lugar de la Colecta", e.g. "Centro de Salud") — so that pair is
+    the only geocoding candidate; no lugar-vs-direccion choice to make (see
+    geocode_points with a single column).
+    """
+    df = castilla_la_mancha.scrape_mobile_points()
+    df.columns = df.columns.map(format_column)
+    df = df.rename(
+        columns={"lugar_de_la_colecta": "lugar", "tipo_de_donacion": "tipo_donacion"}
+    )
+    df["fecha"] = df["dia"].apply(castilla_la_mancha.parse_clm_date)
+    df["localidad"] = df["localidad"].apply(castilla_la_mancha.clean_locality)
+    df["full_address"] = df.apply(
+        lambda row: build_full_address(row["lugar"], row["localidad"], REGION_CLM),
+        axis=1,
+    )
+
+    df = geocode_points(df, load_geocoding_cache(), "full_address")
+
+    df["name"] = "Equipo móvil en " + df["lugar"] + ", " + df["localidad"]
+    df["direccion"] = df["lugar"]
+    df["opening_hours"] = df.apply(
+        lambda row: (
+            parse_mobile_hours(row["fecha"], row["horario"])
+            if pd.notna(row["fecha"])
+            else None
+        ),
+        axis=1,
+    )
+    df["url"] = df["province"].apply(castilla_la_mancha.province_url)
+    # "Tipo de donación" is either SANGRE or PLASMA — a "(SÓLO PLASMA)" stop
+    # genuinely doesn't take whole blood, unlike every other scraped point
+    # (which always does), so sangre is set explicitly false there rather
+    # than left absent (see the App.jsx sangre-filter comment for why that
+    # distinction matters). Médula is never offered at a mobile point in any
+    # region; set explicitly for schema consistency across regions.
+    df["plasma"] = df["tipo_donacion"] == "PLASMA"
+    df["sangre"] = df["tipo_donacion"] != "PLASMA"
+    df["medula"] = False
+    df["region"] = REGION_CLM
+
+    output_cols = [
+        "name",
+        "localidad",
+        "direccion",
+        "fecha",
+        "horario",
+        "opening_hours",
+        "url",
+        "plasma",
+        "sangre",
+        "medula",
+        "region",
+    ]
+    return df[output_cols + ["latitude", "longitude"]]
+
+
 def process_mobile_points():
     """Scrape, geocode, and upload mobile donation points for every region."""
     df = pd.concat(
-        [scrape_mobile_points_madrid(), scrape_mobile_points_cyl()], ignore_index=True
+        [
+            scrape_mobile_points_madrid(),
+            scrape_mobile_points_cyl(),
+            scrape_mobile_points_clm(),
+        ],
+        ignore_index=True,
     )
     to_db(gdf_from_df(df), "puntos_moviles")
     log.info("Mobile points: uploaded %d rows", len(df))
@@ -360,7 +468,11 @@ def scrape_blood_levels_cyl() -> pd.DataFrame:
 
 
 def process_blood_levels():
-    """Scrape and append blood-reserve levels for every region.
+    """Scrape and append blood-reserve levels for every region that has one.
+
+    Castilla-La Mancha has no such source at all (no scrape_blood_levels_clm
+    exists), so it's simply left out here — the frontend shows a "no data for
+    this region" placeholder instead of blank/stale badges for it.
 
     Unlike the other tables, blood_levels is append-only to keep a history of
     reserve levels over time. Create the table manually first with

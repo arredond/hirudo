@@ -22,6 +22,22 @@ def test_parse_mobile_hours_split_shift():
     assert result == "2026 Sep 14 10:00-14:00,17:00-21:00"
 
 
+def test_parse_mobile_hours_dash_separator():
+    # Castilla-La Mancha rows are phrased "HH:MM-HH:MM" (no "a" at all)
+    assert parse_mobile_hours("25/09/2026", "17:00-20:30") == "2026 Sep 25 17:00-20:30"
+
+
+def test_parse_mobile_hours_leading_de():
+    # Castilla y León rows are phrased "De HH:MM a HH:MM" (Madrid's omit "De")
+    # — TIME_RANGE_PATTERN isn't anchored to the string start, so this is
+    # already handled; asserted explicitly so it stays intentional rather
+    # than an incidental side effect of the regex not being anchored.
+    assert (
+        parse_mobile_hours("14/09/2026", "De 16:30 a 20:30")
+        == "2026 Sep 14 16:30-20:30"
+    )
+
+
 def test_parse_mobile_hours_unparseable_horario_returns_none():
     assert parse_mobile_hours("14/09/2026", "Cancelado") is None
 

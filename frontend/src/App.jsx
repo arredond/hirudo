@@ -57,10 +57,16 @@ export default function App() {
       ? features.filter(f => getOpenStatus(f.properties?.opening_hours, now)?.isOpen === true)
       : features
 
-  // Every point takes "sangre" (whole blood) implicitly; plasma/médula are only
+  // Every point takes "sangre" (whole blood) by default; plasma/médula are only
   // taken where the corresponding flag is set — see getPointInfo in lib/pointHelpers.js.
+  // "sangre" is the one type a point can explicitly opt *out* of rather than
+  // into: Castilla-La Mancha's mobile points mark plasma-only stops with
+  // sangre: false (every other point simply never sets the field, so the
+  // default stays permissive there).
   const filterByDonationType = features =>
-    donationType === 'sangre' ? features : features.filter(f => Boolean(f.properties?.[donationType]))
+    donationType === 'sangre'
+      ? features.filter(f => f.properties?.sangre !== false)
+      : features.filter(f => Boolean(f.properties?.[donationType]))
 
   // Bucketed to the minute, and only ticking at all while "Abierto ahora" is
   // active, so the memos below don't get invalidated by the clock when the
@@ -83,7 +89,7 @@ export default function App() {
   const donationTypeCounts = useMemo(() => {
     const all = [...openNowFixedPoints, ...openNowMobilePoints]
     return {
-      sangre: all.length,
+      sangre: all.filter(f => f.properties?.sangre !== false).length,
       plasma: all.filter(f => Boolean(f.properties?.plasma)).length,
       medula: all.filter(f => Boolean(f.properties?.medula)).length,
     }
@@ -179,7 +185,12 @@ export default function App() {
             // max-w leaves clearance on mobile for the map's own geolocate button,
             // which sits in the same top-right corner (see MapView.jsx) — DateNav's
             // own overflow-x-auto lets its tabs scroll instead of running under it.
-            className="flex flex-col gap-3 pointer-events-auto min-w-0 max-w-[calc(100%-3.5rem)] md:max-w-none md:h-full"
+            // md:h-full only while the list is open (so it can fill the column via
+            // its own flex-1) — applied unconditionally, this div's pointer-events:
+            // auto box would stretch to the full map height even when collapsed to
+            // just DateNav + the "Mostrar lista" button, silently blocking clicks
+            // on the map underneath the empty space below them.
+            className={`flex flex-col gap-3 pointer-events-auto min-w-0 max-w-[calc(100%-3.5rem)] md:max-w-none ${showList ? 'md:h-full' : ''}`}
             style={listWidth ? { '--list-width': `${listWidth}px` } : undefined}
           >
             <DateNav ref={dateNavRef} selectedDate={selectedDate} onSelectDate={setSelectedDate} />

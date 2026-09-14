@@ -30,10 +30,30 @@ def test_process_fixed_points_stamps_region(mocker):
             "longitude": [-4.7],
         }
     )
+    scraped_clm = pd.DataFrame(
+        {
+            "name": ["ALBACETE"],
+            "localidad": ["ALBACETE"],
+            "direccion": ["Hospital General Universitario. C/. Hermanos Falcó, 37."],
+            "horario": ["Lunes a viernes de 8:30 a 14:00 h."],
+            "telefono": ["967 24 30 72"],
+            "url": ["https://sanidad.castillalamancha.es/puntos-fijos-de-donacion"],
+        }
+    )
+
+    def fake_geocode_points(df, geocoding_cache, address_column):
+        df["longitude"] = -2.0
+        df["latitude"] = 39.0
+        return df
 
     mocker.patch("main.pd.read_json", side_effect=[manual_points, other_donations])
     mocker.patch("main.madrid.scrape_fixed_points", return_value=scraped_madrid)
     mocker.patch("main.castilla_y_leon.scrape_fixed_points", return_value=scraped_cyl)
+    mocker.patch(
+        "main.castilla_la_mancha.scrape_fixed_points", return_value=scraped_clm
+    )
+    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
     mocker.patch("main.open", mocker.mock_open())
     mocker.patch("main.json.load", return_value={})
     mock_to_db = mocker.patch("main.to_db")
@@ -44,7 +64,11 @@ def test_process_fixed_points_stamps_region(mocker):
     uploaded, table_name = mock_to_db.call_args.args
     assert table_name == "puntos_fijos"
     assert isinstance(uploaded, gpd.GeoDataFrame)
-    assert set(uploaded["region"]) == {"Comunidad de Madrid", "Castilla y León"}
+    assert set(uploaded["region"]) == {
+        "Comunidad de Madrid",
+        "Castilla y León",
+        "Castilla-La Mancha",
+    }
 
 
 def test_scrape_mobile_points_madrid_fixes_known_horario_typo(mocker):
@@ -117,6 +141,39 @@ def test_scrape_mobile_points_cyl_builds_poi_and_street_candidates(mocker):
     )
 
 
+def test_scrape_mobile_points_clm_sets_donation_type_flags(mocker):
+    """A "(SÓLO PLASMA)" stop must end up sangre: False — it genuinely
+    doesn't take whole blood, unlike every other scraped mobile point."""
+    scraped = pd.DataFrame(
+        {
+            "Día": ["Lunes, 14 Septiembre, 2026", "Lunes, 14 Septiembre, 2026"],
+            "Horario": ["17:00-20:30", "16:00-20:00"],
+            "Localidad": ["CONSUEGRA", "CEDILLO DEL CONDADO"],
+            "Lugar de la Colecta": [
+                "Centro de Salud",
+                "(SÓLO PLASMA) Consultorio Médico",
+            ],
+            "Tipo de donación": ["SANGRE", "PLASMA"],
+            "province": ["toledo", "toledo"],
+        }
+    )
+
+    def fake_geocode_points(df, geocoding_cache, address_column):
+        df["longitude"] = -4.0
+        df["latitude"] = 39.8
+        return df
+
+    mocker.patch("main.castilla_la_mancha.scrape_mobile_points", return_value=scraped)
+    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+
+    df = main.scrape_mobile_points_clm()
+
+    assert df["plasma"].tolist() == [False, True]
+    assert df["sangre"].tolist() == [True, False]
+    assert df["medula"].tolist() == [False, False]
+
+
 def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
     scraped_madrid = pd.DataFrame(
         {
@@ -137,6 +194,16 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
             "province": ["avila"],
         }
     )
+    scraped_clm = pd.DataFrame(
+        {
+            "Día": ["Lunes, 14 Septiembre, 2026"],
+            "Horario": ["17:00-20:30"],
+            "Localidad": ["CONSUEGRA"],
+            "Lugar de la Colecta": ["Centro de Salud"],
+            "Tipo de donación": ["SANGRE"],
+            "province": ["toledo"],
+        }
+    )
 
     def fake_geocode_mobile(df, geocoding_cache):
         df["longitude"] = -3.7
@@ -150,6 +217,9 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
 
     mocker.patch("main.madrid.scrape_mobile_points", return_value=scraped_madrid)
     mocker.patch("main.castilla_y_leon.scrape_mobile_points", return_value=scraped_cyl)
+    mocker.patch(
+        "main.castilla_la_mancha.scrape_mobile_points", return_value=scraped_clm
+    )
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
     mocker.patch("main.geocode_mobile_points", side_effect=fake_geocode_mobile)
     mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
@@ -162,4 +232,8 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
     assert table_name == "puntos_moviles"
     # region survives the explicit output_cols projection
     assert "region" in uploaded.columns
-    assert set(uploaded["region"]) == {"Comunidad de Madrid", "Castilla y León"}
+    assert set(uploaded["region"]) == {
+        "Comunidad de Madrid",
+        "Castilla y León",
+        "Castilla-La Mancha",
+    }
