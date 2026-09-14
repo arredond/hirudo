@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import PointCard from './PointCard'
 import { getPointInfo } from '../lib/pointHelpers'
+import { haversine } from '../lib/geo'
 
 // Accent-insensitive, case-insensitive match against name/address/locality.
 function normalize(str) {
@@ -15,17 +16,6 @@ function matchesQuery(point, query) {
   const { name, address, locality } = getPointInfo(point)
   const haystack = normalize([name, address, locality].filter(Boolean).join(' '))
   return haystack.includes(normalize(query))
-}
-
-function haversine(lat1, lng1, lat2, lng2) {
-  const R = 6371
-  const toRad = x => (x * Math.PI) / 180
-  const dLat = toRad(lat2 - lat1)
-  const dLng = toRad(lng2 - lng1)
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.asin(Math.sqrt(a))
 }
 
 function LocationTooltip() {

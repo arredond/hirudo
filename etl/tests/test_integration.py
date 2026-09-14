@@ -8,7 +8,7 @@ import os
 
 import pytest
 from bs4 import BeautifulSoup
-from utils import crawl
+from utils.crawl import madrid as crawl
 
 import main
 
@@ -166,9 +166,9 @@ def test_process_blood_levels_builds_uploadable_frame_without_writing(mocker):
         "source",
         "updated_at",
     }
-    assert len(uploaded) == 8
-    assert set(uploaded["region"]) == {"Comunidad de Madrid"}
-    assert set(uploaded["source"]) == {"donarsangre.org"}
+    assert len(uploaded) == 16  # 8 blood types x 2 regions
+    assert set(uploaded["region"]) == {"Comunidad de Madrid", "Castilla y León"}
+    assert set(uploaded["source"]) == {"donarsangre.org", "centrodehemoterapiacyl.es"}
     assert uploaded["updated_at"].nunique() == 1
 
 
@@ -180,7 +180,7 @@ def test_geocode_known_madrid_address():
     from utils.geocode import geocode_address
 
     lng, lat, _location_type, score = geocode_address(
-        "Puerta del Sol, s/n, Madrid, Community of Madrid, Spain"
+        "Puerta del Sol, s/n, Madrid, Comunidad de Madrid, Spain"
     )
     assert lng is not None and lat is not None
     assert 40.3 < lat < 40.5

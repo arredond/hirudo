@@ -1,6 +1,5 @@
 """Tests for geocode.py — address building and geocoding logic."""
 
-import pandas as pd
 from utils.geocode import build_full_address, geocode_address
 
 # ---------------------------------------------------------------------------
@@ -8,20 +7,21 @@ from utils.geocode import build_full_address, geocode_address
 # ---------------------------------------------------------------------------
 
 
-def _make_row(**kwargs):
-    return pd.Series(kwargs)
-
-
 def test_build_full_address_lugar():
-    row = _make_row(lugar="Calle Mayor, 1", localidad="Madrid")
-    result = build_full_address(row, "lugar")
-    assert result == "Calle Mayor, 1, Madrid, Community of Madrid, Spain"
+    result = build_full_address("Calle Mayor, 1", "Madrid", "Comunidad de Madrid")
+    assert result == "Calle Mayor, 1, Madrid, Comunidad de Madrid, Spain"
 
 
 def test_build_full_address_direccion():
-    row = _make_row(direccion="Av. de la Paz, 5", localidad="Alcalá de Henares")
-    result = build_full_address(row, "direccion")
-    assert result == "Av. de la Paz, 5, Alcalá de Henares, Community of Madrid, Spain"
+    result = build_full_address(
+        "Av. de la Paz, 5", "Alcalá de Henares", "Comunidad de Madrid"
+    )
+    assert result == "Av. de la Paz, 5, Alcalá de Henares, Comunidad de Madrid, Spain"
+
+
+def test_build_full_address_single_part():
+    result = build_full_address("Plaza Mayor, 1, Ávila, Castilla y León")
+    assert result == "Plaza Mayor, 1, Ávila, Castilla y León, Spain"
 
 
 # ---------------------------------------------------------------------------

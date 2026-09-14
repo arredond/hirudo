@@ -10,6 +10,7 @@ import Popup from './components/Popup'
 import { useBloodPoints } from './hooks/useBloodPoints'
 import { useNowTick } from './hooks/useNowTick'
 import { getOpenStatus } from './lib/openingHours'
+import { regionAt, nearestCoveredRegion } from './lib/regions'
 
 dayjs.locale('es')
 
@@ -122,9 +123,38 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [donationType])
 
+  // The region named in the header title (and driving which region's blood
+  // levels are fetched) — whichever region's real boundary the map center
+  // currently falls inside (see regionAt in lib/regions.js), falling back to
+  // the nearest covered region's fixed point when it's outside both (e.g.
+  // panned elsewhere in Spain), using every fixed point regardless of
+  // filters so that fallback never goes stale just because a filter hides
+  // them all.
+  const currentRegion = useMemo(
+    () => regionAt(mapCenter) ?? nearestCoveredRegion(fixedPoints, mapCenter),
+    [fixedPoints, mapCenter]
+  )
+
+  // Selecting a region from the header's dropdown jumps the map there instead
+  // of tracking a separately-held "selected region" — nearestRegion then picks
+  // it back up on its own once the map settles (moveend), same as panning
+  // there by hand would.
+  const handleSelectRegion = region => {
+    const coords = fixedPoints
+      .filter(f => f.properties?.region === region)
+      .map(f => f.geometry.coordinates)
+    mapViewRef.current?.fitToCoords(coords)
+  }
+
   return (
     <div className="flex flex-col h-screen bg-white">
-      <Header hideOnMobile={showList} />
+      <Header
+        hideOnMobile={showList}
+        donationType={donationType}
+        onSelectDonationType={setDonationType}
+        region={currentRegion}
+        onSelectRegion={handleSelectRegion}
+      />
       <div className="flex flex-1 overflow-hidden relative">
         <div className="flex-1 relative">
           <MapView

@@ -1,4 +1,4 @@
-"""Crawl Community of Madrid pages and retrieve fixed and mobile blood donation spots."""
+"""Crawl Comunidad de Madrid pages and retrieve fixed and mobile blood donation spots."""
 
 import urllib.parse
 from io import StringIO
@@ -161,8 +161,3 @@ def scrape_blood_levels() -> pd.DataFrame:
         )
 
     return pd.DataFrame(blood_levels)
-
-
-def gmaps_url_from_coords(row) -> str:
-    """Compose a Google Maps URL from a row's latitude and longitude."""
-    return f"https://www.google.com/maps?q={row.latitude}+{row.longitude}"

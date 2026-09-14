@@ -43,8 +43,10 @@ def geocode_address(full_address, postal_code=None, locality=None):
     return (lng, lat, location_type, score)
 
 
-def build_full_address(row, address_field):
-    """Compose the full geocodable address string for a mobile-point row."""
-    return ", ".join(
-        [row[address_field], row.localidad, "Community of Madrid", "Spain"]
-    )
+def build_full_address(*parts: str) -> str:
+    """Compose a full geocodable address string from its parts, in order.
+
+    "Spain" is always appended, so callers only need to supply the
+    region-specific parts (e.g. street, locality, region).
+    """
+    return ", ".join([*parts, "Spain"])

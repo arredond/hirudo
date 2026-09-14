@@ -17,17 +17,15 @@ export async function fetchMobilePoints(date) {
   return data[0]?.geojson ?? null
 }
 
-// The ETL only covers Comunidad de Madrid (see REGION in etl/main.py).
-const REGION = 'Comunidad de Madrid'
-
-// blood_levels is append-only (one snapshot of 8 rows per ETL run), so this fetches
-// enough recent rows to cover the latest snapshot and lets the caller dedupe by
-// blood_type, keeping the most recent row for each.
-export async function fetchBloodLevels() {
+// blood_levels is append-only (one snapshot of 8 rows per ETL run) and covers
+// several regions (see REGION_MADRID/REGION_CYL in etl/main.py) — this fetches
+// enough recent rows of the given region to cover its latest snapshot and lets
+// the caller dedupe by blood_type, keeping the most recent row for each.
+export async function fetchBloodLevels(region) {
   const { data, error } = await supabase
     .from('blood_levels')
     .select('blood_type, status, level, label, updated_at')
-    .eq('region', REGION)
+    .eq('region', region)
     .order('updated_at', { ascending: false })
     .limit(32)
   if (error) throw error

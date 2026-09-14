@@ -21,7 +21,10 @@ def _scraped_levels():
 
 
 def test_process_blood_levels_appends_to_blood_levels_table(mocker):
-    mocker.patch("main.scrape_blood_levels", return_value=_scraped_levels())
+    mocker.patch("main.madrid.scrape_blood_levels", return_value=_scraped_levels())
+    mocker.patch(
+        "main.castilla_y_leon.scrape_blood_levels", return_value=_scraped_levels()
+    )
     mock_to_db = mocker.patch("main.to_db")
 
     main.process_blood_levels()
@@ -33,13 +36,16 @@ def test_process_blood_levels_appends_to_blood_levels_table(mocker):
 
 
 def test_process_blood_levels_adds_source_and_single_timestamp(mocker):
-    mocker.patch("main.scrape_blood_levels", return_value=_scraped_levels())
+    mocker.patch("main.madrid.scrape_blood_levels", return_value=_scraped_levels())
+    mocker.patch(
+        "main.castilla_y_leon.scrape_blood_levels", return_value=_scraped_levels()
+    )
     mock_to_db = mocker.patch("main.to_db")
 
     main.process_blood_levels()
 
     uploaded = mock_to_db.call_args.args[0]
-    assert set(uploaded["source"]) == {"donarsangre.org"}
-    assert set(uploaded["region"]) == {"Comunidad de Madrid"}
+    assert set(uploaded["source"]) == {"donarsangre.org", "centrodehemoterapiacyl.es"}
+    assert set(uploaded["region"]) == {"Comunidad de Madrid", "Castilla y León"}
     # One snapshot per run: every row shares the same timestamp
     assert uploaded["updated_at"].nunique() == 1

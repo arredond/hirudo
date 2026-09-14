@@ -40,8 +40,8 @@ def _empty_cache():
     return pd.DataFrame(columns=CACHE_COLS)
 
 
-LUGAR_ADDR = "Plaza Mayor, 1, Madrid, Community of Madrid, Spain"
-DIR_ADDR = "Calle Mayor, 5, Madrid, Community of Madrid, Spain"
+LUGAR_ADDR = "Plaza Mayor, 1, Madrid, Comunidad de Madrid, Spain"
+DIR_ADDR = "Calle Mayor, 5, Madrid, Comunidad de Madrid, Spain"
 
 
 # ---------------------------------------------------------------------------
@@ -205,10 +205,10 @@ def test_multiple_rows_each_get_coords(mocker):
             "direccion": ["Calle Mayor, 5", "Calle Alcalá, 2"],
         }
     )
-    addr_lugar_1 = "Plaza Mayor, 1, Madrid, Community of Madrid, Spain"
-    addr_dir_1 = "Calle Mayor, 5, Madrid, Community of Madrid, Spain"
-    addr_lugar_2 = "Gran Vía, 10, Madrid, Community of Madrid, Spain"
-    addr_dir_2 = "Calle Alcalá, 2, Madrid, Community of Madrid, Spain"
+    addr_lugar_1 = "Plaza Mayor, 1, Madrid, Comunidad de Madrid, Spain"
+    addr_dir_1 = "Calle Mayor, 5, Madrid, Comunidad de Madrid, Spain"
+    addr_lugar_2 = "Gran Vía, 10, Madrid, Comunidad de Madrid, Spain"
+    addr_dir_2 = "Calle Alcalá, 2, Madrid, Comunidad de Madrid, Spain"
 
     cache = _cache(
         (addr_lugar_1, -3.70, 40.41, 9),

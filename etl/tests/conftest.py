@@ -74,3 +74,70 @@ LIST_PAGE_HTML = """
 </div>
 </body></html>
 """
+
+# Trimmed from https://www.centrodehemoterapiacyl.es/puntos-de-donacion/avila/ —
+# the fixed point's schedule spans several rows via a rowspan'd first cell.
+CYL_PROVINCE_PAGE_HTML = """
+<html><body>
+<div class="entry-content">
+  <table>
+    <tbody>
+      <tr>
+        <th>PUNTO FIJO DE DONACIÓN DE ÁVILA</th>
+        <th colspan="2">HORARIO</th>
+      </tr>
+      <tr>
+        <td rowspan="3">
+          <strong>HOSPITAL PROVINCIA DE ÁVILA</strong><br/>
+          C/ Jesús del Gran Poder, 44
+          <a href="https://maps.app.goo.gl/hRDcjSERk7mN4TSaA">Ver Ubicación</a><br/>
+          05004 Ávila
+        </td>
+      </tr>
+      <tr><td>Martes y Jueves</td><td>15.00 a 21.30 h</td></tr>
+      <tr><td>Viernes</td><td>09.30 a 15.00 h</td></tr>
+      <tr>
+        <td align="right" colspan="3"><p><span>Festivos cerrado.</span></p></td>
+      </tr>
+    </tbody>
+  </table>
+  <table>
+    <thead>
+      <tr>
+        <th>Campañas de donación</th>
+        <th>Fecha - Ubicación</th>
+        <th>Horario</th>
+        <th>Dirección</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>EL HOYO DE PINARES</td>
+        <td>14/09/2026 Consultorio Médico</td>
+        <td>De 16:30 a 20:30</td>
+        <td>
+          Plaza Víctimas del Terrorismo El Hoyo de Pinares (AVILA)
+          <a href="https://maps.google.es/maps?q=x">Ver Ubicación</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body></html>
+"""
+
+# Trimmed from https://www.centrodehemoterapiacyl.es/ — the "Niveles de
+# sangre actuales" widget, one box per blood type.
+CYL_HOME_PAGE_HTML = """
+<html><body>
+<div class="column mcb-column one-fourth" title="Nivel Óptimo A+">
+  <div class="column_attr"><h2><i class="icon-droplet" style="color:#45a81e"></i>A+</h2></div>
+</div>
+<div class="column mcb-column one-fourth" title="Nivel Medio A-">
+  <div class="column_attr"><h2><i class="icon-droplet" style="color:#fe940d"></i>A-</h2></div>
+</div>
+<div class="column mcb-column one-fourth" title="Nivel Bajo B+">
+  <div class="column_attr"><h2><i class="icon-droplet" style="color:#e85e5e"></i>B+</h2></div>
+</div>
+</body></html>
+"""

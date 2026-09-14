@@ -6,13 +6,18 @@ export function getPointInfo(point) {
     name: isMobile
       ? (p.name ?? '').replace(/^Equipo m[oó]vil en /i, '')
       : (p.name ?? ''),
-    address: isMobile ? p.direccion : p.direccion_postal,
-    locality: isMobile ? p.localidad : p.municipio,
-    hours: isMobile ? p.horario : p.horario_de_donaciones,
+    // "direccion"/"localidad"/"horario" are consolidated names every region's
+    // ETL output uses regardless of how its own source spells them (see
+    // MADRID_FIXED_POINT_COLUMN_ALIASES / CYL_LOCATION_COLUMN_ALIASES in
+    // etl/main.py), so this stays region-agnostic rather than branching here.
+    address: p.direccion,
+    locality: p.localidad,
+    hours: p.horario,
     openingHours: p.opening_hours,
     mapsUrl: isMobile ? p.url : p.gmaps_url,
     infoUrl: isMobile ? null : p.url,
-    // Fixed-point extras shown in popup
+    // Fixed-point extras shown in popup — Comunidad de Madrid only, no
+    // equivalent scraped for other regions, so these are just absent there.
     roomLocation: p.ubicacion_de_las_salas_de_donacion,
     donorInfo: p.informacion_al_donante,
     notes: p.observaciones,
