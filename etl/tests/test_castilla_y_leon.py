@@ -268,8 +268,54 @@ def test_scrape_blood_levels_maps_title_attribute():
 
     assert list(df.columns) == ["blood_type", "status", "level", "label"]
     by_type = df.set_index("blood_type")
-    assert by_type.loc["A+", "status"] == "stable"
+    assert by_type.loc["A+", "status"] == "green"
     assert by_type.loc["A+", "level"] == 3
-    assert by_type.loc["A-", "status"] == "soon"
-    assert by_type.loc["B+", "status"] == "urgent"
+    assert by_type.loc["A-", "status"] == "orange"
+    assert by_type.loc["B+", "status"] == "red"
     assert by_type.loc["B+", "level"] == 1
+
+
+# The site has at times rendered the raw "[puntosDonacion ...]" WordPress
+# shortcode in place of the mobile-points table — only the fixed-point
+# table is left on the page then.
+CYL_PAGE_WITHOUT_MOBILE_TABLE_HTML = (
+    CYL_PROVINCE_PAGE_HTML.rsplit("<table>", 1)[0]
+    + '[puntosDonacion provincia="avila"]</div></body></html>'
+)
+
+
+@responses.activate
+def test_scrape_fixed_points_keeps_point_when_mobile_table_missing(mocker):
+    mocker.patch.object(castilla_y_leon, "PROVINCES", ["avila"])
+    responses.add(
+        responses.GET,
+        castilla_y_leon.province_url("avila"),
+        body=CYL_PAGE_WITHOUT_MOBILE_TABLE_HTML,
+        status=200,
+    )
+    responses.add(
+        responses.GET,
+        "https://maps.app.goo.gl/hRDcjSERk7mN4TSaA",
+        status=302,
+        headers={"Location": "https://www.google.es/maps/place/X/!3d40.65!4d-4.69"},
+    )
+
+    df = castilla_y_leon.scrape_fixed_points()
+
+    assert df["name"].tolist() == ["HOSPITAL PROVINCIA DE ÁVILA"]
+
+
+@responses.activate
+def test_scrape_mobile_points_skips_province_without_mobile_table(mocker):
+    mocker.patch.object(castilla_y_leon, "PROVINCES", ["avila"])
+    responses.add(
+        responses.GET,
+        castilla_y_leon.province_url("avila"),
+        body=CYL_PAGE_WITHOUT_MOBILE_TABLE_HTML,
+        status=200,
+    )
+
+    df = castilla_y_leon.scrape_mobile_points()
+
+    assert df.empty
+    assert list(df.columns) == castilla_y_leon.MOBILE_POINT_COLUMNS

@@ -270,3 +270,286 @@ CLM_MOBILE_PAGE2_HTML = """
 </ul>
 </body></html>
 """
+
+# Trimmed from https://bancosangrearagon.org/ — the homepage's "Puntos fijos
+# de donación" Elementor text widget: an <h4> per province, then a <ul> with
+# the center name in <strong> and everything else as free text.
+ARAGON_HOME_HTML = """
+<html><body>
+<div class="elementor-element puntos-fijos elementor-widget elementor-widget-text-editor">
+  <div class="elementor-widget-container">
+    <h4>ZARAGOZA</h4>
+    <ul>
+      <li><strong>Banco de Sangre y Tejidos de Aragón</strong>
+        C/ Ramón Salanova,1, esquina Duquesa Villahermosa.&nbsp; Parking gratuito.&nbsp;
+        Teléfono: 876 764 300.&nbsp; Horario: de lunes a viernes de 8:00 h. a 21:00 h.
+        Sábados 8:30 h. a 14:00 h.</li>
+      <li><strong>Hospital Miguel Servet</strong>
+        Pº Isabel la Católica, 1-3. Teléfono: 976 765 500.&nbsp; Horario: de lunes a
+        viernes de 9:00 h. a 13:00 h. Servicio de Hematología-Transfusiones&nbsp; 4ª
+        planta.</li>
+    </ul>
+    <h4>TERUEL</h4>
+    <ul>
+      <li><strong>Hospital Obispo Polanco</strong>
+        Ruiz Jarabo, s/n. Teléfono: 978 621 150.&nbsp; Horario: de lunes a jueves de
+        10:30 h. a 14:00 h.</li>
+    </ul>
+  </div>
+</div>
+</body></html>
+"""
+
+
+def aragon_event(event_id: int, title: str, start: str, end: str) -> dict:
+    """Build a minimal Events Calendar REST API event, trimmed to the fields
+    the Aragón crawler reads."""
+    return {
+        "id": event_id,
+        "url": f"https://bancosangrearagon.org/extraccion/{event_id}/",
+        "title": title,
+        "start_date": start,
+        "end_date": end,
+        "venue": [],
+    }
+
+
+# Trimmed from
+# https://centro-transfusion.san.gva.es/es/puntos-de-donacion?provincia=castellon
+# — the fixed-points list, then a per-date schedule table. Includes the
+# fixed point's own schedule row, a morning/afternoon pair for the same stop
+# (two rows), a "(SOLO EMPLEADOS)" stop, a plasma-only stop, and a
+# hyphenated town ("VILA-REAL") — all real quirks of the source data.
+def valencia_row(poblacion: str, ubicacion: str, horario: str) -> str:
+    """Build one schedule <tr>, including the mobile-only label prefixes."""
+    return f"""
+      <tr>
+        <td class="textotabla2sincursor poblacion"><b class="d-lg-none">Población:</b> {poblacion}</td>
+        <td class="textotabla2sincursor ubicacion"><b class="d-lg-none">Ubicación:</b> {ubicacion}</td>
+        <td class="textotabla2sincursor horario"><b class="d-lg-none">Horario:</b> {horario}</td>
+      </tr>"""
+
+
+VALENCIA_HEADER_ROW = """
+      <tr class="d-none d-lg-table-row">
+        <td class="titulotabla"><b>Población</b></td>
+        <td class="titulotabla"><b>Ubicación</b></td>
+        <td class="titulotabla"><b>Horario</b></td>
+      </tr>"""
+
+VALENCIA_FIXED_UBICACION = (
+    "CASTELLÓN-CENTRO DE TRANSFUSIÓN C.V. SALA DONACIÓN-PARKING SUBTERRÁNEO "
+    "HOSP.GRATUITO, AVDA. BENICASIM, S/N"
+)
+
+VALENCIA_PROVINCE_PAGE_HTML = f"""
+<html><body>
+<table class="text-left ctfcv"><tr><td class="datos">
+<table><tr><td class="texto">
+  <p class="subtitulo1">Puntos Fijos de extracción</p>
+  <div class="puntosfijos">
+    <p class="subtitulo2">CASTELLÓN-CENTRO DE TRANSFUSIÓN C.V. SALA  DONACIÓN-PARKING SUBTERRÁNEO HOSP.GRATUITO, AVDA. BENICASIM, S/N</p>
+    <p>12004-CASTELLÓ DE LA PLANA</p>
+    <p></p>
+    <p>Horarios sujetos a la programación de las donaciones (Ver a continuación)</p>
+  </div>
+  <p class="subtitulo1">Programación de las Donaciones</p>
+  <p class="subtitulo2">Martes, 27 de octubre</p>
+  <table class="datosCentro">{VALENCIA_HEADER_ROW}
+    {valencia_row("CASTELLÓ DE LA PLANA", VALENCIA_FIXED_UBICACION, "08:30-14:00")}
+    {valencia_row("CASTELLÓ DE LA PLANA", VALENCIA_FIXED_UBICACION, "14:00-21:00")}
+    {valencia_row("CABANES", "CABANES-CASAL JOVE LOCAL, CARRER  DELEGADO VALERA, N. 50", "16:30-20:30")}
+    {valencia_row("VILA-REAL", "VILA-REAL - HOSPITAL LA PLANA HALL PRINCIPAL, CTRA. VILA-REAL A BURRIANA, KM. 0.5", "16:30-20:30")}
+    {valencia_row("VILA-REAL", "VILA-REAL - HOSPITAL LA PLANA HALL PRINCIPAL, CTRA. VILA-REAL A BURRIANA, KM. 0.5", "09:30-13:30")}
+  </table>
+  <p class="subtitulo2">Miércoles, 28 de octubre</p>
+  <table class="datosCentro">{VALENCIA_HEADER_ROW}
+    {valencia_row("CASTELLÓ DE LA PLANA", VALENCIA_FIXED_UBICACION, "08:30-14:30")}
+    {valencia_row("CASTELLÓ DE LA PLANA", "CASTELLÓN-PROP (SOLO EMPLEADOS), AVDA. HERMANOS BOU, S/N", "09:30-13:30")}
+    {valencia_row("ELCHE", "ELCHE-SOLO DONACIÓN DE PLASMA CON CITA PREVIA-ELCHE HOSPITAL GENERAL , C/ ALMAZARA Nº 11", "16:30-21:00")}
+  </table>
+</td></tr></table>
+</td></tr></table>
+</body></html>
+"""
+
+# Trimmed from https://www.bancsang.net/es/donaciones/sangre/donde/ — one
+# card per hospital with a blood and a plasma booking button.
+CATALUNA_DONDE_HTML = """
+<html><body>
+<div class="column">
+  <h3>Barcelona</h3><p>Hospital de la Santa Creu i Sant Pau</p>
+  <a href="/es/donaciones/sangre/hospital/c/2/">Dona sangre</a>
+  <a href="/es/donaciones/plasma/inscripcion//?hospital=99999">Dona plasma</a>
+</div>
+<div class="column">
+  <h3>Hospitalet de Llobregat, L'</h3><p>BST L’Hospitalet - Santa Eulàlia</p>
+  <a href="/es/donaciones/sangre/hospital/c/30/">Dona sangre</a>
+  <a href="/es/donaciones/sangre/hospital/c/30/28-10-2026/">28</a>
+</div>
+</body></html>
+"""
+
+# Trimmed from https://www.bancsang.net/es/hospitales/30/bst-l-hospitalet-santa-eulalia
+CATALUNA_HOSPITAL_INFO_HTML = """
+<html><body>
+<h1>BST L’Hospitalet - Santa Eulàlia</h1>
+<div class="flow flow--small text-base">
+  <h3 class="is-relative is-size-7"><svg></svg>Horario</h3>
+  <div class="is-size-8">
+    <p>De lunes a viernes de 9 a 20 h.<br/>Sábados de 9 a 14.30 h.</p>
+    <p>El <strong>20 de octubre</strong> la donación estará cerrada de 15 a 16h.</p>
+  </div>
+  <h3 class="is-relative is-size-7"><svg></svg>Ubicación</h3>
+  <div class="is-size-8">
+    C/ Jacint Verdaguer, 12
+    <p>08902\t\t\t\t\t\tHospitalet de Llobregat, L'</p>
+    <p class="is-flex"><svg></svg>93 557 36 41</p>
+    <p class="mt-4"><a href="https://www.google.com/maps/dir//...">Cómo llegar</a></p>
+  </div>
+</div>
+</body></html>
+"""
+
+# Trimmed from https://www.bancsang.net/es/donaciones/sangre/calendario-de-recogida/
+# — one grid of cards per day: a blood-only stop, a blood + plasma stop, a
+# plasma-only stop (no blood button), and a donation-bus stop.
+CATALUNA_CALENDAR_HTML = """
+<html><body>
+<div class="boxes-grid columns">
+  <div class="column is-half-mobile"><div>
+    <h3 class="is-size-8 mt-3">Barcelona</h3>
+    <p>Escola Santa Anna<br/>C. Bailèn, 53</p>
+    <ul><li><a class="button is-primary" href="/es/donaciones/sangre/recogida/poblacion//9386/barcelona/27-10-2026/">Dona sangre</a></li></ul>
+  </div></div>
+  <div class="column is-half-mobile"><div>
+    <h3 class="is-size-8 mt-3">Esparreguera</h3>
+    <p>Biblioteca l'Ateneu<br/>Pl. Antoni Nin i Escudé, 1</p>
+    <ul>
+      <li><a class="button is-primary" href="/es/donaciones/sangre/recogida/poblacion//13445/esparreguera/27-10-2026/">Dona sangre</a></li>
+      <li><a class="button is-plasma" href="/es/donaciones/plasma/inscripcion/?hospital=534K&amp;day=27-10-2026">Dona plasma</a></li>
+    </ul>
+  </div></div>
+  <div class="column is-half-mobile"><div>
+    <h3 class="is-size-8 mt-3">Vielha e Mijaran</h3>
+    <p>Palau d'Esports<br/>Av. Garona, 35</p>
+    <ul><li><a class="button is-plasma" href="/es/donaciones/plasma/inscripcion/?hospital=9B243&amp;day=27-10-2026">Dona plasma</a></li></ul>
+  </div></div>
+</div>
+<div class="boxes-grid columns">
+  <div class="column is-half-mobile"><div>
+    <h3 class="is-size-8 mt-3">Gavà</h3>
+    <p>Unidad móvil<br/>Pl. Jaume Balmes</p>
+    <ul><li><a class="button is-primary" href="/es/donaciones/sangre/recogida/poblacion//14001/gava/28-10-2026/">Dona sangre</a></li></ul>
+  </div></div>
+</div>
+</body></html>
+"""
+
+# Trimmed from a stop's blood-booking page (e.g. .../poblacion//9386/barcelona/27-10-2026/)
+CATALUNA_STOP_HTML = """
+<html><body><div class="text">
+  <p class="seleccio">Barcelona</p>
+  <p class="seleccio b">Tuesday, 27 de October de 2026</p>
+  <p class="horari">
+      De 10:00 a 14:00 i de 16:00 a 21:00
+  </p>
+  <p class="lloc">Escola Santa Anna, C. Bailèn, 53</p>
+</div></body></html>
+"""
+
+# Trimmed from https://ados.sergas.gal/cartafol/ADOS-locais (two of seven
+# accordion blocks: one with GPS coordinates, one without)
+GALICIA_FIXED_POINTS_HTML = """
+<html><body>
+<div class="accordion-simple"><div class="accordion-content-block collapse"><div class="accordion-content-block-title">
+  <span>Local de doazón de Ferrol</span> </div><div class="accordion-content-block-data"><p>
+  <b>Horario</b></p><p>Luns de 15&#58;00 a 22&#58;00</p><p>Martes, mércores e xoves de 8&#58;00 a 15&#58;00<br></p><p>
+  <b>\u200bEnderezo</b></p><p>Hospital Arquitecto Marcide. Andar cero<br></p><p>Estrada de San Pedro de Leixa, s/n</p><p>15405 Ferrol</p><p>Teléfono 981334541</p><p>Aparcamento gratuíto no parking do hospital</p><p>Coordenadas GPS&#58; 43°30'37.0&quot;N 8°12'58.2&quot;W.</p></div></div></div>
+<div class="accordion-simple"><div class="accordion-content-block collapse"><div class="accordion-content-block-title">
+  <span>Local de doazón de Ourense</span></div>
+  <div class="accordion-content-block-data"><p>\u200b<b>Horario</b></p><p>
+  <span style="text-decoration&#58;underline;">Horario de inverno</span> (de outubro a maio)</p><p>Luns e&#160;venres&#160;de 15&#58;00 a 22&#58;00\u200b</p><p>
+  <b>Enderezo</b></p><p>Plaza Paz Novoa nº3.&#160;Aparcamento gratuíto &quot;parking Orense&quot;\u200b</p><p>32003 Ourense</p><p>Teléfono 988370103</p></div></div></div>
+<div class="accordion-simple"><div class="accordion-content-block collapse"><div class="accordion-content-block-title">
+  <span>Local de doazón de Santiago</span> </div><div class="accordion-content-block-data"><p>
+  <b>Horario</b></p><p>Luns a venres de 8&#58;00 a 22&#58;00</p><p>
+  <b>Enderezo</b></p><p>Complexo Hospitalario Universitario de Santiago (CHUS)</p><p>Teléfono 981955728</p><p>Coordenadas GPS&#58; 42º 52' 8.7''N 8º 33' 55.1''WOs.</p></div></div></div>
+</body></html>
+"""
+
+# Trimmed from https://ados.sergas.gal/cartafol/proximos-desprazamentos
+GALICIA_MOBILE_POINTS_HTML = """
+<html><body><div class="collect-container"><div class="collect-body">
+<details class="group-details"><summary>ÁREA SANITARIA A CORUÑA E CEE</summary><div class="group-content">
+<div class="date-header">Venres, 23/10/2026&#160;</div><div class="table-wrapper"><table class="collect-table">
+<thead><tr><th>Concello</th><th>Lugar de colecta</th><th>Localizacións e horarios</th></tr></thead><tbody>
+<tr><td><strong>Sada</strong></td><td><strong>SADA</strong> </td><td><div class="location-item"><span class="location-name">UNIDADE MÓBIL DIANTE DA CASA DA XUVENTUDE</span> <span class="schedule-time">09&#58;45 a 14&#58;30 e 15&#58;45 a 21&#58;00</span>&#160;</div></td></tr>
+</tbody></table>&#160;</div>
+</div></details>
+<details class="group-details"><summary>ÁREA SANITARIA LUGO-A MARIÑA-MONFORTE</summary><div class="group-content">
+<div class="date-header">Martes, 10/11/2026&#160;</div><div class="table-wrapper"><table class="collect-table">
+<thead><tr><th>Concello</th><th>Lugar de colecta</th><th>Localizacións e horarios</th></tr></thead><tbody>
+<tr class="provisional-row"><td><strong>Foz</strong></td><td><strong>FOZ</strong> <span class="provisional-badge">Provisional</span></td><td><div class="location-item"><span class="location-name">PRAZA CONDE FONTAO
+NO PEIRAO (AO CARON DA FUNCIONAL)</span> <span class="schedule-time">10&#58;30 a 14&#58;00 e 16&#58;30 a 21&#58;00</span>&#160;</div><div class="location-item"><span class="location-name">Localización 2</span> <span class="schedule-time">16&#58;30 a 21&#58;00</span></div></td></tr>
+</tbody></table>&#160;</div>
+<div class="date-header">Luns, 02/11/2026&#160;</div><div class="table-wrapper"><table class="collect-table">
+<thead><tr><th>Concello</th><th>Lugar de colecta</th><th>Localizacións e horarios</th></tr></thead><tbody>
+<tr><td><strong>Melón</strong></td><td><strong>MELON</strong> </td><td><div class="location-item"><span class="location-name">QUINS: UNIDADE MOBIL DIANTE DO CENTRO DE SAÚDE</span> <span class="schedule-time">10&#58;00 a 11&#58;30</span></div><div class="location-item"><span class="location-name">MELON: UNIDADE MOBIL NO PARQUE DE MELON</span> <span class="schedule-time">12&#58;00 a 14&#58;00</span></div></td></tr>
+</tbody></table>&#160;</div>
+</div></details>
+</div></div></body></html>
+"""
+
+GALICIA_SEMAFORO_HTML = """
+<html><body><div class="carousel-item active"><a href="#">
+<img src="/cartafol/PublishingImages/148/Semaforo_2026-10-20.png" alt="Visor Semáforo" class="d-block" />
+</a></div><img src="/cartafol/PublishingImages/148/acceso-sema3.png" alt="Semáforo" /></body></html>
+"""
+
+# Trimmed from the "¿Dónde donar?" day-listing endpoint
+# (.../extracciones/index.php?idioma=ES&provincia=Bizkaia&fechaInicio=2026/10/27):
+# a fixed centre, a stop open morning and afternoon (listed twice), and an
+# exact repeat.
+PAIS_VASCO_DAY_HTML = (
+    '<div class="contenedor_Bizkaia"><span class="lugar" style="text-transform:uppercase">'
+    'Galdakao:</span> <span class="lugar">GALDAKAO Planta 0-CVTTH</span><br/>27-10 de 8:30 '
+    'a 14:30<br/><a class="direccion" href="https://www.google.com/maps/place/'
+    '43.222799979715,-2.8175108989617" target="_blank">Barrio Labeaga 46A </a></span></div>'
+    '<div class="contenedor_Bizkaia"><span class="lugar" style="text-transform:uppercase">'
+    'Bilbao:</span> <span class="lugar">Bilbao Bombero Etxaniz - Solo Plasma/Cita</span>'
+    '<br/>27-10 de 8:30 a 13:00<br/><a class="direccion" href="https://www.google.com/maps/'
+    'place/43.258362392224,-2.939835762394" target="_blank">Plaza Bombero Etxaniz 1</a>'
+    "</span></div>"
+    '<div class="contenedor_Bizkaia"><span class="lugar" style="text-transform:uppercase">'
+    'Bilbao:</span> <span class="lugar">Bilbao Bombero Etxaniz - Solo Plasma/Cita</span>'
+    '<br/>27-10 de 14:00 a 18:30<br/><a class="direccion" href="https://www.google.com/maps/'
+    'place/43.258362392224,-2.939835762394" target="_blank">Plaza Bombero Etxaniz 1</a>'
+    "</span></div>"
+    '<div class="contenedor_Bizkaia"><span class="lugar" style="text-transform:uppercase">'
+    'Bilbao:</span> <span class="lugar">Plaza Circular</span><br/>27-10 de 9:15 a 14:00<br/>'
+    '<a class="direccion" href="https://www.google.com/maps/place/43.26128769,-2.92748213" '
+    'target="_blank">Plaza Circular</a></span></div>'
+    '<div class="contenedor_Bizkaia"><span class="lugar" style="text-transform:uppercase">'
+    'Bilbao:</span> <span class="lugar">Plaza Circular</span><br/>27-10 de 9:15 a 14:00<br/>'
+    '<a class="direccion" href="https://www.google.com/maps/place/43.26128769,-2.92748213" '
+    'target="_blank">Plaza Circular</a></span></div>'
+)
+
+# Trimmed from .../niveles-sangre/index.php?idioma=ES
+PAIS_VASCO_LEVELS_HTML = (
+    '<p class="linea_niveles"><span class="fecha_niveles"> 27/10/2026</span></p>'
+    '<table class="tabla_niveles"><tr>'
+    '<td class="row_niveles"><img src="https://donantesdesangre.eus/wp-content/themes/'
+    'hello-elementor/niveles-sangre/Reserva-Sangre-02.svg" alt="O+" class="bolsa_sangre" />'
+    "<br/>O+</td>"
+    '<td class="row_niveles"><img src="https://donantesdesangre.eus/wp-content/themes/'
+    'hello-elementor/niveles-sangre/Reserva-Sangre-03.svg" alt="O-" class="bolsa_sangre" />'
+    "<br/>O-</td>"
+    '<td class="row_niveles"><img src="https://donantesdesangre.eus/wp-content/themes/'
+    'hello-elementor/niveles-sangre/Reserva-Sangre-01.svg" alt="B+" class="bolsa_sangre" />'
+    "<br/>B+</td></tr></table>"
+    '<table class="tabla_niveles"><tr><td class="row_niveles"><img src="https://'
+    "donantesdesangre.eus/wp-content/themes/hello-elementor/niveles-sangre/"
+    'ico-sangre-roja.svg" /></td><td class="texto_donar">Dona urgente</td></tr></table>'
+)

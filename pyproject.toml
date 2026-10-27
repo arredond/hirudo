@@ -15,6 +15,7 @@ dependencies = [
     "lxml>=6.1.1",
     "opening-hours-py>=2.1.4",
     "pandas>=3.0.5",
+    "pillow>=13.0.0",
     "psycopg2-binary>=2.9.12",
     "python-dotenv>=1.2.2",
     "ruff>=0.16.3",

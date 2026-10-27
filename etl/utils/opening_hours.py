@@ -71,3 +71,40 @@ def parse_mobile_hours(fecha: str, horario: str) -> str | None:
     except ParserError:
         log.warning("Invalid opening_hours candidate %r (from %r)", candidate, horario)
         return None
+
+
+def parse_scheduled_hours(schedule: list[tuple[str, str]]) -> str | None:
+    """Build an OSM opening_hours string from a list of dated days.
+
+    For fixed points whose hours are published as a day-by-day schedule
+    rather than a weekly pattern (Comunidad Valenciana's "Horarios sujetos a
+    la programación de las donaciones"). Each (fecha, horario) pair becomes
+    one dated rule (see parse_mobile_hours), joined in date order with ";",
+    so every unlisted day is closed. Days that don't parse are skipped (and
+    logged by parse_mobile_hours); returns None if none parse.
+    """
+
+    def date_key(day):
+        match = DATE_PATTERN.match(day[0].strip())
+        if not match:
+            return (9999, 99, 99)
+        day_num, month, year = match.groups()
+        return (int(year), int(month), int(day_num))
+
+    rules = [
+        rule
+        for rule in (
+            parse_mobile_hours(fecha, horario)
+            for fecha, horario in sorted(schedule, key=date_key)
+        )
+        if rule
+    ]
+    if not rules:
+        return None
+
+    candidate = "; ".join(rules)
+    try:
+        return str(OpeningHours(candidate))
+    except ParserError:
+        log.warning("Invalid scheduled opening_hours candidate %r", candidate)
+        return None

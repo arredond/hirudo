@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS blood_levels (
     id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     region     text        NOT NULL,             -- Comunidad Autónoma, e.g. 'Comunidad de Madrid'
     blood_type text        NOT NULL,             -- '0-', '0+', 'A-', ... 'AB+'
-    status     text        NOT NULL,             -- 'urgent' | 'soon' | 'stable'
-    level      smallint    NOT NULL,             -- 1 = most urgent ... 3 = stable
+    status     text        NOT NULL,             -- colour the source shows: 'red' | 'orange' | 'yellow' | 'green'
+    level      smallint    NOT NULL,             -- 1 = most urgent ... 3 (or 4, Galicia) = best
     label      text,                             -- original Spanish phrase, e.g. 'Dona hoy'
     source     text        NOT NULL,             -- 'donarsangre.org'
     updated_at timestamptz NOT NULL              -- scrape time (one value per run)

@@ -1,0 +1,62 @@
+[
+    {
+        "match": "DGA Pignatelli",
+        "lugar": "Edificio Pignatelli, Pº María Agustín 36, Zaragoza",
+        "latitude": 41.652984,
+        "longitude": -0.891616
+    },
+    {
+        "match": "Delegación de Hacienda",
+        "lugar": "Agencia Tributaria, C. José Luis Albareda 16, Zaragoza",
+        "latitude": 41.651111,
+        "longitude": -0.887767
+    },
+    {
+        "match": "Cesur Centro de Formación",
+        "lugar": "CESUR Zaragoza, Av. de Ranillas 5C, Zaragoza",
+        "latitude": 41.669755,
+        "longitude": -0.904119
+    },
+    {
+        "match": "Consejería de Educación",
+        "lugar": "Servicio Provincial de Educación, Av. Juan Pablo II 20, Zaragoza",
+        "latitude": 41.642497,
+        "longitude": -0.912236
+    },
+    {
+        "match": "Regimiento Pontoneros",
+        "lugar": "RPEI-12, Cam. Alfocea 11, Monzalbarba",
+        "latitude": 41.702962,
+        "longitude": -0.964399
+    },
+    {
+        "match": "Profand, Caladero",
+        "lugar": "Profand, C. Bari 3, Zaragoza (Plaza)",
+        "latitude": 41.655547,
+        "longitude": -1.000487
+    },
+    {
+        "match": "Orihuela, en el Centro de Salud",
+        "lugar": "PAC Orihuela del Tremedal, Ctra. a Albarracín 13",
+        "latitude": 40.550404,
+        "longitude": -1.648421
+    },
+    {
+        "match": "Santa Eulalia, en el Centro de Salud",
+        "lugar": "Centro de Salud de Santa Eulalia del Campo, C. San Pascual s/n",
+        "latitude": 40.566991,
+        "longitude": -1.313785
+    },
+    {
+        "match": "Biota, en el Antiguo Matadero",
+        "lugar": "Ayuntamiento de Biota (the old slaughterhouse isn't on Google Maps)",
+        "latitude": 42.262302,
+        "longitude": -1.18819
+    },
+    {
+        "match": "Estadilla, en el Salón Buñero",
+        "lugar": "Ayuntamiento de Estadilla (the Salón Buñero isn't on Google Maps)",
+        "latitude": 42.057378,
+        "longitude": 0.244094
+    }
+]

@@ -1,5 +1,6 @@
 """Crawl Castilla y León pages and retrieve fixed and mobile blood donation spots."""
 
+import logging
 import re
 import urllib.parse
 from io import StringIO
@@ -12,8 +13,8 @@ URL_BASE = "https://www.centrodehemoterapiacyl.es/"
 URL_POINTS_INDEX = urllib.parse.urljoin(URL_BASE, "puntos-de-donacion/")
 
 # The province pages aren't linked anywhere in a machine-readable way, so the
-# list is hardcoded. Each page has the same layout: a fixed-point table
-# followed by a mobile-points table.
+# list is hardcoded. Each page has one or more fixed-point tables, usually
+# followed by a mobile-points table (see is_mobile_points_table).
 PROVINCES = [
     "avila",
     "burgos",
@@ -28,12 +29,13 @@ PROVINCES = [
 
 # The homepage's "Niveles de sangre actuales" widget renders one box per
 # blood type, with the urgency level spelled out in its title attribute
-# (e.g. title="Nivel Bajo AB-"). Mapping to (status, level), level 1 = most
-# urgent, matching the scheme used for Comunidad de Madrid.
+# (e.g. title="Nivel Bajo AB-"). Mapping to (status, level): status is the
+# colour the widget paints that level's droplet, like Comunidad de Madrid's;
+# level 1 = most urgent.
 BLOOD_LEVEL_STATUS = {
-    "Óptimo": ("stable", 3),
-    "Medio": ("soon", 2),
-    "Bajo": ("urgent", 1),
+    "Óptimo": ("green", 3),
+    "Medio": ("orange", 2),
+    "Bajo": ("red", 1),
 }
 
 # A maps.app.goo.gl short link's first redirect (before Google's consent
@@ -49,6 +51,17 @@ DATE_RE = re.compile(r"\d{2}/\d{2}/\d{4}")
 # The homepage 403s on requests' default User-Agent (it serves the Apache
 # placeholder page instead), unlike the province subpages, which don't care.
 # Setting a normal browser UA avoids that inconsistency altogether.
+MOBILE_POINT_COLUMNS = [
+    "campana",
+    "fecha",
+    "ubicacion",
+    "horario",
+    "direccion",
+    "province",
+]
+
+log = logging.getLogger(__name__)
+
 SESSION = requests.Session()
 SESSION.headers.update(
     {
@@ -134,15 +147,23 @@ def parse_fixed_points(table, province: str) -> list[dict]:
     return points
 
 
+def is_mobile_points_table(table) -> bool:
+    """Tell the mobile-points table apart from fixed-point ones by its header.
+
+    Position isn't reliable: a province can have several fixed-point tables
+    (e.g. León's extra "Hospital del Bierzo"), and the mobile-points table
+    can be missing entirely — the site has at times rendered the raw
+    "[puntosDonacion ...]" WordPress shortcode in its place.
+    """
+    return "Campañas de donación" in table.get_text(" ", strip=True)
+
+
 def scrape_fixed_points() -> pd.DataFrame:
     """Scrape every province's fixed point(s), resolving coordinates from
     their Google Maps short link (no geocoding API call needed).
 
-    Most provinces have one fixed-point table followed by the mobile-points
-    table (2 tables total), but a province can have more than one fixed
-    point — e.g. León also lists "Hospital del Bierzo" — as an extra table
-    of the same shape. The mobile-points table is always last, so every
-    table before it is treated as a fixed point.
+    Every table on a province page that isn't the mobile-points one is a
+    fixed-point table (see is_mobile_points_table).
     """
     fixed_points = []
     for province in PROVINCES:
@@ -151,7 +172,9 @@ def scrape_fixed_points() -> pd.DataFrame:
         soup = BeautifulSoup(html, features="lxml")
         tables = soup.find("div", {"class": "entry-content"}).find_all("table")
 
-        for table in tables[:-1]:
+        for table in tables:
+            if is_mobile_points_table(table):
+                continue
             for point in parse_fixed_points(table, province):
                 if point["gmaps_url"]:
                     point["latitude"], point["longitude"] = resolve_gmaps_coords(
@@ -181,18 +204,21 @@ def clean_mobile_point_row(row: pd.Series) -> pd.Series:
 def scrape_mobile_points() -> pd.DataFrame:
     """Scrape and return all mobile donation points as a DataFrame.
 
-    The mobile-points table is always the last one on the page, regardless
-    of how many fixed-point tables precede it (see scrape_fixed_points).
+    Provinces with no mobile-points table are skipped with a warning (see
+    is_mobile_points_table); if none has one, an empty frame with the output
+    columns is returned so the other regions still upload.
     """
     province_frames = []
     for province in PROVINCES:
         html = SESSION.get(province_url(province)).text
         soup = BeautifulSoup(html, features="lxml")
         tables = soup.find("div", {"class": "entry-content"}).find_all("table")
-        if len(tables) < 2:
-            continue  # no mobile points listed for this province
+        mobile_tables = [table for table in tables if is_mobile_points_table(table)]
+        if not mobile_tables:
+            log.warning("No mobile-points table for province: %s", province)
+            continue
 
-        df = pd.read_html(StringIO(str(tables[-1])))[0]
+        df = pd.read_html(StringIO(str(mobile_tables[0])))[0]
         df = df.rename(
             columns={
                 "Campañas de donación": "campana",
@@ -202,10 +228,10 @@ def scrape_mobile_points() -> pd.DataFrame:
         )
         df = df.apply(clean_mobile_point_row, axis=1)
         df["province"] = province
-        province_frames.append(
-            df[["campana", "fecha", "ubicacion", "horario", "direccion", "province"]]
-        )
+        province_frames.append(df[MOBILE_POINT_COLUMNS])
 
+    if not province_frames:
+        return pd.DataFrame(columns=MOBILE_POINT_COLUMNS)
     return pd.concat(province_frames, ignore_index=True)
 
 

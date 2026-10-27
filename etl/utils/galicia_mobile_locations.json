@@ -1,0 +1,14 @@
+[
+    {
+        "match": "PRAZA DO CONCELLO, O Barco de Valdeorras",
+        "lugar": "Concello do Barco de Valdeorras, Pl. España 1 (geocoding finds a \"Praza do Concello\" in Rubiá)",
+        "latitude": 42.4164018,
+        "longitude": -6.9840763
+    },
+    {
+        "match": "ZONA PORTUARIA A CARÓN DA LONXA VELLA, Porto do Son",
+        "lugar": "Porto do Son harbour, by the Lonxa (Places and geocoding find Portosín's)",
+        "latitude": 42.7273907,
+        "longitude": -9.003293
+    }
+]

@@ -9,6 +9,10 @@ import pandas as pd
 
 import main
 
+NO_LOCATION_OVERRIDES = pd.DataFrame(
+    columns=["match", "lugar", "latitude", "longitude"]
+)
+
 
 def test_process_fixed_points_stamps_region(mocker):
     manual_points = pd.DataFrame(
@@ -40,6 +44,72 @@ def test_process_fixed_points_stamps_region(mocker):
             "url": ["https://sanidad.castillalamancha.es/puntos-fijos-de-donacion"],
         }
     )
+    scraped_aragon = pd.DataFrame(
+        {
+            "name": ["Hospital San Jorge"],
+            "localidad": ["Huesca"],
+            "direccion": ["Martínez de Velasco, 36"],
+            "telefono": ["974 247 000"],
+            "horario": ["de lunes a jueves de 8:30 h. a 14:00 h."],
+            "plasma": [False],
+            "url": ["https://bancosangrearagon.org/"],
+        }
+    )
+
+    scraped_valencia = pd.DataFrame(
+        {
+            "name": ["Centro de Transfusión de Alicante"],
+            "direccion": ["CARRETERA NACIONAL 332, KM. 113"],
+            "localidad": ["Sant Joan D Alacant"],
+            "codigo_postal": ["03550"],
+            "plasma": [True],
+            "horario": ["mar 27/10 08:30-21:00"],
+            "schedule": [[("27/10/2026", "08:30-21:00")]],
+            "url": ["https://centro-transfusion.san.gva.es/es/puntos-de-donacion"],
+        }
+    )
+
+    scraped_cataluna = pd.DataFrame(
+        {
+            "name": ["Hospital Clínic"],
+            "horario": ["Lunes a viernes a 8.30 a 21 h."],
+            "direccion": ["Villarroel, 170"],
+            "codigo_postal": ["08036"],
+            "localidad": ["Barcelona"],
+            "telefono": ["93 227 54 00"],
+            "plasma": [True],
+            "url": ["https://www.bancsang.net/es/hospitales/3/"],
+        }
+    )
+
+    scraped_galicia = pd.DataFrame(
+        {
+            "name": ["Local de doazón de Ourense"],
+            "venue": ["Plaza Paz Novoa nº3. Aparcamento gratuíto"],
+            "direccion": ["Plaza Paz Novoa nº3. Aparcamento gratuíto · 32003 Ourense"],
+            "localidad": ["Ourense"],
+            "codigo_postal": ["32003"],
+            "horario": ["Luns a venres de 8:00 a 15:00"],
+            "latitude": [None],
+            "longitude": [None],
+            "plasma": [True],
+            "url": ["https://ados.sergas.gal/cartafol/ADOS-locais"],
+        }
+    )
+
+    scraped_pais_vasco = pd.DataFrame(
+        {
+            "name": ["Ambulatorio Olaguibel (Vitoria-Gasteiz)"],
+            "localidad": ["Vitoria-Gasteiz"],
+            "direccion": ["OLAGUIBEL, 31"],
+            "latitude": [42.846035],
+            "longitude": [-2.66569352],
+            "schedule": [[("27/10/2026", "08:30-21:00")]],
+            "horario": ["mar 27/10 08:30-21:00"],
+            "plasma_only": [False],
+            "url": ["https://donantesdesangre.eus/donde-donar/"],
+        }
+    )
 
     def fake_geocode_points(df, geocoding_cache, address_column):
         df["longitude"] = -2.0
@@ -52,6 +122,15 @@ def test_process_fixed_points_stamps_region(mocker):
     mocker.patch(
         "main.castilla_la_mancha.scrape_fixed_points", return_value=scraped_clm
     )
+    mocker.patch("main.aragon.scrape_fixed_points", return_value=scraped_aragon)
+    mocker.patch(
+        "main.comunidad_valenciana.scrape_fixed_points", return_value=scraped_valencia
+    )
+    mocker.patch("main.cataluna.scrape_fixed_points", return_value=scraped_cataluna)
+    mocker.patch("main.galicia.scrape_fixed_points", return_value=scraped_galicia)
+    mocker.patch("main.pais_vasco.scrape_fixed_points", return_value=scraped_pais_vasco)
+    mocker.patch("main.refresh_places_cache", side_effect=lambda q, cache, b: cache)
+    mocker.patch("main.place_candidate", return_value=None)
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
     mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
     mocker.patch("main.open", mocker.mock_open())
@@ -68,6 +147,11 @@ def test_process_fixed_points_stamps_region(mocker):
         "Comunidad de Madrid",
         "Castilla y León",
         "Castilla-La Mancha",
+        "Aragón",
+        "Comunidad Valenciana",
+        "Cataluña",
+        "Galicia",
+        "País Vasco",
     }
 
 
@@ -204,6 +288,72 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
             "province": ["toledo"],
         }
     )
+    scraped_aragon = pd.DataFrame(
+        {
+            "title": ["Sariñena, en el Centro de Salud"],
+            "who": ["Sariñena"],
+            "venue": ["Centro de Salud"],
+            "fecha": ["28/10/2026"],
+            "horario": ["17:30 a 21:00"],
+            "url": ["https://bancosangrearagon.org/extraccion/sarinena/"],
+        }
+    )
+
+    scraped_valencia = pd.DataFrame(
+        {
+            "fecha": ["27/10/2026"],
+            "poblacion": ["CABANES"],
+            "ubicacion": ["CABANES-CASAL JOVE LOCAL, CARRER DELEGADO VALERA, N. 50"],
+            "horario": ["16:30-20:30"],
+            "province": ["castellon"],
+            "venue": ["CASAL JOVE LOCAL"],
+            "direccion": ["CARRER DELEGADO VALERA, N. 50"],
+            "restriction": [None],
+            "plasma_only": [False],
+        }
+    )
+
+    scraped_cataluna = pd.DataFrame(
+        {
+            "localidad": ["Gavà"],
+            "venue": ["Unidad móvil"],
+            "direccion": ["Pl. Jaume Balmes"],
+            "fecha": ["28/10/2026"],
+            "sangre": [True],
+            "plasma": [False],
+            "url": ["https://www.bancsang.net/es/donaciones/sangre/recogida/x/"],
+            "horario": ["De 17:00 a 21:00"],
+        }
+    )
+
+    scraped_galicia = pd.DataFrame(
+        {
+            "area": ["ÁREA SANITARIA A CORUÑA E CEE"],
+            "fecha": ["23/10/2026"],
+            "concello": ["Sada"],
+            "lugar": ["SADA"],
+            "direccion": ["UNIDADE MÓBIL DIANTE DA CASA DA XUVENTUDE"],
+            "place_text": ["CASA DA XUVENTUDE"],
+            "horario": ["09:45 a 14:30 e 15:45 a 21:00"],
+            "provisional": [False],
+            "url": ["https://ados.sergas.gal/cartafol/proximos-desprazamentos"],
+        }
+    )
+
+    scraped_pais_vasco = pd.DataFrame(
+        {
+            "province": ["Bizkaia"],
+            "localidad": ["Bilbao"],
+            "lugar": ["Bilbao Bombero Etxaniz - Solo Plasma/Cita"],
+            "direccion": ["Plaza Bombero Etxaniz 1"],
+            "latitude": [43.2584],
+            "longitude": [-2.9398],
+            "fecha": ["27/10/2026"],
+            "horario": ["08:30-13:00, 14:00-18:30"],
+            "plasma_only": [True],
+            "url": ["https://donantesdesangre.eus/donde-donar/"],
+        }
+    )
 
     def fake_geocode_mobile(df, geocoding_cache):
         df["longitude"] = -3.7
@@ -220,7 +370,20 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
     mocker.patch(
         "main.castilla_la_mancha.scrape_mobile_points", return_value=scraped_clm
     )
+    mocker.patch("main.aragon.scrape_mobile_points", return_value=scraped_aragon)
+    mocker.patch(
+        "main.comunidad_valenciana.scrape_mobile_points",
+        return_value=scraped_valencia,
+    )
+    mocker.patch("main.cataluna.scrape_mobile_points", return_value=scraped_cataluna)
+    mocker.patch("main.galicia.scrape_mobile_points", return_value=scraped_galicia)
+    mocker.patch(
+        "main.pais_vasco.scrape_mobile_points", return_value=scraped_pais_vasco
+    )
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
+    mocker.patch("main.place_candidate", return_value=None)
+    mocker.patch("main.pd.read_json", return_value=NO_LOCATION_OVERRIDES)
     mocker.patch("main.geocode_mobile_points", side_effect=fake_geocode_mobile)
     mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
     mock_to_db = mocker.patch("main.to_db")
@@ -236,4 +399,330 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         "Comunidad de Madrid",
         "Castilla y León",
         "Castilla-La Mancha",
+        "Aragón",
+        "Comunidad Valenciana",
+        "Cataluña",
+        "Galicia",
+        "País Vasco",
     }
+
+
+def test_scrape_mobile_points_aragon_builds_title_and_venue_candidates(mocker):
+    scraped = pd.DataFrame(
+        {
+            "title": ["Sariñena, en el Centro de Salud", "Amazon Data Huesca"],
+            "who": ["Sariñena", "Amazon Data Huesca"],
+            "venue": ["Centro de Salud", None],
+            "fecha": ["28/10/2026", "05/11/2026"],
+            "horario": ["17:30 a 21:00", "09:30 a 13:00"],
+            "url": ["https://bancosangrearagon.org/extraccion/a/"] * 2,
+        }
+    )
+
+    captured = {}
+
+    def fake_geocode_points(df, geocoding_cache, address_columns):
+        captured["address_columns"] = address_columns
+        captured["df"] = df.copy()
+        df["longitude"] = -0.1
+        df["latitude"] = 41.8
+        return df
+
+    mocker.patch("main.aragon.scrape_mobile_points", return_value=scraped)
+    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
+    mocker.patch("main.pd.read_json", return_value=NO_LOCATION_OVERRIDES)
+    mocker.patch(
+        "main.place_candidate",
+        side_effect=lambda query, expected, cache, bounds: (
+            main.PLACE_CACHE_PREFIX + query if expected == "Sariñena" else None
+        ),
+    )
+    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+
+    df = main.scrape_mobile_points_aragon()
+
+    assert captured["address_columns"] == [
+        "address_title",
+        "address_venue",
+        "place_title",
+    ]
+    seen = captured["df"]
+    assert seen["address_title"].iloc[0] == (
+        "Sariñena, en el Centro de Salud, Aragón, Spain"
+    )
+    assert seen["address_venue"].iloc[0] == "Centro de Salud Sariñena, Aragón, Spain"
+    # No ", en <venue>" part -> no venue candidate
+    assert pd.isna(seen["address_venue"].iloc[1])
+    assert seen["place_title"].iloc[0] == "place: Sariñena, en el Centro de Salud"
+    assert pd.isna(seen["place_title"].iloc[1])
+    assert df["name"].iloc[0] == "Equipo móvil en Sariñena, en el Centro de Salud"
+    assert df["opening_hours"].iloc[0] == "2026 Oct 28 17:30-21:00"
+
+
+def test_apply_location_overrides_matches_title_or_who():
+    df = pd.DataFrame(
+        {
+            "title": [
+                "Delegación de Hacienda, en el Sótano -1",
+                "Delegación de Hacienda, en la Planta 2",
+                "Biota, en el Antiguo Matadero",
+                "Biota, en el Centro de Salud",
+                "Sariñena, en el Centro de Salud",
+            ],
+            "who": [
+                "Delegación de Hacienda",
+                "Delegación de Hacienda",
+                "Biota",
+                "Biota",
+                "Sariñena",
+            ],
+            "longitude": [0.0] * 5,
+            "latitude": [0.0] * 5,
+        }
+    )
+    overrides = pd.DataFrame(
+        {
+            "match": ["Delegación de Hacienda", "Biota, en el Antiguo Matadero"],
+            "lugar": ["Agencia Tributaria", "Ayuntamiento de Biota"],
+            "latitude": [41.65, 42.26],
+            "longitude": [-0.89, -1.19],
+        }
+    )
+
+    df = main.apply_location_overrides(df, overrides, ["who", "title"])
+
+    # Organization overrides cover any room; town overrides only that venue
+    assert df["latitude"].tolist() == [41.65, 41.65, 42.26, 0.0, 0.0]
+    assert df["longitude"].tolist() == [-0.89, -0.89, -1.19, 0.0, 0.0]
+
+
+def test_scrape_mobile_points_valencia_flags_restriction_and_plasma(mocker):
+    scraped = pd.DataFrame(
+        {
+            "fecha": ["28/10/2026", "28/10/2026"],
+            "poblacion": ["CASTELLÓ DE LA PLANA", "ELCHE"],
+            "ubicacion": ["CASTELLÓN-PROP ...", "ELCHE-SOLO DONACIÓN DE PLASMA ..."],
+            "horario": ["09:30-13:30, 16:30-20:30", "16:30-21:00"],
+            "province": ["castellon", "alicante"],
+            "venue": ["PROP", "ELCHE HOSPITAL GENERAL"],
+            # NaN, not None: what a missing street address is after the
+            # crawler's DataFrame join — must fall back to the venue
+            "direccion": ["AVDA. HERMANOS BOU, S/N", float("nan")],
+            "restriction": ["(SOLO EMPLEADOS)", None],
+            "plasma_only": [False, True],
+        }
+    )
+
+    captured = {}
+
+    def fake_geocode_points(df, geocoding_cache, address_columns):
+        captured["df"] = df.copy()
+        df["longitude"] = -0.04
+        df["latitude"] = 39.98
+        return df
+
+    mocker.patch("main.comunidad_valenciana.scrape_mobile_points", return_value=scraped)
+    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
+    mocker.patch("main.place_candidate", return_value=None)
+    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+
+    df = main.scrape_mobile_points_valencia()
+
+    assert df["name"].tolist() == [
+        "Equipo móvil en PROP (SOLO EMPLEADOS)",
+        "Equipo móvil en ELCHE HOSPITAL GENERAL",
+    ]
+    assert df["localidad"].tolist() == ["Castelló De La Plana", "Elche"]
+    assert df["sangre"].tolist() == [True, False]
+    assert df["plasma"].tolist() == [False, True]
+    assert df["opening_hours"].iloc[0] == "2026 Oct 28 09:30-13:30,16:30-20:30"
+    assert captured["df"]["address_direccion"].iloc[1] == (
+        "ELCHE HOSPITAL GENERAL, Elche, Comunidad Valenciana, Spain"
+    )
+
+
+def test_scrape_mobile_points_cataluna_skips_places_for_mobile_units(mocker):
+    scraped = pd.DataFrame(
+        {
+            "localidad": ["Gavà", "Vielha e Mijaran"],
+            "venue": ["Unidad móvil", "Palau d'Esports"],
+            "direccion": ["Pl. Jaume Balmes", "Av. Garona, 35"],
+            "fecha": ["28/10/2026", "27/10/2026"],
+            "sangre": [True, False],
+            "plasma": [False, True],
+            "url": ["https://www.bancsang.net/x/", "https://www.bancsang.net/y/"],
+            "horario": ["De 17:00 a 21:00", None],
+        }
+    )
+    captured = {}
+
+    def fake_refresh(queries, cache, bounds):
+        captured["queries"] = queries
+        return cache
+
+    def fake_geocode_points(df, geocoding_cache, address_columns):
+        df["longitude"] = 2.0
+        df["latitude"] = 41.3
+        return df
+
+    mocker.patch("main.cataluna.scrape_mobile_points", return_value=scraped)
+    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("main.refresh_places_cache", side_effect=fake_refresh)
+    mocker.patch("main.place_candidate", return_value=None)
+    mocker.patch("main.pd.read_json", return_value=NO_LOCATION_OVERRIDES)
+    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+
+    df = main.scrape_mobile_points_cataluna()
+
+    # The bus stop's venue text isn't searched; its street address is the spot
+    assert captured["queries"] == {"Palau d'Esports, Vielha e Mijaran"}
+    assert df["sangre"].tolist() == [True, False]
+    assert df["opening_hours"].iloc[0] == "2026 Oct 28 17:00-21:00"
+    # Plasma-only stops have no published hours
+    assert pd.isna(df["opening_hours"].iloc[1])
+
+
+def test_scrape_mobile_points_cataluna_pins_by_venue_or_street(mocker):
+    scraped = pd.DataFrame(
+        {
+            "localidad": ["Subirats", "Badalona", "Badalona"],
+            "venue": ["Ateneu (Ordal)", "Unidad móvil", "Unidad móvil"],
+            "direccion": ["Pl. del Ateneu, s/n", "Pl. de la Plana", "Pl. Pep Ventura"],
+            "fecha": ["31/10/2026"] * 3,
+            "sangre": [True] * 3,
+            "plasma": [False] * 3,
+            "url": ["https://www.bancsang.net/x/"] * 3,
+            "horario": ["De 17:00 a 21:00"] * 3,
+        }
+    )
+    overrides = pd.DataFrame(
+        {
+            "match": ["Ateneu (Ordal), Subirats", "Pl. de la Plana, Badalona"],
+            "lugar": ["Ateneu Ordalenc", "Plaça de la Plana"],
+            "latitude": [41.3955, 41.4469],
+            "longitude": [1.8496, 2.2451],
+        }
+    )
+
+    def fake_geocode_points(df, geocoding_cache, address_columns):
+        df["longitude"] = 0.0
+        df["latitude"] = 0.0
+        return df
+
+    mocker.patch("main.cataluna.scrape_mobile_points", return_value=scraped)
+    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("main.refresh_places_cache", side_effect=lambda q, c, b: c)
+    mocker.patch("main.place_candidate", return_value=None)
+    mocker.patch("main.pd.read_json", return_value=overrides)
+    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+
+    df = main.scrape_mobile_points_cataluna()
+
+    # Venue-keyed pin, street-keyed pin, and a different bus stop in the
+    # same town left alone
+    assert df["latitude"].tolist() == [41.3955, 41.4469, 0.0]
+
+
+def test_scrape_mobile_points_galicia_builds_queries_and_marks_provisional(mocker):
+    scraped = pd.DataFrame(
+        {
+            "area": ["ÁREA SANITARIA A CORUÑA E CEE"] * 2,
+            "fecha": ["23/10/2026", "11/11/2026"],
+            "concello": ["Sada", "A Coruña"],
+            "lugar": ["SADA", "Bº NOVO MESOIRO (A CORUÑA)"],
+            "direccion": [
+                "UNIDADE MÓBIL DIANTE DA CASA DA XUVENTUDE",
+                "UNIDADE MÓBIL NA ROTONDA",
+            ],
+            "place_text": ["CASA DA XUVENTUDE", "ROTONDA"],
+            "horario": ["09:45 a 14:30 e 15:45 a 21:00", "15:30 a 21:00"],
+            "provisional": [False, True],
+            "url": ["https://ados.sergas.gal/cartafol/proximos-desprazamentos"] * 2,
+        }
+    )
+    overrides = pd.DataFrame(
+        {
+            "match": ["ROTONDA, A Coruña"],
+            "lugar": ["Rotonda de Mesoiro"],
+            "latitude": [43.33],
+            "longitude": [-8.43],
+        }
+    )
+    captured = {}
+
+    def fake_refresh(queries, cache, bounds):
+        captured["queries"] = queries
+        return cache
+
+    def fake_place_candidate(query, expected, cache, bounds):
+        captured.setdefault("expected", []).append(expected)
+        return "place: " + query if query.startswith("CASA") else None
+
+    def fake_geocode_points(df, geocoding_cache, address_columns):
+        captured["best_query"] = df[address_columns].tolist()
+        df["longitude"] = -8.3
+        df["latitude"] = 43.3
+        return df
+
+    mocker.patch("main.galicia.scrape_mobile_points", return_value=scraped)
+    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("main.refresh_places_cache", side_effect=fake_refresh)
+    mocker.patch("main.place_candidate", side_effect=fake_place_candidate)
+    mocker.patch("main.pd.read_json", return_value=overrides)
+    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+
+    df = main.scrape_mobile_points_galicia()
+
+    # A place that's just the concello isn't repeated; a neighbourhood loses
+    # its "Bº" marker and parenthesized town
+    assert captured["queries"] == {
+        "CASA DA XUVENTUDE, Sada",
+        "ROTONDA, Novo Mesoiro, A Coruña",
+    }
+    assert captured["expected"] == ["SADA/Sada", "NOVO MESOIRO/A Coruña"]
+    # An accepted Places result wins outright; otherwise the geocode is used
+    assert captured["best_query"] == [
+        "place: CASA DA XUVENTUDE, Sada",
+        "ROTONDA, Novo Mesoiro, A Coruña, Galicia, Spain",
+    ]
+    assert df["name"].tolist() == [
+        "Equipo móvil en Sada",
+        "Equipo móvil en Bº Novo Mesoiro (A Coruña) (provisional)",
+    ]
+    assert df["latitude"].tolist() == [43.3, 43.33]
+    assert df["opening_hours"].iloc[0] == "2026 Oct 23 09:45-14:30,15:45-21:00"
+
+
+def test_title_galicia_name_keeps_particles_lowercase():
+    assert main.title_galicia_name("O BARCO DE VALDEORRAS") == "O Barco de Valdeorras"
+    assert main.title_galicia_name("ZONA DA FERRARÍA") == "Zona da Ferraría"
+    assert main.title_galicia_name("DE PONTEVEDRA") == "De Pontevedra"
+
+
+def test_scrape_mobile_points_pais_vasco_uses_listing_coords(mocker):
+    scraped = pd.DataFrame(
+        {
+            "province": ["Bizkaia", "Bizkaia"],
+            "localidad": ["Bilbao", "Bilbao"],
+            "lugar": ["Bilbao Bombero Etxaniz - Solo Plasma/Cita", "Plaza Circular"],
+            "direccion": ["Plaza Bombero Etxaniz 1", "Plaza Circular"],
+            "latitude": [43.2584, 43.2613],
+            "longitude": [-2.9398, -2.9275],
+            "fecha": ["27/10/2026", "27/10/2026"],
+            "horario": ["08:30-13:00, 14:00-18:30", "09:15-14:00"],
+            "plasma_only": [True, False],
+            "url": ["https://donantesdesangre.eus/donde-donar/"] * 2,
+        }
+    )
+    mocker.patch("main.pais_vasco.scrape_mobile_points", return_value=scraped)
+    geocode = mocker.patch("main.geocode_points")
+
+    df = main.scrape_mobile_points_pais_vasco()
+
+    geocode.assert_not_called()
+    assert df["latitude"].tolist() == [43.2584, 43.2613]
+    assert df["sangre"].tolist() == [False, True]
+    assert df["plasma"].tolist() == [True, False]
+    assert df["opening_hours"].iloc[0] == "2026 Oct 27 08:30-13:00,14:00-18:30"

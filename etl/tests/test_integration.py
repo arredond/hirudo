@@ -140,7 +140,7 @@ def test_blood_levels_returns_all_types():
     assert set(df["blood_type"]) == ALL_BLOOD_TYPES, (
         f"Unexpected blood types: {sorted(df['blood_type'])}"
     )
-    assert set(df["status"]) <= {"urgent", "soon", "stable"}
+    assert set(df["status"]) <= {"red", "orange", "green"}
     assert df["level"].between(1, 3).all()
     assert df["label"].str.len().gt(0).all()
 

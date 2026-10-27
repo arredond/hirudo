@@ -13,12 +13,14 @@ URL_MOBILE_POINTS = urllib.parse.urljoin(URL_BASE, "moviles.aspx")
 
 # The "Semáforo de necesidades" component on the national donation site renders
 # each blood type with a Bulma background class that encodes how urgently that
-# type is needed. Mapping to (status, level) with level 1 = most urgent.
+# type is needed. Mapping to (status, level): status is the colour the site
+# shows (its "warning" is orange, #f5a623), so the app can paint each region's
+# own scale as is; level 1 = most urgent.
 URL_BLOOD_LEVELS = "https://www.donarsangre.org/"
 BLOOD_LEVEL_STATUS = {
-    "has-background-danger": ("urgent", 1),
-    "has-background-warning": ("soon", 2),
-    "has-background-success": ("stable", 3),
+    "has-background-danger": ("red", 1),
+    "has-background-warning": ("orange", 2),
+    "has-background-success": ("green", 3),
 }
 
 SESSION = requests.Session()

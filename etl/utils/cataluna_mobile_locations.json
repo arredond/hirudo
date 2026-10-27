@@ -1,0 +1,44 @@
+[
+    {
+        "match": "Palau d'Esports, Vielha e Mijaran",
+        "lugar": "Palai de Gèu, Av. Garona 33, Vielha",
+        "latitude": 42.701101,
+        "longitude": 0.801468
+    },
+    {
+        "match": "Ateneu (Ordal), Subirats",
+        "lugar": "Ateneu Ordalenc, Plaça de l'Ateneu, Ordal",
+        "latitude": 41.395549,
+        "longitude": 1.849628
+    },
+    {
+        "match": "Centro Cultural La Torreta, La Roca del Vallès",
+        "lugar": "Centre Cultural La Torreta, La Torreta (La Roca del Vallès)",
+        "latitude": 41.603148,
+        "longitude": 2.299706
+    },
+    {
+        "match": "Centro Cultural \"Les Olletes\", Sant Privat d'en Bas",
+        "lugar": "Local social Les Olletes, El Mallol (La Vall d'en Bas)",
+        "latitude": 42.147913,
+        "longitude": 2.444632
+    },
+    {
+        "match": "Pabellón Deportivo-Sala Annexe, Sant Esteve d'en Bas",
+        "lugar": "Pavelló municipal de la Vall d'en Bas, C. Piscina, Sant Esteve d'en Bas",
+        "latitude": 42.119591,
+        "longitude": 2.453499
+    },
+    {
+        "match": "Pl. Jaume Ferrer, 1, La Fuliola",
+        "lugar": "La Fuliola village centre (the Llar del Jubilat / Pl. Jaume Ferrer aren't on Google Maps; the street geocode landed in Miralcamp)",
+        "latitude": 41.711458,
+        "longitude": 1.005972
+    },
+    {
+        "match": "Pl. de la Plana, Badalona",
+        "lugar": "Plaça de la Plana, Badalona (donation bus; the street geocode landed near Cerdanyola)",
+        "latitude": 41.446863,
+        "longitude": 2.245117
+    }
+]

@@ -116,12 +116,12 @@ def test_scrape_blood_levels_maps_background_classes():
     assert len(df) == 3
 
     by_type = df.set_index("blood_type")
-    assert by_type.loc["0-", "status"] == "urgent"
+    assert by_type.loc["0-", "status"] == "red"
     assert by_type.loc["0-", "level"] == 1
     assert by_type.loc["0-", "label"] == "Dona hoy"
-    assert by_type.loc["A+", "status"] == "soon"
+    assert by_type.loc["A+", "status"] == "orange"
     assert by_type.loc["A+", "level"] == 2
-    assert by_type.loc["AB+", "status"] == "stable"
+    assert by_type.loc["AB+", "status"] == "green"
     assert by_type.loc["AB+", "level"] == 3
 
 
@@ -156,7 +156,7 @@ def test_scrape_blood_levels_flattens_and_strips_text():
 
     assert df.loc[0, "blood_type"] == "B+"
     assert df.loc[0, "label"] == "Dona en los próximos días"
-    assert df.loc[0, "status"] == "soon"
+    assert df.loc[0, "status"] == "orange"
 
 
 # ---------------------------------------------------------------------------
