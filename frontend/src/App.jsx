@@ -178,6 +178,25 @@ export default function App() {
           {selectedPoint && (
             <Popup point={selectedPoint} onClose={() => setSelectedPoint(null)} />
           )}
+          {/* An empty "Abierto ahora" map (e.g. late at night) otherwise looks
+              exactly like a broken one — say so, and offer today's full list.
+              Only once both point sets have loaded, so it doesn't flash. */}
+          {showOnlyOpenNow &&
+            fixedPoints.length > 0 &&
+            !loadingMobile &&
+            visibleFixedPoints.length + visibleMobilePoints.length === 0 && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center p-4 pointer-events-none">
+                <div className="pointer-events-auto bg-white rounded-2xl shadow-md px-5 py-4 max-w-xs text-center">
+                  <p className="text-sm font-semibold text-gray-900">Ahora mismo no hay ningún punto abierto</p>
+                  <button
+                    onClick={() => setSelectedDate(dayjs())}
+                    className="mt-3 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+                  >
+                    Ver los puntos de hoy
+                  </button>
+                </div>
+              </div>
+            )}
         </div>
 
         {/* Floating controls: date tabs + list on the left, filter chips on the
