@@ -6,6 +6,7 @@ each uploaded frame carries the region column for both regions.
 
 import geopandas as gpd
 import pandas as pd
+import pytest
 
 import main
 
@@ -164,6 +165,18 @@ def test_process_fixed_points_stamps_region(mocker):
             "url": ["https://donasturias.org/puntos-fijos/"],
         }
     )
+    scraped_melilla = pd.DataFrame(
+        {
+            "name": ["Centro de Transfusión"],
+            "localidad": ["Melilla"],
+            "direccion": ["C. Cuerpo Nacional de Policia, n 4"],
+            "telefono": ["951 320 224 y 951 320 225"],
+            "horario": ["De 8:30 h. a 14:30 h."],
+            "url": [
+                "https://ingesa.sanidad.gob.es/melilla/Area-Sanitaria/Centros-de-Donaci-n.html"
+            ],
+        }
+    )
 
     def fake_geocode_points(df, geocoding_cache, address_column):
         df["longitude"] = -2.0
@@ -202,6 +215,7 @@ def test_process_fixed_points_stamps_region(mocker):
     mocker.patch("main.navarra.scrape_fixed_points", return_value=scraped_navarra)
 
     mocker.patch("main.asturias.scrape_fixed_points", return_value=scraped_asturias)
+    mocker.patch("main.melilla.scrape_fixed_points", return_value=scraped_melilla)
     mocker.patch("main.refresh_places_cache", side_effect=lambda q, cache, b: cache)
     mocker.patch("main.place_candidate", return_value=None)
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
@@ -230,7 +244,44 @@ def test_process_fixed_points_stamps_region(mocker):
         "Cantabria",
         "Comunidad Foral de Navarra",
         "Principado de Asturias",
+        "Melilla",
     }
+
+
+def test_scrape_fixed_points_melilla_geocodes_and_uses_hand_built_hours(mocker):
+    scraped = pd.DataFrame(
+        {
+            "name": ["Centro de Transfusión"],
+            "localidad": ["Melilla"],
+            "direccion": ["C. Cuerpo Nacional de Policia, n 4"],
+            "telefono": ["951 320 224 y 951 320 225"],
+            "horario": ["De 8:30 h. a 14:30 h."],
+            "url": ["https://ingesa.sanidad.gob.es/melilla/"],
+        }
+    )
+    lookup = {"Centro de Transfusión": "Mo-Fr 08:30-14:30; PH off"}
+
+    def fake_geocode_points(df, geocoding_cache, address_column):
+        assert address_column == "full_address"
+        assert df["full_address"].iloc[0] == (
+            "C. Cuerpo Nacional de Policia, n 4, Melilla, Spain"
+        )
+        df["longitude"] = -2.9395
+        df["latitude"] = 35.2904
+        return df
+
+    mocker.patch("main.melilla.scrape_fixed_points", return_value=scraped)
+    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("main.load_opening_hours_fijos", return_value=lookup)
+
+    df = main.scrape_fixed_points_melilla()
+
+    assert df["opening_hours"].iloc[0] == "Mo-Fr 08:30-14:30; PH off"
+    assert df["region"].iloc[0] == "Melilla"
+    assert "full_address" not in df.columns
+    assert df["latitude"].iloc[0] == pytest.approx(35.2904)
+    assert df["gmaps_url"].iloc[0] == "https://www.google.com/maps?q=35.2904+-2.9395"
 
 
 def test_scrape_mobile_points_madrid_fixes_known_horario_typo(mocker):

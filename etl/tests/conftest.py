@@ -458,6 +458,25 @@ CATALUNA_STOP_HTML = """
 </div></body></html>
 """
 
+# Trimmed from ingesa.sanidad.gob.es/melilla/.../Centros-de-Donaci-n.html (the
+# "Centro de Donación" block, verbatim markup including its nested <p>s).
+MELILLA_DONACION_HTML = r"""
+<html><body>
+<div class="text-img">
+    <h2>Centro de Donación</h2>
+
+          <p><p><strong>Centro de Transfusi&oacute;n</strong><br />
+Ubicado en el Centro de Salud ZONA CENTRO<br />
+Tlfs: 951 320 224 y 951 320 225<br />
+ctransfusion.ae.melilla@ingesa.sanidad.gob.es<br />
+C.\ Cuerpo Nacional de Policia, n 4<br />
+Nuestro horario: De&nbsp;<strong>8:30 h. a 14:30 h.</strong></p>
+</p>
+
+    </div>
+</body></html>
+"""
+
 # Trimmed from https://ados.sergas.gal/cartafol/ADOS-locais (two of seven
 # accordion blocks: one with GPS coordinates, one without)
 GALICIA_FIXED_POINTS_HTML = """
