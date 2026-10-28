@@ -9,6 +9,17 @@ Each region's scraper lives at `etl/utils/crawl/<region>.py`; see `main.py`'s
 `REGION_*` constants and `scrape_*_<region>` functions for how a region is
 wired in once its sources are known.
 
+Where a region's scraped pages don't say which fixed points take plasma but
+its official plasma page does, those points are listed by hand in
+`etl/utils/plasma_fijos.json` (name -> source URL). As of 2026-10-28 that
+covers Andalucía (all 8 CTTCs), Canarias (the 4 points on
+efectodonacion.com/plasma), Cantabria (Valdecilla), Castilla y León (every
+fixed point in a provincial capital), Illes Balears (Palma), La Rioja and
+Asturias (HUCA). Nothing official was found for Castilla-La Mancha's hospital
+points or Melilla; País Vasco's plasma page names provinces, not centres.
+Points that only take donors by appointment can likewise be listed by hand in
+`etl/utils/cita_previa_fijos.json`.
+
 ## Implemented
 
 ### Comunidad de Madrid

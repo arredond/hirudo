@@ -4,6 +4,8 @@ These mock every I/O boundary (scraping, geocoding, DB) and only check that
 each uploaded frame carries the region column for both regions.
 """
 
+import pathlib
+
 import geopandas as gpd
 import pandas as pd
 import pytest
@@ -1133,3 +1135,13 @@ def test_flag_appointments_combines_text_names_and_scraper_flags():
     df = main.flag_appointments(df, {"Hospital Clínic"})
 
     assert df["cita_previa"].tolist() == [True, True, True, False]
+
+
+def test_plasma_fijos_maps_names_to_source_urls(monkeypatch):
+    # main loads its data files relative to etl/, the Cloud Run job's cwd
+    monkeypatch.chdir(pathlib.Path(main.__file__).parent)
+    entries = main.load_plasma_fijos()
+
+    assert entries
+    assert all(isinstance(name, str) and name for name in entries)
+    assert all(url.startswith("https://") for url in entries.values())

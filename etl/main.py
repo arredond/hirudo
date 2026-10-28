@@ -760,6 +760,16 @@ def load_cita_previa_fijos() -> set:
         return set(json.load(f))
 
 
+def load_plasma_fijos() -> dict:
+    """Load the hand-maintained fixed points that take plasma, name -> source URL.
+
+    For regions whose scraped pages don't say which fixed points take plasma,
+    but whose official plasma page does (each entry names its source).
+    """
+    with open("utils/plasma_fijos.json", encoding="utf-8") as f:
+        return json.load(f)
+
+
 def flag_appointments(df: pd.DataFrame, names: set = frozenset()) -> pd.DataFrame:
     """Set "cita_previa": whether a point only takes donors by appointment.
 
@@ -807,6 +817,7 @@ def process_fixed_points():
         ignore_index=True,
     )
     df = flag_appointments(df, load_cita_previa_fijos())
+    df.loc[df["name"].isin(load_plasma_fijos()), "plasma"] = True
     to_db(gdf_from_df(df), "puntos_fijos")
     log.info("Fixed points: uploaded %d rows", len(df))
 
