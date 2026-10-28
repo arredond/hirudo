@@ -109,9 +109,7 @@ export default function App() {
     [openNowMobilePoints, donationType]
   )
 
-  // Plasma/médula points are a handful out of the full list — easy to miss if the
-  // map happens to be zoomed into an area that doesn't include any of them. Médula
-  // is taken at exactly one point (see puntos_fijos_otras_donaciones.json), so
+  // Médula is taken at exactly one point (see puntos_fijos_otras_donaciones.json), so
   // rather than just fitting it like any other single marker, select it
   // automatically; MapView frames it together with userLocation via focusCompanion
   // below (whenever it's known — including if it resolves after this selection).
@@ -120,16 +118,6 @@ export default function App() {
     const centro = fixedPoints.find(f => Boolean(f.properties?.medula))
     if (centro) setSelectedPoint(centro)
   }, [donationType, fixedPoints])
-
-  // Plasma: just zoom out to fit whatever's currently visible, once, right when
-  // the filter is picked — deliberately not re-fit on every later points update
-  // while it stays selected, so it doesn't fight the user's own panning/zooming.
-  useEffect(() => {
-    if (donationType !== 'plasma') return
-    const coords = [...visibleFixedPoints, ...visibleMobilePoints].map(f => f.geometry.coordinates)
-    mapViewRef.current?.fitToCoords(coords)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [donationType])
 
   // The region named in the header title (and driving which region's blood
   // levels are fetched) — whichever region's real boundary the map center
