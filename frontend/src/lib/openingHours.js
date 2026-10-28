@@ -7,8 +7,16 @@ import OpeningHours from 'opening_hours'
 // Nominatim call needed. Without a known region, `state` is simply omitted:
 // opening_hours.js still applies nationwide (non-state-restricted)
 // holidays, which is safer than guessing a region.
+// The few regions whose name in opening_hours.js differs from ours.
+const HOLIDAY_STATE_NAMES = {
+  'Comunidad Foral de Navarra': 'Navarra',
+  'Illes Balears': 'Islas Baleares',
+  'Principado de Asturias': 'Asturias',
+}
+
 function nominatimObjectFor(region) {
-  return { address: { country_code: 'es', ...(region ? { state: region } : {}) } }
+  const state = HOLIDAY_STATE_NAMES[region] ?? region
+  return { address: { country_code: 'es', ...(state ? { state } : {}) } }
 }
 
 // Hand-maintained sentinels in etl/utils/opening_hours_fijos.json, checked before
