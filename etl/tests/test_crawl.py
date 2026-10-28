@@ -6,7 +6,7 @@ import certifi
 import pytest
 import responses
 from utils.crawl import crawl
-from utils.crawl.crawl import gmaps_url_from_coords
+from utils.crawl.crawl import gmaps_url_from_coords, title_name
 
 
 def test_gmaps_url_from_coords():
@@ -78,3 +78,9 @@ def test_ca_bundle_with_appends_extra_cert_to_certifi_roots():
     assert bundle.count("BEGIN CERTIFICATE") == (
         pathlib.Path(certifi.where()).read_text().count("BEGIN CERTIFICATE") + 1
     )
+
+
+def test_title_name_keeps_spanish_particles_lowercase():
+    assert title_name("ALCALÁ DE GUADAÍRA") == "Alcalá de Guadaíra"
+    assert title_name("PUEBLA DEL RÍO") == "Puebla del Río"
+    assert title_name("JEREZ DE LA FRONTERA") == "Jerez de la Frontera"

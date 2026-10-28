@@ -215,9 +215,36 @@ wired in once its sources are known.
   (<https://www.bancosangrerioja.org/donacion/donacion-aferesis>); the flag is
   left unset, as for the other regions' fixed points.
 
+### Andalucía
+- Entry page: <https://www.juntadeandalucia.es/temas/salud/servicios/donacion-sangre.html>
+  links each province's Centro de transfusión, tejidos y células (CTTC),
+  all on sspa.juntadeandalucia.es with one template per province
+  (`informacion-por-centros/<id>`): Almería 20585, Cádiz 16502, Córdoba 16503,
+  Granada 16504, Huelva 16505, Jaén 16506, Málaga 16507, Sevilla 16508.
+- Fixed points: each CTTC page's own address (`field--name-field-direccion`,
+  `-codigo-postal`, `-municipio`) and one repeating weekly timetable
+  (`table.center-schedule__table`, one row per weekday). Each province has
+  one fixed point, geocoded from its street address (no coordinates on the
+  page); `opening_hours` is built straight from the weekly table
+  (`opening_hours.parse_weekly_hours`), so there's no hand-built lookup.
+- Mobile points: the same page's "Se puede donar en..." table
+  (`div.center-blood table.views-table`): date (DD-MM-YYYY), town, venue
+  ("Lugar") and hours, a few weeks ahead, server-rendered and unpaginated.
+  Hours come in several styles ("09:00 - 14:30", "DE 17,30 a 21,00", "17 a 21
+  HORAS", "10 a 14 Y 17 a 21 HORAS"), normalized to "HH:MM - HH:MM" before
+  `parse_mobile_hours`. Venues are geocoded from venue + town (like
+  Castilla-La Mancha's), with no Places lookup. Mobile stops don't say
+  whether they take whole blood or plasma, so `sangre`/`plasma` stay unset.
+- Known quirks: "DESDE LAS 17,00 HORAS" (open-ended, no closing time) gets no
+  `opening_hours`; one Almería stop lists "Plasma Centro de Transfusion" as
+  its town.
+- Blood levels: none. The CTTC pages and the entry page show no reserve or
+  semáforo level, so there's no `scrape_blood_levels_andalucia`.
+- Boundary polygon: mainland Andalucía only (the Ceuta/Melilla and island
+  slivers in the source are dropped).
+
 ## Not yet researched
 
-- Andalucía
 - Principado de Asturias
 - Illes Balears
 - Canarias

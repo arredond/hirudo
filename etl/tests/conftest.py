@@ -806,3 +806,71 @@ LA_RIOJA_STOP_NO_MAP_HTML = """
 </div>
 </body></html>
 """
+
+# Trimmed from https://www.sspa.juntadeandalucia.es/servicioandaluzdesalud/el-sas/servicios-y-centros/informacion-por-centros/16508
+# (Centro de transfusión de Sevilla): the centre's own address and weekly
+# timetable, plus its "Se puede donar en..." mobile collections. The last
+# three rows show the hour formats the source mixes in ("DE 17 A 21 H ( P )",
+# "09:30 a 13:30 y 16:30 a 20:30", "DESDE LAS 17,00 HORAS").
+ANDALUCIA_CENTER_HTML = """
+<html><body>
+<h1 class="center-label__title center-label__title--main">
+  Centro de transfusión, tejidos y células de Sevilla
+</h1>
+<div class="center-address__address-postal">
+  <div class="field__label">Dirección postal</div>
+  <div class="field field--name-field-direccion field__item"><p>Avda. Manuel Siurot, 39</p></div>
+  <div class="field field--name-field-codigo-postal field__item">41013</div>
+  <div class="field field--name-field-municipio field__item">Sevilla</div>
+</div>
+<div class="center-address__schedules">
+  <table class="center-schedule__table">
+    <tbody>
+      <tr>
+        <td>Lunes</td>
+        <td><ul class="center-schedule__list">
+          <li class="center-schedule__item">08:30 - 14:30</li>
+          <li class="center-schedule__item">15:30 - 21:30</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td>Sábado</td>
+        <td><ul class="center-schedule__list">
+          <li class="center-schedule__item">09:00 - 15:00</li>
+        </ul></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="center-blood">
+  <p class="center-blood__title">Se puede donar en...</p>
+  <div class="views-element-container">
+    <table class="views-table views-view-table cols-5">
+      <thead>
+        <tr>
+          <th>Fecha</th><th>Día</th><th>Localidad</th><th>Lugar</th><th>Hora</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>28-10-2026</td><td>X</td><td>DOS HERMANAS</td>
+          <td>HERMANDAD DEL ROCÍO</td><td>17:00 - 21:00</td>
+        </tr>
+        <tr>
+          <td>29-10-2026</td><td>J</td><td>ALCALÁ DE GUADAIRA</td>
+          <td>CEIP OROMANA</td><td>DE 17 A 21 H ( P )</td>
+        </tr>
+        <tr>
+          <td>29-10-2026</td><td>J</td><td>CORIA DEL RÍO</td>
+          <td>CENTRO DE ESTUDIOS CEPER</td><td>09:30 a 13:30 y 16:30 a 20:30</td>
+        </tr>
+        <tr>
+          <td>30-10-2026</td><td>V</td><td>VILLAMANRIQUE DE LA CONDESA</td>
+          <td>BIBLIOTECA</td><td>DESDE LAS 17,00 HORAS</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body></html>
+"""

@@ -159,6 +159,20 @@ def test_process_fixed_points_stamps_region(mocker):
 
     mocker.patch("main.pd.read_json", side_effect=[manual_points, other_donations])
     mocker.patch("main.madrid.scrape_fixed_points", return_value=scraped_madrid)
+    mocker.patch(
+        "main.andalucia.scrape_fixed_points",
+        return_value=pd.DataFrame(
+            {
+                "name": ["Centro de transfusión, tejidos y células de Sevilla"],
+                "localidad": ["Sevilla"],
+                "direccion": ["Avda. Manuel Siurot, 39, 41013"],
+                "horario": ["Lunes 08:00 - 21:00"],
+                "schedule": [[("Mo", "08:00 - 21:00")]],
+                "provincia": ["Sevilla"],
+                "url": ["https://www.sspa.juntadeandalucia.es/"],
+            }
+        ),
+    )
     mocker.patch("main.castilla_y_leon.scrape_fixed_points", return_value=scraped_cyl)
     mocker.patch(
         "main.castilla_la_mancha.scrape_fixed_points", return_value=scraped_clm
@@ -189,6 +203,7 @@ def test_process_fixed_points_stamps_region(mocker):
     assert isinstance(uploaded, gpd.GeoDataFrame)
     assert set(uploaded["region"]) == {
         "Comunidad de Madrid",
+        "Andalucía",
         "Castilla y León",
         "Castilla-La Mancha",
         "Aragón",
@@ -436,6 +451,18 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         return df
 
     mocker.patch("main.madrid.scrape_mobile_points", return_value=scraped_madrid)
+    mocker.patch(
+        "main.andalucia.scrape_mobile_points",
+        return_value=pd.DataFrame(
+            {
+                "fecha": ["28/10/2026"],
+                "localidad": ["Dos Hermanas"],
+                "lugar": ["HERMANDAD DEL ROCÍO"],
+                "horario": ["17:00 - 21:00"],
+                "url": ["https://www.sspa.juntadeandalucia.es/"],
+            }
+        ),
+    )
     mocker.patch("main.castilla_y_leon.scrape_mobile_points", return_value=scraped_cyl)
     mocker.patch(
         "main.castilla_la_mancha.scrape_mobile_points", return_value=scraped_clm
@@ -469,6 +496,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
     assert "region" in uploaded.columns
     assert set(uploaded["region"]) == {
         "Comunidad de Madrid",
+        "Andalucía",
         "Castilla y León",
         "Castilla-La Mancha",
         "Aragón",

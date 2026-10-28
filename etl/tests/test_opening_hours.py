@@ -1,6 +1,6 @@
 """Tests for opening_hours.py — building OSM opening_hours strings for mobile points."""
 
-from utils.opening_hours import parse_mobile_hours
+from utils.opening_hours import parse_mobile_hours, parse_weekly_hours
 
 
 def test_parse_mobile_hours_single_range():
@@ -44,3 +44,15 @@ def test_parse_mobile_hours_unparseable_horario_returns_none():
 
 def test_parse_mobile_hours_unparseable_fecha_returns_none():
     assert parse_mobile_hours("not-a-date", "17:00 a 20:45") is None
+
+
+def test_parse_weekly_hours_closes_unlisted_days_and_splits_ranges():
+    schedule = [("Mo", "08:30 - 14:30 | 15:30 - 21:30"), ("Sa", "09:00 - 15:00")]
+    assert parse_weekly_hours(schedule) == "Mo 08:30-14:30,15:30-21:30; Sa 09:00-15:00"
+
+
+def test_parse_weekly_hours_skips_days_without_hours():
+    assert parse_weekly_hours([("Mo", "Cerrado"), ("Tu", "09:00 a 14:00")]) == (
+        "Tu 09:00-14:00"
+    )
+    assert parse_weekly_hours([("Mo", "Cerrado")]) is None

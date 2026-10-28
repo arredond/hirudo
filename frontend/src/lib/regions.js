@@ -5,6 +5,7 @@ import regionBoundaries from '../data/regionBoundaries.json'
 // the option list for the header's
 // region dropdown, so kept in alphabetical order.
 export const REGIONS = [
+  'Andalucía',
   'Aragón',
   'Cantabria',
   'Castilla y León',
