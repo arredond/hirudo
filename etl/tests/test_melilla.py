@@ -14,7 +14,7 @@ def test_parse_fixed_point_reads_name_address_phone_and_hours():
 
     spot = melilla.parse_fixed_point(soup)
 
-    assert spot["name"] == "Centro de Transfusión"
+    assert spot["name"] == "Centro de Transfusión de Melilla"
     assert spot["localidad"] == "Melilla"
     assert spot["direccion"] == "C. Cuerpo Nacional de Policia, n 4"
     assert spot["telefono"] == "951 320 224 y 951 320 225"
@@ -41,7 +41,7 @@ def test_scrape_fixed_points_returns_the_single_spot():
     df = melilla.scrape_fixed_points()
 
     assert len(df) == 1
-    assert df.iloc[0]["name"] == "Centro de Transfusión"
+    assert df.iloc[0]["name"] == "Centro de Transfusión de Melilla"
     assert df.iloc[0]["direccion"] == "C. Cuerpo Nacional de Policia, n 4"
 
 

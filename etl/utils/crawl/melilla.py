@@ -60,7 +60,9 @@ def parse_fixed_point(soup: BeautifulSoup) -> dict:
 
     horario = normalize_whitespace(" ".join(lines[hours_start:]))
     return {
-        "name": normalize_whitespace(label.get_text()),
+        # The page just says "Centro de Transfusión"; the city is appended so
+        # the name (also the opening_hours_fijos.json key) is unambiguous.
+        "name": normalize_whitespace(label.get_text()) + " de Melilla",
         "localidad": LOCALIDAD,
         "direccion": address_line.replace("\\", "").strip(),
         "telefono": phone_line.removeprefix(PHONE_PREFIX).strip(),

@@ -167,7 +167,7 @@ def test_process_fixed_points_stamps_region(mocker):
     )
     scraped_melilla = pd.DataFrame(
         {
-            "name": ["Centro de Transfusión"],
+            "name": ["Centro de Transfusión de Melilla"],
             "localidad": ["Melilla"],
             "direccion": ["C. Cuerpo Nacional de Policia, n 4"],
             "telefono": ["951 320 224 y 951 320 225"],
@@ -251,7 +251,7 @@ def test_process_fixed_points_stamps_region(mocker):
 def test_scrape_fixed_points_melilla_geocodes_and_uses_hand_built_hours(mocker):
     scraped = pd.DataFrame(
         {
-            "name": ["Centro de Transfusión"],
+            "name": ["Centro de Transfusión de Melilla"],
             "localidad": ["Melilla"],
             "direccion": ["C. Cuerpo Nacional de Policia, n 4"],
             "telefono": ["951 320 224 y 951 320 225"],
@@ -259,7 +259,7 @@ def test_scrape_fixed_points_melilla_geocodes_and_uses_hand_built_hours(mocker):
             "url": ["https://ingesa.sanidad.gob.es/melilla/"],
         }
     )
-    lookup = {"Centro de Transfusión": "Mo-Fr 08:30-14:30; PH off"}
+    lookup = {"Centro de Transfusión de Melilla": "Mo-Fr 08:30-14:30; PH off"}
 
     def fake_geocode_points(df, geocoding_cache, address_column):
         assert address_column == "full_address"
