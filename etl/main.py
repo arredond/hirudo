@@ -17,6 +17,7 @@ import pandas as pd
 from utils.crawl import (
     andalucia,
     aragon,
+    asturias,
     cantabria,
     castilla_la_mancha,
     castilla_y_leon,
@@ -63,6 +64,7 @@ REGION_CANTABRIA = "Cantabria"
 REGION_NAVARRA = "Comunidad Foral de Navarra"
 REGION_LA_RIOJA = "La Rioja"
 REGION_ANDALUCIA = "Andalucía"
+REGION_ASTURIAS = "Principado de Asturias"
 
 # Fixed points carry a handful of concepts every region has, under whatever
 # name that region's own source happens to spell them with. Renaming them to
@@ -91,6 +93,7 @@ ARAGON_PLACES_BOUNDS = (39.8, -2.3, 42.95, 0.8)
 VALENCIA_PLACES_BOUNDS = (37.8, -1.6, 40.85, 0.75)
 CATALUNA_PLACES_BOUNDS = (40.5, 0.15, 42.9, 3.35)
 GALICIA_PLACES_BOUNDS = (41.8, -9.35, 43.8, -6.7)
+ASTURIAS_PLACES_BOUNDS = (42.8, -7.25, 43.7, -4.45)
 NAVARRA_PLACES_BOUNDS = (41.85, -2.3, 43.4, -0.65)
 
 # Galician mobile stops' "Lugar de colecta" decorations that aren't part of
@@ -640,6 +643,35 @@ def scrape_fixed_points_la_rioja() -> pd.DataFrame:
     return df
 
 
+def scrape_fixed_points_asturias() -> pd.DataFrame:
+    """Scrape and geocode Principado de Asturias' fixed donation points.
+
+    Each centre's Google Maps embed carries its coordinates, used as-is;
+    only a centre whose embed has none is geocoded from its address (see
+    geocode_points). Hours come from the hand-built opening_hours_fijos.json
+    lookup, keyed by name.
+    """
+    df = asturias.scrape_fixed_points()
+    missing = df["latitude"].isna()
+    df["address_direccion"] = df.apply(
+        lambda row: build_full_address(row["direccion"]), axis=1
+    ).where(missing)
+    page_coords = df[["longitude", "latitude"]]
+    df = geocode_points(
+        df.drop(columns=["longitude", "latitude"]),
+        load_geocoding_cache(),
+        "address_direccion",
+    )
+    df[["longitude", "latitude"]] = page_coords.fillna(df[["longitude", "latitude"]])
+    df["gmaps_url"] = df.apply(crawl.gmaps_url_from_coords, axis=1)
+    opening_hours_lookup = load_opening_hours_fijos()
+    df["opening_hours"] = df.apply(
+        opening_hours_for_fixed_point, lookup=opening_hours_lookup, axis=1
+    )
+    df["region"] = REGION_ASTURIAS
+    return df.drop(columns=["address_direccion"])
+
+
 def process_fixed_points():
     """Scrape, enrich, and upload fixed donation points for every region."""
     df = pd.concat(
@@ -656,6 +688,7 @@ def process_fixed_points():
             scrape_fixed_points_navarra(),
             scrape_fixed_points_la_rioja(),
             scrape_fixed_points_andalucia(),
+            scrape_fixed_points_asturias(),
         ],
         ignore_index=True,
     )
@@ -1350,6 +1383,61 @@ def scrape_mobile_points_la_rioja() -> pd.DataFrame:
     return df[output_cols + ["latitude", "longitude"]]
 
 
+def scrape_mobile_points_asturias() -> pd.DataFrame:
+    """Scrape and geocode Principado de Asturias' mobile donation points.
+
+    Each calendar event is one town and day, and each spot in it (see
+    asturias.py) becomes its own row. The calendar has no coordinates, so
+    two candidates are tried and the best-scoring one kept (see
+    geocode_points): the spot's address via the Geocoding API, and its venue
+    via a Places search, checked to be in the region and the town (see
+    place_candidate). Organization-titled events ("Acuartelamiento Cabo
+    Noval") are checked against that name, so their Places match may be
+    rejected in favour of the address.
+    """
+    df = asturias.scrape_mobile_points()
+    df["address_place"] = df.apply(
+        lambda row: build_full_address(
+            row["direccion"].rstrip(". "), row["localidad"], REGION_ASTURIAS
+        ),
+        axis=1,
+    )
+    df["place_query"] = df["lugar"] + ", " + df["localidad"]
+    geocoding_cache = refresh_places_cache(
+        set(df["place_query"]), load_geocoding_cache(), ASTURIAS_PLACES_BOUNDS
+    )
+    df["place_venue"] = df.apply(
+        lambda row: place_candidate(
+            row["place_query"],
+            row["localidad"],
+            geocoding_cache,
+            ASTURIAS_PLACES_BOUNDS,
+        ),
+        axis=1,
+    )
+    df = geocode_points(df, geocoding_cache, ["address_place", "place_venue"])
+
+    df["name"] = "Equipo móvil en " + df["lugar"]
+    df["opening_hours"] = df.apply(
+        lambda row: parse_mobile_hours(row["fecha"], row["horario"]), axis=1
+    )
+    df["medula"] = False
+    df["region"] = REGION_ASTURIAS
+
+    output_cols = [
+        "name",
+        "localidad",
+        "direccion",
+        "fecha",
+        "horario",
+        "opening_hours",
+        "url",
+        "medula",
+        "region",
+    ]
+    return df[output_cols + ["latitude", "longitude"]]
+
+
 def process_mobile_points():
     """Scrape, geocode, and upload mobile donation points for every region."""
     df = pd.concat(
@@ -1365,6 +1453,7 @@ def process_mobile_points():
             scrape_mobile_points_navarra(),
             scrape_mobile_points_la_rioja(),
             scrape_mobile_points_andalucia(),
+            scrape_mobile_points_asturias(),
         ],
         ignore_index=True,
     )
@@ -1412,6 +1501,14 @@ def scrape_blood_levels_la_rioja() -> pd.DataFrame:
     return df
 
 
+def scrape_blood_levels_asturias() -> pd.DataFrame:
+    """Scrape Principado de Asturias' blood-reserve levels (gauges, read off their needles)."""
+    df = asturias.scrape_blood_levels()
+    df["region"] = REGION_ASTURIAS
+    df["source"] = "donasturias.org"
+    return df
+
+
 def process_blood_levels():
     """Scrape and append blood-reserve levels for every region that has one.
 
@@ -1431,6 +1528,7 @@ def process_blood_levels():
             scrape_blood_levels_galicia(),
             scrape_blood_levels_pais_vasco(),
             scrape_blood_levels_la_rioja(),
+            scrape_blood_levels_asturias(),
         ],
         ignore_index=True,
     )

@@ -2,8 +2,8 @@ import { haversine } from './geo'
 import regionBoundaries from '../data/regionBoundaries.json'
 
 // Every region the ETL covers (the REGION_* constants in etl/main.py) — also
-// the option list for the header's
-// region dropdown, so kept in alphabetical order.
+// the option list for the header's region dropdown, so kept in alphabetical
+// order.
 export const REGIONS = [
   'Andalucía',
   'Aragón',
@@ -17,6 +17,7 @@ export const REGIONS = [
   'Galicia',
   'La Rioja',
   'País Vasco',
+  'Principado de Asturias',
 ]
 
 // regionBoundaries.json holds just these regions' real polygons, trimmed

@@ -874,3 +874,127 @@ ANDALUCIA_CENTER_HTML = """
 </div>
 </body></html>
 """
+
+
+ASTURIAS_FIXED_POINTS_HTML = r"""
+<html><body><main id="main" class="site-main"><div class="wpb_text_column"><div class="wpb_wrapper"><h5 align="center"><strong>H.U.C.A. &#8211; CENTRO COMUNITARIO DE SANGRE Y TEJIDOS DE ASTURIAS</strong></h5>
+<p style="text-align: center;"><strong style="line-height: 1.5em;">H.U.C.A. Hospitalización &#8211; Planta 0. Av. Roma, S/N, 33011, Oviedo, Asturias</strong></p>
+<p style="text-align: center;">Lunes a viernes: 08.30-20.30 h. | Sábados: 10.00-14.00 h.</p>
+<p>&nbsp;</p>
+<p style="text-align: right;"><img fetchpriority="high" decoding="async" class="alignleft size-full wp-image-25465" src="https://donasturias.org/wp-content/uploads/2026/05/2605-DONAASTURIAS-HUCA-II-570x337.png" alt="2605 DONAASTURIAS - HUCA II" width="374" height="221" /></p>
+<p style="text-align: right;"><iframe style="border: 0;" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2900.0813436145368!2d-5.829514423865379!3d43.37532317035888!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd368d175232031b%3A0xe42481e467f1c6bd!2sCentro%20Comunitario%20de%20Sangre%20y%20Tejidos%20de%20Asturias%20%7C%20Donaasturias%20%7C%20Donaci%C3%B3n%20de%20sangre!5e0!3m2!1ses!2ses!4v1779867063059!5m2!1ses!2ses" width="429" height="208" allowfullscreen="allowfullscreen"></iframe><br />
+<small><a style="color: #0000ff; text-align: left;" href="https://maps.google.com/?q=Centro+Comunitario+de+Sangre+y+Tejidos+de+Asturias">Ver mapa más grande</a></small></p>
+<h5 align="center"><strong>CENTRO DE SALUD PUERTA DE LA VILLA</strong></h5>
+<p style="text-align: center;"><strong style="line-height: 1.5em;">Calle Donato Argüelles, 20, 33206 Gijón, Asturias</strong></p>
+<p style="text-align: center;">Lunes y Miércoles: 16.00-21.00 h. |  Viernes: 10.00-20.00 h.</p>
+<p>&nbsp;</p>
+<p style="text-align: right;"><img decoding="async" class="size-full wp-image-397 alignleft" src="https://www.donasturias.org/wp-content/uploads/2014/02/Oviedo2.jpg" alt="Oviedo2" width="470" height="200" /></p>
+<p style="text-align: right;"><iframe loading="lazy" src="https://maps.google.es/maps?f=q&amp;source=s_q&amp;hl=es&amp;geocode=&amp;q=centro+de+salud+cerca+de+Puerta+la+Villa,+Gij%C3%B3n%2FXix%C3%B3n&amp;aq=0&amp;oq=Centro+de+Salud+Puerta+La+Villa&amp;sll=43.540099,-5.66479&amp;sspn=0.009099,0.021007&amp;g=C%2F+Donato+Arg%C3%BCelles,+s%2Fn+33206+GIJON-ASTURIAS&amp;ie=UTF8&amp;hq=centro+de+salud&amp;hnear=Puerta+la+Villa&amp;ll=43.539316,-5.664576&amp;spn=0.018199,0.042014&amp;t=m&amp;z=14&amp;iwloc=A&amp;cid=11235643786092270557&amp;output=embed" width="429" height="208" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe><br />
+<small><a style="color: #0000ff; text-align: left;" href="https://maps.google.es/maps?f=q&amp;source=embed&amp;hl=es&amp;geocode=&amp;q=centro+de+salud+cerca+de+Puerta+la+Villa,+Gij%C3%B3n%2FXix%C3%B3n&amp;aq=0&amp;oq=Centro+de+Salud+Puerta+La+Villa&amp;sll=43.540099,-5.66479&amp;sspn=0.009099,0.021007&amp;g=C%2F+Donato+Arg%C3%BCelles,+s%2Fn+33206+GIJON-ASTURIAS&amp;ie=UTF8&amp;hq=centro+de+salud&amp;hnear=Puerta+la+Villa&amp;ll=43.539316,-5.664576&amp;spn=0.018199,0.042014&amp;t=m&amp;z=14&amp;iwloc=A&amp;cid=11235643786092270557">Ver mapa más grande</a></small></p>
+<h5 align="center"><strong>CRUZ ROJA DE GIJÓN</strong></h5>
+<p style="text-align: center;"><strong>C/ Uría nº 37, 33202 Gijón, Asturias ‎</strong></p>
+<p style="text-align: center;">Lunes, Miércoles y Viernes:  11.00-14.00 h.</p>
+<p>&nbsp;</p>
+<p style="text-align: right;"><img loading="lazy" decoding="async" class="size-full wp-image-406 alignleft" src="https://www.donasturias.org/wp-content/uploads/2014/02/cruzroja.jpg" alt="cruzroja" width="441" height="200" /></p>
+<p style="text-align: right;"><iframe loading="lazy" src="https://maps.google.es/maps?f=q&amp;source=s_q&amp;hl=es&amp;geocode=&amp;q=Cruz+Roja,+Gij%C3%B3n%2FXix%C3%B3n&amp;aq=0&amp;oq=cr&amp;sll=43.539854,-5.655105&amp;sspn=0.009099,0.021007&amp;g=43.53892,-5.655001&amp;ie=UTF8&amp;hq=&amp;hnear=Cruz+Roja&amp;ll=43.539854,-5.655105&amp;spn=0.009099,0.021007&amp;t=m&amp;z=14&amp;iwloc=A&amp;output=embed" width="438" height="202" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe><br />
+<small><a style="color: #0000ff; text-align: left;" href="https://maps.google.es/maps?f=q&amp;source=embed&amp;hl=es&amp;geocode=&amp;q=Cruz+Roja,+Gij%C3%B3n%2FXix%C3%B3n&amp;aq=0&amp;oq=cr&amp;sll=43.539854,-5.655105&amp;sspn=0.009099,0.021007&amp;g=43.53892,-5.655001&amp;ie=UTF8&amp;hq=&amp;hnear=Cruz+Roja&amp;ll=43.539854,-5.655105&amp;spn=0.009099,0.021007&amp;t=m&amp;z=14&amp;iwloc=A">Ver mapa más grande</a></small></p>
+<h5 align="center"><strong>ASOCIACIÓN DE DONANTES DE SANGRE DE AVILÉS</strong></h5>
+<p style="text-align: center;"><strong>Plaza Santiago López, 1, 33402 Avilés, Asturias</strong></p>
+<p style="text-align: center;">Martes y jueves: 16.00-21.00 h.</p>
+<p style="text-align: center;">Primer jueves laborable de cada mes: 9.00-14.00 y 16.00-21.00 h.</p>
+<p>&nbsp;</p>
+<p style="text-align: right;"><img loading="lazy" decoding="async" class="size-full wp-image-410 alignleft" src="https://www.donasturias.org/wp-content/uploads/2014/02/aviless.jpg" alt="aviless" width="441" height="200" /></p>
+<p style="text-align: right;"><iframe loading="lazy" src="https://maps.google.es/maps?f=q&amp;source=s_q&amp;hl=es&amp;geocode=&amp;q=donantes+de+sangre+aviles&amp;aq=&amp;sll=43.539854,-5.655212&amp;sspn=0.009099,0.021007&amp;ie=UTF8&amp;hq=&amp;hnear=&amp;ll=43.555626,-5.919465&amp;spn=0.006295,0.006295&amp;t=m&amp;iwloc=A&amp;output=embed" width="440" height="194" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe><br />
+<small><a style="color: #0000ff; text-align: left;" href="https://maps.google.es/maps?f=q&amp;source=embed&amp;hl=es&amp;geocode=&amp;q=donantes+de+sangre+aviles&amp;aq=&amp;sll=43.539854,-5.655212&amp;sspn=0.009099,0.021007&amp;ie=UTF8&amp;hq=&amp;hnear=&amp;ll=43.555626,-5.919465&amp;spn=0.006295,0.006295&amp;t=m&amp;iwloc=A">Ver mapa más grande</a></small></p></div></div></main></body></html>
+"""
+
+ASTURIAS_HOME_HTML = r"""
+<html><body><img fetchpriority="high" decoding="async" src="//donasturias.org/wp-content/uploads/2026/10/DONAASTURIAS-Slider-Dona-Sangre-Temporada.png" alt="DONAASTURIAS Slider - Dona Sangre - Temporada" title="DONAASTURIAS Slider &#8211; Dona Sangre &#8211; Temporada" width="1920" height="850" class="rev-slidebg tp-rs-img" data-bg="p:center top;" data-no-retina><h2 class="vc_custom_heading">Estado de las reservas de hematíes</h2><div class="wpb_single_image"><img loading="lazy" decoding="async" data-vc-zoom="https://donasturias.org/wp-content/uploads/2023/08/omas230-1.jpg" width="109" height="108" src="https://donasturias.org/wp-content/uploads/2023/08/omas230-1.jpg" class="vc_single_image-img attachment-full" alt="" /><img loading="lazy" decoding="async" width="109" height="108" src="https://donasturias.org/wp-content/uploads/2024/07/o-90.jpg" class="vc_single_image-img attachment-full" alt="" /><img loading="lazy" decoding="async" width="109" height="108" src="https://donasturias.org/wp-content/uploads/2022/12/Amas140.jpg" class="vc_single_image-img attachment-full" alt="" /><img loading="lazy" decoding="async" width="109" height="108" src="https://donasturias.org/wp-content/uploads/2022/09/A-45.jpg" class="vc_single_image-img attachment-full" alt="" /><img loading="lazy" decoding="async" width="109" height="108" src="https://donasturias.org/wp-content/uploads/2023/07/Bmas60.jpg" class="vc_single_image-img attachment-full" alt="" /><img loading="lazy" decoding="async" width="109" height="108" src="https://donasturias.org/wp-content/uploads/2024/04/B-9.jpg" class="vc_single_image-img attachment-full" alt="" /><img loading="lazy" decoding="async" width="109" height="108" src="https://donasturias.org/wp-content/uploads/2025/05/ABmas40.jpg" class="vc_single_image-img attachment-full" alt="" /><img loading="lazy" decoding="async" width="109" height="108" src="https://donasturias.org/wp-content/uploads/2023/07/ab-1.jpg" class="vc_single_image-img attachment-full" alt="" /></div></body></html>
+"""
+
+ASTURIAS_EVENTS_JSON = r"""
+{
+ "events": [
+  {
+   "id": 26727,
+   "title": "Acuartelamiento Cabo Noval",
+   "start_date": "2026-10-28 00:00:00",
+   "end_date": "2026-10-28 23:59:59",
+   "url": "https://donasturias.org/eventos/acuartelamiento-cabo-noval-3/",
+   "description": "<p>09.00-14.00 | Delante del botiquín.</p>"
+  },
+  {
+   "id": 26729,
+   "title": "Carbayín",
+   "start_date": "2026-10-28 00:00:00",
+   "end_date": "2026-10-28 23:59:59",
+   "url": "https://donasturias.org/eventos/carbayin-2/",
+   "description": "<p>16.00-17.30 | <strong>Carbayín Bajo</strong>. Bar Pepín.</p>\n<p>18.00-21.00 | <strong>Carbayín Alto.</strong> Plaza de la Iglesia.</p>"
+  },
+  {
+   "id": 26733,
+   "title": "Oviedo",
+   "start_date": "2026-10-28 00:00:00",
+   "end_date": "2026-10-28 23:59:59",
+   "url": "https://donasturias.org/eventos/oviedo-33/",
+   "description": "<p>09.00-15.00 y 15.00-21.00 | <strong>San Lázaro.</strong> C/ San Lázaro, 2.</p>"
+  },
+  {
+   "id": 26784,
+   "title": "PUNTOS FIJOS",
+   "start_date": "2026-10-28 00:00:00",
+   "end_date": "2026-10-28 23:59:59",
+   "url": "https://donasturias.org/eventos/puntos-fijos-83/",
+   "description": "<p>08.30-20.30 | <strong>HUCA · C.C. Sangre y Tejidos de Asturias. </strong>Entrada hospitalización.</p>\n<p>11.00-14.00 | <strong>Gijón. Cruz Roja</strong>. C/ Uría, 37.</p>\n<p>16.00-21.00 | <strong>Gijón. C.S. Puerta de la Villa</strong>. 1º Planta. C/ Donato Argüelles, 20.</p>"
+  },
+  {
+   "id": 26735,
+   "title": "Acuartelamiento Cabo Noval",
+   "start_date": "2026-10-29 00:00:00",
+   "end_date": "2026-10-29 23:59:59",
+   "url": "https://donasturias.org/eventos/acuartelamiento-cabo-noval-4/",
+   "description": "<p>09.00-14.00 | Delante del botiquín.</p>"
+  },
+  {
+   "id": 26745,
+   "title": "UNIOVI | Campus Llamaquique",
+   "start_date": "2026-10-29 00:00:00",
+   "end_date": "2026-10-29 23:59:59",
+   "url": "https://donasturias.org/eventos/uniovi-campus-llamaquique/",
+   "description": "<p>08.30-14.30 y 14.30-20.30 | C/ Aniceto Sela.</p>"
+  },
+  {
+   "id": 26796,
+   "title": "PUNTOS FIJOS",
+   "start_date": "2026-10-29 00:00:00",
+   "end_date": "2026-10-29 23:59:59",
+   "url": "https://donasturias.org/eventos/puntos-fijos-88/",
+   "description": "<p>08.30-20.30 |<strong> HUCA · C.C. Sangre y Tejidos de Asturias. </strong>Entrada hospitalización.</p>\n<p>16.00-21.00 | <strong>Avilés · Asociación de Donantes de Sangre.</strong> Plaza Santiago López, 1-Bajo.</p>"
+  },
+  {
+   "id": 26751,
+   "title": "Oviedo",
+   "start_date": "2026-10-30 00:00:00",
+   "end_date": "2026-10-30 23:59:59",
+   "url": "https://donasturias.org/eventos/oviedo-34/",
+   "description": "<p>15.00-21.00 | <strong>Ventanielles</strong>. Plaza de la Iglesia (Pza. Lago Enol).</p>"
+  },
+  {
+   "id": 26753,
+   "title": "Arcelor Mittal Avilés",
+   "start_date": "2026-10-30 00:00:00",
+   "end_date": "2026-10-30 23:59:59",
+   "url": "https://donasturias.org/eventos/arcelor-mittal-aviles-2/",
+   "description": "<p>09.00-11.30 | Centro Desarrollo Tecnológico.</p>"
+  },
+  {
+   "id": 26607,
+   "title": "Gijón",
+   "start_date": "2026-10-01 00:00:00",
+   "end_date": "2026-10-01 23:59:59",
+   "url": "https://donasturias.org/eventos/gijon-27/",
+   "description": "<p>09.00-14.00 y 16.00-21.00 | <strong>La Arena.</strong> C/ Menéndez Pelayo, entre núm. 13 y 17.</p>\n<p>09.00-14.00 y 16.00-21.00 | <strong>Natahoyo.</strong> C/ El Cortijo, delante AAVV Atalía, al lado del parque.</p>"
+  }
+ ]
+}
+"""
