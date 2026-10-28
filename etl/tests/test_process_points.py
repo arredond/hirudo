@@ -127,6 +127,19 @@ def test_process_fixed_points_stamps_region(mocker):
         }
     )
 
+    scraped_navarra = pd.DataFrame(
+        {
+            "name": ["Banco de Sangre de Tudela"],
+            "direccion": ["C/ Don Miguel Eza, nº 2"],
+            "localidad": ["Tudela"],
+            "telefono": ["848 421 991"],
+            "horario": ["Lunes y miércoles de 8:00h. a 13:30h."],
+            "latitude": [42.0607974],
+            "longitude": [-1.6051186],
+            "url": ["https://adona.es/es/contacto-adona/contacto-tudela"],
+        }
+    )
+
     def fake_geocode_points(df, geocoding_cache, address_column):
         df["longitude"] = -2.0
         df["latitude"] = 39.0
@@ -146,6 +159,7 @@ def test_process_fixed_points_stamps_region(mocker):
     mocker.patch("main.galicia.scrape_fixed_points", return_value=scraped_galicia)
     mocker.patch("main.pais_vasco.scrape_fixed_points", return_value=scraped_pais_vasco)
     mocker.patch("main.cantabria.scrape_fixed_points", return_value=scraped_cantabria)
+    mocker.patch("main.navarra.scrape_fixed_points", return_value=scraped_navarra)
     mocker.patch("main.refresh_places_cache", side_effect=lambda q, cache, b: cache)
     mocker.patch("main.place_candidate", return_value=None)
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
@@ -170,6 +184,7 @@ def test_process_fixed_points_stamps_region(mocker):
         "Galicia",
         "País Vasco",
         "Cantabria",
+        "Comunidad Foral de Navarra",
     }
 
 
@@ -373,6 +388,16 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         }
     )
 
+    scraped_navarra = pd.DataFrame(
+        {
+            "localidad": ["Lumbier"],
+            "lugar": ["Centro Cívico"],
+            "fecha": ["28/10/2026"],
+            "horario": ["16:45 a 21:00"],
+            "url": ["https://adona.es/es/calendario-unidad-movil"],
+        }
+    )
+
     def fake_geocode_mobile(df, geocoding_cache):
         df["longitude"] = -3.7
         df["latitude"] = 40.4
@@ -398,6 +423,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
     mocker.patch(
         "main.pais_vasco.scrape_mobile_points", return_value=scraped_pais_vasco
     )
+    mocker.patch("main.navarra.scrape_mobile_points", return_value=scraped_navarra)
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
     mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
     mocker.patch("main.place_candidate", return_value=None)
@@ -422,6 +448,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         "Cataluña",
         "Galicia",
         "País Vasco",
+        "Comunidad Foral de Navarra",
     }
 
 

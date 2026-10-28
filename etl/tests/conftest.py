@@ -598,3 +598,94 @@ campañas especiales</h3>
     </sr7-module>
 </body></html>
 """
+# Trimmed from https://adona.es/es/contacto-adona/contacto-tudela: the info
+# boxes (address, phone, hours) and the map script with the spot's centre.
+NAVARRA_CONTACT_TUDELA_HTML = """
+<div class="block block-contact">
+  <div class="box-services-2">
+    <div class="box-left"><i class="icon icon-4 icon_pin_alt"></i></div>
+    <div class="box-right">
+      C/ Don Miguel Eza, nº 2<br />
+31500 TUDELA                        </div>
+  </div>
+  <div class="box-services-2">
+    <div class="box-left"><i class="icon icon-4 icon_mobile"></i></div>
+    <div class="box-right">
+      T.  848 421 991            </div>
+  </div>
+  <div class="box-services-2">
+    <div class="box-left"><i class="icon icon-4 icon_clock_alt"></i></div>
+    <div class="box-right">
+                      Lunes y miércoles de 8:00h. a 13:30h.<br />
+Martes y jueves de 8:00h. a 20:00h.<br />
+Viernes cerrado                  </div>
+  </div>
+</div>
+<script type="text/javascript">
+function initMap(){
+  var center = {lat: 42,0607974, lng: -1,6051186};
+  var map = new google.maps.Map(document.getElementById( 'simplemap-11436'), {
+    zoom: 18,
+    center: center
+  });
+}
+</script>
+"""
+
+# Same template, Pamplona's spot: a two-line address and hours.
+NAVARRA_CONTACT_PAMPLONA_HTML = """
+<div class="block block-contact">
+  <div class="box-services-2">
+    <div class="box-left"><i class="icon icon-4 icon_pin_alt"></i></div>
+    <div class="box-right">
+      C/ Irunlarrea, 3 (Hospital de Navarra)<br />
+      31008 PAMPLONA
+    </div>
+  </div>
+  <div class="box-services-2">
+    <div class="box-left"><i class="icon icon-4 icon_mobile"></i></div>
+    <div class="box-right">
+      T. 848 422 500
+    </div>
+  </div>
+  <div class="box-services-2">
+    <div class="box-left"><i class="icon icon-4 icon_clock_alt"></i></div>
+    <div class="box-right">
+      De lunes a jueves de 8:00h. a 20:00h.<br />
+      Viernes de 8:00h. a 14:30h.
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+function initMap(){
+  var center = {lat: 42,804981957138, lng: -1,6653321776321};
+}
+</script>
+"""
+
+# Trimmed from the calendar's JSON feed (.../adona/calendars/get.json): a
+# stop with a dotted time, a stop from before today, the empty placeholder
+# entry, and a stop whose venue is on a second line.
+NAVARRA_CALENDAR_EVENTS = {
+    "events": [
+        {
+            "id": 1,
+            "title": "SANTACARA 16:45 - 20:45\nCentro de Salud",
+            "start": "2026-10-27",
+            "end": "2026-10-27",
+        },
+        {
+            "id": 2,
+            "title": "LUMBIER 16:45 - 21:00\nCentro Cívico",
+            "start": "2026-10-28",
+            "end": "2026-10-28",
+        },
+        {
+            "id": 3,
+            "title": "LOS ARCOS 17.00 - 21.00\nCasa de la Villa",
+            "start": "2026-10-29",
+            "end": "2026-10-29",
+        },
+        {"id": 4, "title": ".  - \n", "start": "2026-10-30", "end": "2026-10-30"},
+    ]
+}

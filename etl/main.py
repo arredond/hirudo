@@ -24,6 +24,7 @@ from utils.crawl import (
     crawl,
     galicia,
     madrid,
+    navarra,
     pais_vasco,
 )
 from utils.db import format_column, from_db, gdf_from_df, to_db
@@ -53,6 +54,7 @@ REGION_CATALUNA = "Cataluña"
 REGION_GALICIA = "Galicia"
 REGION_PAIS_VASCO = "País Vasco"
 REGION_CANTABRIA = "Cantabria"
+REGION_NAVARRA = "Comunidad Foral de Navarra"
 
 # Fixed points carry a handful of concepts every region has, under whatever
 # name that region's own source happens to spell them with. Renaming them to
@@ -81,6 +83,7 @@ ARAGON_PLACES_BOUNDS = (39.8, -2.3, 42.95, 0.8)
 VALENCIA_PLACES_BOUNDS = (37.8, -1.6, 40.85, 0.75)
 CATALUNA_PLACES_BOUNDS = (40.5, 0.15, 42.9, 3.35)
 GALICIA_PLACES_BOUNDS = (41.8, -9.35, 43.8, -6.7)
+NAVARRA_PLACES_BOUNDS = (41.85, -2.3, 43.4, -0.65)
 
 # Galician mobile stops' "Lugar de colecta" decorations that aren't part of
 # the place's name: a neighbourhood or housing-estate marker ("Bº NOVO
@@ -570,6 +573,26 @@ def scrape_fixed_points_cantabria() -> pd.DataFrame:
     return df
 
 
+def scrape_fixed_points_navarra() -> pd.DataFrame:
+    """Scrape Navarra's fixed donation points (ADONA's Pamplona and Tudela banks).
+
+    Each contact page's map carries the spot's coordinates, so nothing is
+    geocoded. Hours are hand-translated into opening_hours_fijos.json, keyed
+    by name. Both spots take plasma by aféresis (see navarra.py), so both
+    get plasma and sangre set.
+    """
+    df = navarra.scrape_fixed_points()
+    df["gmaps_url"] = df.apply(crawl.gmaps_url_from_coords, axis=1)
+    opening_hours_lookup = load_opening_hours_fijos()
+    df["opening_hours"] = df.apply(
+        opening_hours_for_fixed_point, lookup=opening_hours_lookup, axis=1
+    )
+    df["plasma"] = True
+    df["sangre"] = True
+    df["region"] = REGION_NAVARRA
+    return df
+
+
 def process_fixed_points():
     """Scrape, enrich, and upload fixed donation points for every region."""
     df = pd.concat(
@@ -583,6 +606,7 @@ def process_fixed_points():
             scrape_fixed_points_galicia(),
             scrape_fixed_points_pais_vasco(),
             scrape_fixed_points_cantabria(),
+            scrape_fixed_points_navarra(),
         ],
         ignore_index=True,
     )
@@ -1129,6 +1153,64 @@ def scrape_mobile_points_pais_vasco() -> pd.DataFrame:
     return df[output_cols + ["latitude", "longitude"]]
 
 
+def scrape_mobile_points_navarra() -> pd.DataFrame:
+    """Scrape and geocode Navarra's mobile donation points.
+
+    The calendar gives only a town and a venue ("LUMBIER 16:45 - 21:00" with
+    "Centro Cívico" underneath), so the venue plus town is both geocoded and
+    searched with Places, and the better-scoring one kept (see
+    geocode_points). The Places result only counts when it passes
+    place_candidate's town check. Name is "Equipo móvil en <town> (<venue>)".
+
+    Both donation types are offered on the booking page's Unidad móvil entry
+    ("Dona Sangre" and "Dona aféresis"), so every stop gets plasma and sangre.
+    """
+    df = navarra.scrape_mobile_points()
+    df["address_lugar"] = df.apply(
+        lambda row: build_full_address(row["lugar"], row["localidad"], REGION_NAVARRA),
+        axis=1,
+    )
+    df["place_query"] = df["lugar"] + ", " + df["localidad"]
+    geocoding_cache = refresh_places_cache(
+        set(df["place_query"]), load_geocoding_cache(), NAVARRA_PLACES_BOUNDS
+    )
+    df["place_lugar"] = df.apply(
+        lambda row: place_candidate(
+            row["place_query"],
+            row["localidad"],
+            geocoding_cache,
+            NAVARRA_PLACES_BOUNDS,
+        ),
+        axis=1,
+    )
+    df = geocode_points(df, geocoding_cache, ["address_lugar", "place_lugar"])
+
+    df["name"] = "Equipo móvil en " + df["localidad"] + " (" + df["lugar"] + ")"
+    df["direccion"] = None
+    df["opening_hours"] = df.apply(
+        lambda row: parse_mobile_hours(row["fecha"], row["horario"]), axis=1
+    )
+    df["plasma"] = True
+    df["sangre"] = True
+    df["medula"] = False
+    df["region"] = REGION_NAVARRA
+
+    output_cols = [
+        "name",
+        "localidad",
+        "direccion",
+        "fecha",
+        "horario",
+        "opening_hours",
+        "url",
+        "plasma",
+        "sangre",
+        "medula",
+        "region",
+    ]
+    return df[output_cols + ["latitude", "longitude"]]
+
+
 def process_mobile_points():
     """Scrape, geocode, and upload mobile donation points for every region."""
     df = pd.concat(
@@ -1141,6 +1223,7 @@ def process_mobile_points():
             scrape_mobile_points_cataluna(),
             scrape_mobile_points_galicia(),
             scrape_mobile_points_pais_vasco(),
+            scrape_mobile_points_navarra(),
         ],
         ignore_index=True,
     )
@@ -1183,9 +1266,8 @@ def scrape_blood_levels_pais_vasco() -> pd.DataFrame:
 def process_blood_levels():
     """Scrape and append blood-reserve levels for every region that has one.
 
-    Castilla-La Mancha, Aragón, Comunidad Valenciana, Cataluña and Cantabria
-    have no such source at all (no scrape_blood_levels_clm/_aragon/_valencia/
-    _cataluna/_cantabria exists), so they're simply left out
+    Regions whose source publishes no levels have no
+    scrape_blood_levels_<region> function and are simply left out
     here — the frontend shows a "no data for this region" placeholder
     instead of blank/stale badges for them.
 

@@ -170,6 +170,28 @@ wired in once its sources are known.
   starts publishing the agenda as text.
 - Blood levels: none. The homepage and the donation page have no
   "niveles de sangre" or semáforo widget.
+### Comunidad Foral de Navarra
+- Fixed points: ADONA's two spots, one contact page each:
+  <https://adona.es/es/contacto-adona/contacto-pamplona> (Banco de Sangre
+  de Pamplona) and <https://adona.es/es/contacto-adona/contacto-tudela>
+  (Tudela). Address, phone and hours sit in `div.box-services-2` boxes
+  keyed by their icon class; the map's `initMap()` carries the centre
+  coordinates with decimal commas (`lat: 42,804981957138`), so nothing is
+  geocoded. Hours are hand-translated into `opening_hours_fijos.json`,
+  keyed by the names we give them (the site only says "Pamplona"/"Tudela").
+- Plasma: both spots offer "Dona aféresis" on the booking page
+  (<https://adona.es/es/dona-sangre/reservar-cita>, `?aferesis=1` links), so
+  both are flagged `plasma` and `sangre`.
+- Mobile points ("Unidad móvil", Autohemoteca): <https://adona.es/es/calendario-unidad-movil>
+  is a FullCalendar page fed by `https://adona.es/adona/calendars/get.json`
+  (needs a unix `start`/`end` window; returns nothing without one). One
+  event per stop, titled "TOWN HH:MM - HH:MM" with the venue on the next
+  line; some times use dots ("17.00"), and a placeholder entry (".  - ")
+  is skipped. Geocoded from venue + town (Geocoding API + Places, best
+  score kept), since the feed has no coordinates. The booking page offers
+  "Dona aféresis" for the Unidad móvil too, so its stops get `plasma` and
+  `sangre` like the fixed spots.
+- Blood levels: **none found** on the site (frontend shows the placeholder).
 
 ## Not yet researched
 
@@ -179,5 +201,4 @@ wired in once its sources are known.
 - Canarias
 - Extremadura
 - Región de Murcia
-- Comunidad Foral de Navarra
 - La Rioja
