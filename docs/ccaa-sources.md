@@ -290,6 +290,32 @@ wired in once its sources are known.
   holidays at all, so "PH off" parses there unchanged.
 - Boundary polygon: the source's Melilla feature, rounded to 6 decimals.
 
+### Illes Balears
+- Source: Fundació Banc de Sang i Teixits de les Illes Balears,
+  <https://www.donasang.org/es_index.php> (server-rendered; the Spanish
+  pages are crawled, the Catalan ones are the same data).
+- Fixed points: the three centres listed on
+  <https://www.donasang.org/on-puc-donar/es_calendari/index.php> (Palma, Mahón,
+  Eivissa). Each has a detail page whose map script (`new
+  google.maps.LatLng(lat, lng)`) carries its coordinates; no Google Maps link
+  is published. Palma's hours are prose on the listing, hand-translated into
+  `opening_hours_fijos.json`; Mahón and Eivissa publish only "Consultar
+  calendario campañas", so they have no lookup entry and log a warning.
+- Mobile points: the day calendar at
+  <https://www.donasang.org/on-puc-donar/es_calendari/punts.php>, paged
+  `?PAGE=N` (three event days per page, 18 pages at the time of writing). The
+  ETL reads pages in order until one passes the end of next month, so the
+  window is the same as La Rioja's. Each entry has its own detail page with
+  the spot's coordinates, fetched once per spot (name, town and address), since
+  the same venue recurs on each day with a new id. Entries named "AFERESI /
+  AFERESIS" are apheresis sessions and are flagged plasma (not sangre).
+- Blood levels: the homepage's "Niveles de la reserva" grid, one bag image per
+  type (`/media/comu/reserves/<digit>_<type>.jpg`). The digit is the bag's
+  fill, read against the legend's own icons: 1 is full ("Dona en la próxima
+  campaña", green), 2 half ("Dona en 2 ó 3 días", orange), 3 nearly empty
+  ("Dona urgentemente", red). This runs the opposite way to La Rioja's digits,
+  so the mapping is per region.
+
 ## Blocked
 
 ### Región de Murcia
@@ -317,5 +343,4 @@ wired in once its sources are known.
   homepage, the Centros de salud page nor the Hospital Universitario page
   mention donation or a transfusion centre. Next step: search the site
   (Mapa Web or the site search) for "donación", or ask the centre.
-- Illes Balears
 - Canarias
