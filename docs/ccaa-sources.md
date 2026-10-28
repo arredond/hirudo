@@ -352,6 +352,14 @@ wired in once its sources are known.
   to every non-browser request, so the Cloud Run job can't fetch it. Not
   worked around. Revisit if the CRH offers a feed/open-data export or lifts
   the check for these pages.
+- Second look (2026-10-28, in a real browser): levels, the Fijos/Móviles
+  lists and the calendar are all server-rendered in the page HTML — no
+  XHR/JSON endpoint, PDF or iCal behind them, so there's no side door. Plain
+  requests to every page (and RSS) 302 to the Radware challenge
+  (validate.perfdrive.com). The map links are JS toggles
+  (`javascript:smsCRHToggleMapa`), not plain URLs. `/sitemap.xml` is open
+  but lists no donation pages; datos.carm.es / opendata.carm.es didn't
+  resolve or connect.
 
 ### Extremadura
 - Source: <https://saludextremadura.ses.es/bancodesangre/> — reachable
