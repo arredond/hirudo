@@ -12,7 +12,9 @@ same template. A page gives:
 Neither part carries coordinates, so every point is geocoded from its text
 (see main.py). The pages publish no blood-reserve levels, so there's no
 scrape_blood_levels() here. Mobile collections aren't split by donation type
-(sangre or plasma) either, so those flags are left unset.
+(sangre or plasma) either, except for the plasma-only sessions some centres
+hold at their own premises, which name "plasma" in the town or venue
+(see PLASMA_RE).
 """
 
 import functools
@@ -137,20 +139,34 @@ def normalize_hours(horario: str) -> str:
     return " | ".join(ranges) if ranges else horario
 
 
+# A plasma-only session at the CTTC itself: Almería writes it as the town
+# ("PLASMA CENTRO DE TRANSFUSION"), Granada in the venue ("CTTC (...)
+# DONACIÓN PLASMA").
+PLASMA_RE = re.compile(r"plasma", re.IGNORECASE)
+CENTER_AS_TOWN_RE = re.compile(r"centro de transfusi[oó]n", re.IGNORECASE)
+
+
 def parse_mobile_points(soup: BeautifulSoup, province: str) -> pd.DataFrame:
     """Parse a CTTC page's "Se puede donar en..." table of mobile collections.
 
     The source writes dates as "DD-MM-YYYY"; they're rebuilt as "DD/MM/YYYY"
     to match the other regions. Returns an empty frame when the page has no
-    such table.
+    such table. A session held at the centre itself, written with the centre
+    as its town, gets the centre's own municipality as its town instead.
     """
-    columns = ["fecha", "localidad", "lugar", "horario", "url"]
+    columns = ["fecha", "localidad", "lugar", "horario", "url", "plasma_only"]
     table = soup.select_one("div.center-blood table.views-table")
     if table is None:
         return pd.DataFrame(columns=columns)
 
     df = pd.read_html(StringIO(str(table)))[0].rename(columns=MOBILE_COLUMNS)
     df["fecha"] = pd.to_datetime(df["fecha"], format="%d-%m-%Y").dt.strftime("%d/%m/%Y")
+    df["plasma_only"] = df["localidad"].str.contains(PLASMA_RE) | df[
+        "lugar"
+    ].str.contains(PLASMA_RE)
+    at_center = df["localidad"].str.contains(CENTER_AS_TOWN_RE)
+    if at_center.any():
+        df.loc[at_center, "localidad"] = parse_fixed_point(soup)["localidad"]
     df["localidad"] = df["localidad"].apply(crawl.title_name)
     df["horario"] = df["horario"].apply(normalize_hours)
     df["url"] = center_url(province)

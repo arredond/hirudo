@@ -460,6 +460,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
                 "lugar": ["HERMANDAD DEL ROCÍO"],
                 "horario": ["17:00 - 21:00"],
                 "url": ["https://www.sspa.juntadeandalucia.es/"],
+                "plasma_only": [False],
             }
         ),
     )

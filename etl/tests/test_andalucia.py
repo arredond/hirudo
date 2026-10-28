@@ -150,6 +150,7 @@ def test_scrape_mobile_points_andalucia_names_and_parses_hours(mocker):
             "localidad": ["Dos Hermanas"],
             "lugar": ["HERMANDAD DEL ROCÍO"],
             "horario": ["17:00 - 21:00"],
+            "plasma_only": [False],
             "url": [andalucia.center_url("Sevilla")],
         }
     )
@@ -171,3 +172,26 @@ def test_scrape_mobile_points_andalucia_names_and_parses_hours(mocker):
     assert row["opening_hours"] == "2026 Oct 28 17:00-21:00"
     assert row["region"] == "Andalucía"
     assert row["latitude"] == pytest.approx(37.28)
+
+
+def test_parse_mobile_points_flags_plasma_sessions_at_the_center():
+    html = ANDALUCIA_CENTER_HTML.replace(
+        "<tbody>\n        <tr>",
+        """<tbody>
+        <tr>
+          <td>28-10-2026</td><td>X</td><td>PLASMA CENTRO DE TRANSFUSION</td>
+          <td>SALA DE EXTRACCIONES</td><td>16:30 - 21:30</td>
+        </tr>
+        <tr>
+          <td>10-11-2026</td><td>M</td><td>SEVILLA</td>
+          <td>CTTC DONACIÓN PLASMA</td><td>16:00 - 21:00</td>
+        </tr>
+        <tr>""",
+        1,
+    )
+
+    df = andalucia.parse_mobile_points(BeautifulSoup(html, "lxml"), "Sevilla")
+
+    assert df.loc[0, "localidad"] == "Sevilla"
+    assert df.loc[:1, "plasma_only"].tolist() == [True, True]
+    assert not df.loc[2:, "plasma_only"].any()
