@@ -15,6 +15,7 @@ import re
 
 import pandas as pd
 from utils.crawl import (
+    andalucia,
     aragon,
     castilla_la_mancha,
     castilla_y_leon,
@@ -33,7 +34,11 @@ from utils.geocode import (
     geocode_address,
     place_matches,
 )
-from utils.opening_hours import parse_mobile_hours, parse_scheduled_hours
+from utils.opening_hours import (
+    parse_mobile_hours,
+    parse_scheduled_hours,
+    parse_weekly_hours,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger(__name__)
@@ -44,6 +49,7 @@ log = logging.getLogger(__name__)
 # it). The geocoding_cache is shared across all regions and keyed by full
 # address strings that already name the region, so it is left unstamped.
 REGION_MADRID = "Comunidad de Madrid"
+REGION_ANDALUCIA = "Andalucía"
 REGION_CYL = "Castilla y León"
 REGION_CLM = "Castilla-La Mancha"
 REGION_ARAGON = "Aragón"
@@ -133,6 +139,28 @@ def scrape_fixed_points_madrid() -> pd.DataFrame:
     df = pd.merge(df, other_donations, on="name", how="left")
     df["region"] = REGION_MADRID
     return df
+
+
+def scrape_fixed_points_andalucia() -> pd.DataFrame:
+    """Scrape and geocode Andalucía's fixed donation points (one CTTC per province).
+
+    Each centre's weekly timetable goes straight into opening_hours (see
+    parse_weekly_hours), so nothing comes from the hand-built lookup. The
+    pages carry no coordinates, so each centre is geocoded from its street
+    address (see geocode_points).
+    """
+    df = andalucia.scrape_fixed_points()
+    df["opening_hours"] = df["schedule"].apply(parse_weekly_hours)
+    df["full_address"] = df.apply(
+        lambda row: build_full_address(
+            row["direccion"], row["localidad"], REGION_ANDALUCIA
+        ),
+        axis=1,
+    )
+    df = geocode_points(df, load_geocoding_cache(), "full_address")
+    df["gmaps_url"] = df.apply(crawl.gmaps_url_from_coords, axis=1)
+    df["region"] = REGION_ANDALUCIA
+    return df.drop(columns=["schedule", "full_address", "provincia"])
 
 
 def scrape_fixed_points_cyl() -> pd.DataFrame:
@@ -556,6 +584,7 @@ def process_fixed_points():
     df = pd.concat(
         [
             scrape_fixed_points_madrid(),
+            scrape_fixed_points_andalucia(),
             scrape_fixed_points_cyl(),
             scrape_fixed_points_clm(),
             scrape_fixed_points_aragon(),
@@ -602,6 +631,45 @@ def scrape_mobile_points_madrid() -> pd.DataFrame:
         "url",
         "region",
     ]
+    return df[output_cols + ["latitude", "longitude"]]
+
+
+def scrape_mobile_points_andalucia() -> pd.DataFrame:
+    """Scrape and geocode Andalucía's mobile donation points.
+
+    Like Castilla-La Mancha's, a stop has only a town and a venue ("Lugar",
+    e.g. "CENTRO DE SALUD"), so that pair is the one geocoding candidate.
+    Hours are parsed per day (see parse_mobile_hours); open-ended ones such
+    as "DESDE LAS 17,00 HORAS" stay unset.
+    """
+    output_cols = [
+        "name",
+        "localidad",
+        "direccion",
+        "fecha",
+        "horario",
+        "opening_hours",
+        "url",
+        "region",
+    ]
+    df = andalucia.scrape_mobile_points()
+    if df.empty:
+        return pd.DataFrame(columns=output_cols + ["latitude", "longitude"])
+
+    df["full_address"] = df.apply(
+        lambda row: build_full_address(
+            row["lugar"], row["localidad"], REGION_ANDALUCIA
+        ),
+        axis=1,
+    )
+    df = geocode_points(df, load_geocoding_cache(), "full_address")
+
+    df["name"] = "Equipo móvil en " + df["lugar"] + ", " + df["localidad"]
+    df["direccion"] = df["lugar"]
+    df["opening_hours"] = df.apply(
+        lambda row: parse_mobile_hours(row["fecha"], row["horario"]), axis=1
+    )
+    df["region"] = REGION_ANDALUCIA
     return df[output_cols + ["latitude", "longitude"]]
 
 
@@ -1114,6 +1182,7 @@ def process_mobile_points():
     df = pd.concat(
         [
             scrape_mobile_points_madrid(),
+            scrape_mobile_points_andalucia(),
             scrape_mobile_points_cyl(),
             scrape_mobile_points_clm(),
             scrape_mobile_points_aragon(),
@@ -1163,9 +1232,9 @@ def scrape_blood_levels_pais_vasco() -> pd.DataFrame:
 def process_blood_levels():
     """Scrape and append blood-reserve levels for every region that has one.
 
-    Castilla-La Mancha, Aragón, Comunidad Valenciana and Cataluña have no
-    such source at all (no scrape_blood_levels_clm/_aragon/_valencia/
-    _cataluna exists), so they're simply left out
+    Andalucía, Castilla-La Mancha, Aragón, Comunidad Valenciana and Cataluña
+    have no such source at all (no scrape_blood_levels_andalucia/_clm/
+    _aragon/_valencia/_cataluna exists), so they're simply left out
     here — the frontend shows a "no data for this region" placeholder
     instead of blank/stale badges for them.
 

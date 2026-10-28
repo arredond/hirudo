@@ -108,3 +108,33 @@ def parse_scheduled_hours(schedule: list[tuple[str, str]]) -> str | None:
     except ParserError:
         log.warning("Invalid scheduled opening_hours candidate %r", candidate)
         return None
+
+
+def parse_weekly_hours(schedule: list[tuple[str, str]]) -> str | None:
+    """Build an OSM opening_hours string from a fixed weekly timetable.
+
+    For fixed points that publish one repeating week ("Lunes" ... "Sábado")
+    rather than dated days. Each (weekday code, horario) pair becomes one
+    weekly rule, e.g. ("Tu", "08:30 - 14:30 | 15:30 - 21:30"), so any weekday
+    left out is closed. Pairs with no parseable time range are skipped; returns
+    None if no day parses.
+    """
+    rules = []
+    for weekday, horario in schedule:
+        ranges = TIME_RANGE_PATTERN.findall(horario)
+        if not ranges:
+            continue
+        times = ",".join(
+            f"{open_h}:{open_m}-{close_h}:{close_m}"
+            for open_h, open_m, close_h, close_m in ranges
+        )
+        rules.append(f"{weekday} {times}")
+    if not rules:
+        return None
+
+    candidate = "; ".join(rules)
+    try:
+        return str(OpeningHours(candidate))
+    except ParserError:
+        log.warning("Invalid weekly opening_hours candidate %r", candidate)
+        return None
