@@ -14,25 +14,38 @@ const STATUS_COLOR = {
   stable: 'bg-green-600 text-white',
 }
 
+// Every state below renders in the same fixed-height slot (badge height), so
+// the header — and the map under it — doesn't jump while panning between
+// regions: badges, "no data" note and the empty loading state all take the
+// same vertical space.
+const SLOT = 'h-8 sm:h-9 flex items-center justify-end shrink-0'
+
 export default function BloodLevelBadges({ region }) {
   const { bloodLevels, hasLoaded } = useBloodLevels(region)
 
   // Still loading, or no region resolved yet — say nothing rather than
   // flash a "no data" message that a moment later turns out to be wrong.
-  if (!hasLoaded) return null
+  if (!hasLoaded) return <div className={SLOT} />
 
   // Loaded, but genuinely nothing for this region (e.g. Castilla-La Mancha,
   // which has no blood-levels source at all — see REGION_CLM in etl/main.py).
+  // Clamped to two lines so it fits the slot.
   if (bloodLevels.length === 0) {
+    const message = `En este momento no disponemos de niveles de donación para ${region}.`
     return (
-      <p className="max-w-[200px] shrink-0 text-right text-xs italic text-gray-500 sm:max-w-xs sm:text-sm">
-        En este momento no disponemos de niveles de donación para {region}.
-      </p>
+      <div className={SLOT}>
+        <p
+          title={message}
+          className="max-w-[200px] sm:max-w-xs text-right text-[11px] leading-4 sm:text-xs sm:leading-[18px] italic text-gray-500 line-clamp-2"
+        >
+          {message}
+        </p>
+      </div>
     )
   }
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+    <div className={`${SLOT} gap-1 sm:gap-2`}>
       {bloodLevels.map(({ blood_type: bloodType, status, label }) => (
         <span
           key={bloodType}

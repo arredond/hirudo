@@ -12,12 +12,23 @@ const BLOOD_TYPE_ORDER = ['O+', 'A+', 'AB+', 'B+', 'O-', 'A-', 'AB-', 'B-']
 // genuinely has no rows" (e.g. Castilla-La Mancha, which has no blood-levels
 // source at all — see REGION_CLM in etl/main.py) — both look like an empty
 // bloodLevels array otherwise, but the UI wants to tell them apart.
+//
+// Each region's levels are cached for the session (they change once a day at
+// most), so panning back into a region shows them at once instead of blanking
+// the header while they're fetched again.
+const cache = new Map()
+
 export function useBloodLevels(region) {
-  const [bloodLevels, setBloodLevels] = useState([])
-  const [hasLoaded, setHasLoaded] = useState(false)
+  const [bloodLevels, setBloodLevels] = useState(() => cache.get(region) ?? [])
+  const [hasLoaded, setHasLoaded] = useState(() => cache.has(region))
 
   useEffect(() => {
     if (!region) return
+    if (cache.has(region)) {
+      setBloodLevels(cache.get(region))
+      setHasLoaded(true)
+      return
+    }
     let cancelled = false
     setHasLoaded(false)
     fetchBloodLevels(region).then(rows => {
@@ -28,9 +39,9 @@ export function useBloodLevels(region) {
         const bloodType = row.blood_type.replace('0', 'O')
         if (!latestByType.has(bloodType)) latestByType.set(bloodType, { ...row, blood_type: bloodType })
       })
-      setBloodLevels(
-        BLOOD_TYPE_ORDER.map(bloodType => latestByType.get(bloodType)).filter(Boolean)
-      )
+      const levels = BLOOD_TYPE_ORDER.map(bloodType => latestByType.get(bloodType)).filter(Boolean)
+      cache.set(region, levels)
+      setBloodLevels(levels)
       setHasLoaded(true)
     })
     // Guards against an earlier region's slower response landing after a
