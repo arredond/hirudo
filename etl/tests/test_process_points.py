@@ -474,6 +474,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
             "direccion": ["CARRER DELEGADO VALERA, N. 50"],
             "restriction": [None],
             "plasma_only": [False],
+            "cita_previa": [False],
         }
     )
 
@@ -835,6 +836,7 @@ def test_scrape_mobile_points_valencia_flags_restriction_and_plasma(mocker):
             "direccion": ["AVDA. HERMANOS BOU, S/N", float("nan")],
             "restriction": ["(SOLO EMPLEADOS)", None],
             "plasma_only": [False, True],
+            "cita_previa": [False, True],
         }
     )
 
@@ -861,6 +863,7 @@ def test_scrape_mobile_points_valencia_flags_restriction_and_plasma(mocker):
     assert df["localidad"].tolist() == ["Castelló De La Plana", "Elche"]
     assert df["sangre"].tolist() == [True, False]
     assert df["plasma"].tolist() == [False, True]
+    assert df["cita_previa"].tolist() == [False, True]
     assert df["opening_hours"].iloc[0] == "2026 Oct 28 09:30-13:30,16:30-20:30"
     assert captured["df"]["address_direccion"].iloc[1] == (
         "ELCHE HOSPITAL GENERAL, Elche, Comunidad Valenciana, Spain"
@@ -1111,3 +1114,22 @@ def test_scrape_mobile_points_baleares_flags_aferesis_as_plasma(mocker):
     assert df["sangre"].iloc[1] == False
     assert df["opening_hours"].notna().all()
     assert df["region"].tolist() == ["Illes Balears", "Illes Balears"]
+
+
+def test_flag_appointments_combines_text_names_and_scraper_flags():
+    df = pd.DataFrame(
+        {
+            "name": ["Hospiten Bellevue", "Hospital Clínic", "A", "B"],
+            "horario": [
+                "Con cita previa telefónica 922 385 235. De lunes a viernes",
+                "Lunes a viernes de 8.30 a 21 h.",
+                "De 9 a 14 h.",
+                "De 9 a 14 h.",
+            ],
+            "cita_previa": [None, None, True, None],
+        }
+    )
+
+    df = main.flag_appointments(df, {"Hospital Clínic"})
+
+    assert df["cita_previa"].tolist() == [True, True, True, False]

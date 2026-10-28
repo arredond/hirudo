@@ -21,6 +21,7 @@ import pandas as pd
 import requests
 import unidecode
 from bs4 import BeautifulSoup
+from utils.crawl import crawl
 
 URL_BASE = "https://centro-transfusion.san.gva.es/"
 URL_POINTS = urllib.parse.urljoin(URL_BASE, "es/puntos-de-donacion")
@@ -378,5 +379,8 @@ def scrape_mobile_points(today: datetime.date | None = None) -> pd.DataFrame:
         )
         mobile = mobile.join(parts)
         mobile["plasma_only"] = mobile["ubicacion"].apply(is_plasma_only)
+        # Checked on the raw text: split_ubicacion drops the plasma marker
+        # ("... CON CITA PREVIA") that carries it.
+        mobile["cita_previa"] = mobile["ubicacion"].apply(crawl.requires_appointment)
         frames.append(mobile)
     return pd.concat(frames, ignore_index=True)

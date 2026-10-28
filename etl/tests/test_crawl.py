@@ -84,3 +84,20 @@ def test_title_name_keeps_spanish_particles_lowercase():
     assert title_name("ALCALÁ DE GUADAÍRA") == "Alcalá de Guadaíra"
     assert title_name("PUEBLA DEL RÍO") == "Puebla del Río"
     assert title_name("JEREZ DE LA FRONTERA") == "Jerez de la Frontera"
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("Con cita previa telefónica 928 730 362. Viernes de 08:00 a 14:00h.", True),
+        ("ELCHE-SOLO DONACIÓN DE PLASMA CON CITA PREVIA-ELCHE HOSPITAL", True),
+        ("Bilbao Bombero Etxaniz - Solo Plasma/Cita", True),
+        ("Donación previa cita en el teléfono 900", True),
+        ("¿Te has apuntado pero no podrás venir? Cancela la cita", False),
+        ("Hospital Universitari de Tortosa Verge de la Cinta", False),
+        ("De lunes a viernes de 9 a 20 h.", False),
+        (None, False),
+    ],
+)
+def test_requires_appointment(text, expected):
+    assert crawl.requires_appointment(text) is expected

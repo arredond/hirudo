@@ -751,6 +751,38 @@ def scrape_fixed_points_canarias() -> pd.DataFrame:
     return df.drop(columns=["address_direccion"])
 
 
+def load_cita_previa_fijos() -> set:
+    """Load the hand-maintained names of fixed points that need an appointment.
+
+    For sources that don't say so in any scraped text (see flag_appointments).
+    """
+    with open("utils/cita_previa_fijos.json", encoding="utf-8") as f:
+        return set(json.load(f))
+
+
+def flag_appointments(df: pd.DataFrame, names: set = frozenset()) -> pd.DataFrame:
+    """Set "cita_previa": whether a point only takes donors by appointment.
+
+    True when a region's scraper already flagged it, when its name is in
+    `names`, or when any of its text fields says so (crawl.APPOINTMENT_RE).
+    """
+    text_cols = [
+        col
+        for col in ["name", "horario", "observaciones", "informacion_al_donante"]
+        if col in df.columns
+    ]
+    flagged = (
+        df[text_cols]
+        .apply(lambda col: col.apply(crawl.requires_appointment))
+        .any(axis=1)
+    )
+    flagged |= df["name"].isin(names)
+    if "cita_previa" in df.columns:
+        flagged |= df["cita_previa"].fillna(False).astype(bool)
+    df["cita_previa"] = flagged
+    return df
+
+
 def process_fixed_points():
     """Scrape, enrich, and upload fixed donation points for every region."""
     df = pd.concat(
@@ -774,6 +806,7 @@ def process_fixed_points():
         ],
         ignore_index=True,
     )
+    df = flag_appointments(df, load_cita_previa_fijos())
     to_db(gdf_from_df(df), "puntos_fijos")
     log.info("Fixed points: uploaded %d rows", len(df))
 
@@ -1151,6 +1184,7 @@ def scrape_mobile_points_valencia() -> pd.DataFrame:
         "plasma",
         "sangre",
         "medula",
+        "cita_previa",
         "region",
     ]
     return df[output_cols + ["latitude", "longitude"]]
@@ -1622,6 +1656,7 @@ def process_mobile_points():
         ],
         ignore_index=True,
     )
+    df = flag_appointments(df)
     to_db(gdf_from_df(df), "puntos_moviles")
     log.info("Mobile points: uploaded %d rows", len(df))
 

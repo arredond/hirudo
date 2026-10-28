@@ -15,6 +15,14 @@ import requests
 GMAPS_PIN_RE = re.compile(r"!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)")
 GMAPS_VIEWPORT_RE = re.compile(r"@(-?\d+\.\d+),(-?\d+\.\d+)")
 
+# Wording sources use for a point that only takes donors by appointment:
+# "Con cita previa telefónica ..." (Canarias), "... PLASMA CON CITA PREVIA"
+# (Comunidad Valenciana), "Solo Plasma/Cita" (País Vasco), "previa cita".
+APPOINTMENT_RE = re.compile(
+    r"\bcon\s+cita\b|\bcita\s+previa\b|\bprevia\s+cita\b|/\s*cita\b",
+    re.IGNORECASE,
+)
+
 CERTS_DIR = pathlib.Path(__file__).resolve().parent.parent / "certs"
 
 SESSION = requests.Session()
@@ -43,6 +51,11 @@ def resolve_gmaps_coords(short_url: str) -> tuple[float, float]:
     if not match:
         raise ValueError(f"Could not extract coordinates from redirect: {location}")
     return float(match.group(1)), float(match.group(2))
+
+
+def requires_appointment(text) -> bool:
+    """Tell whether a point's text says it only takes donors by appointment."""
+    return isinstance(text, str) and bool(APPOINTMENT_RE.search(text))
 
 
 def ca_bundle_with(*cert_names: str) -> str:

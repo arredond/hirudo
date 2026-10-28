@@ -31,6 +31,9 @@ export function getPointInfo(point) {
     // Castilla-La Mancha's mobile points ever mark a point sangre: false (a
     // plasma-only stop) — everywhere else the field is simply absent, so the
     // default stays permissive (matches App.jsx's donation-type filter).
+    // Set by the ETL (flag_appointments) where the source says the point only
+    // takes donors by appointment; absent or false means walk-ins are fine.
+    appointmentRequired: p.cita_previa === true,
     donationTypes: {
       plasma: Boolean(p.plasma),
       sangre: p.sangre !== false,
