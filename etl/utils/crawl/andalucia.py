@@ -63,6 +63,10 @@ WEEKDAY_CODES = {
 HOURS_RANGE_RE = re.compile(
     r"(\d{1,2})(?:[:.,](\d{2}))?\s*(?:a|A|-)\s*(\d{1,2})(?:[:.,](\d{2}))?"
 )
+# An open-ended start ("DESDE LAS 17,00 HORAS"): the source gives no closing
+# time, so ASSUMED_CLOSING_TIME is used for it.
+OPEN_ENDED_RE = re.compile(r"DESDE\s+LAS\s+(\d{1,2})(?:[:.,](\d{2}))?", re.IGNORECASE)
+ASSUMED_CLOSING_TIME = "20:00"
 
 MOBILE_COLUMNS = {
     "Fecha": "fecha",
@@ -128,15 +132,24 @@ def parse_fixed_point(soup: BeautifulSoup) -> dict:
 def normalize_hours(horario: str) -> str:
     """Rewrite a mobile stop's hours as "HH:MM - HH:MM" ranges joined by " | ".
 
-    Text with no time range at all (e.g. "DESDE LAS 17,00 HORAS") is returned
-    unchanged, so parse_mobile_hours logs it downstream.
+    An open-ended start ("DESDE LAS 17,00 HORAS") is closed at
+    ASSUMED_CLOSING_TIME, unless it starts at or after it. Any other text with
+    no time range is returned unchanged, so parse_mobile_hours logs it
+    downstream.
     """
     ranges = []
     for open_h, open_m, close_h, close_m in HOURS_RANGE_RE.findall(horario):
         ranges.append(
             f"{int(open_h):02d}:{open_m or '00'} - {int(close_h):02d}:{close_m or '00'}"
         )
-    return " | ".join(ranges) if ranges else horario
+    if ranges:
+        return " | ".join(ranges)
+    open_ended = OPEN_ENDED_RE.search(horario)
+    if open_ended:
+        opening = f"{int(open_ended.group(1)):02d}:{open_ended.group(2) or '00'}"
+        if opening < ASSUMED_CLOSING_TIME:
+            return f"{opening} - {ASSUMED_CLOSING_TIME}"
+    return horario
 
 
 # A plasma-only session at the CTTC itself: Almería writes it as the town

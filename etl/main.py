@@ -737,7 +737,8 @@ def scrape_mobile_points_andalucia() -> pd.DataFrame:
     Like Castilla-La Mancha's, a stop has only a town and a venue ("Lugar",
     e.g. "CENTRO DE SALUD"), so that pair is the one geocoding candidate.
     Hours are parsed per day (see parse_mobile_hours); open-ended ones such
-    as "DESDE LAS 17,00 HORAS" stay unset. Plasma-only sessions at a centre
+    as "DESDE LAS 17,00 HORAS" are assumed to close at 20:00 (see
+    andalucia.normalize_hours). Plasma-only sessions at a centre
     are flagged plasma (and not sangre); every other stop leaves both unset,
     since the source doesn't say.
     """

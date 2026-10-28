@@ -235,9 +235,10 @@ wired in once its sources are known.
   `parse_mobile_hours`. Venues are geocoded from venue + town (like
   Castilla-La Mancha's), with no Places lookup. Mobile stops don't say
   whether they take whole blood or plasma, so `sangre`/`plasma` stay unset.
-- Known quirks: "DESDE LAS 17,00 HORAS" (open-ended, no closing time) gets no
-  `opening_hours`; one Almería stop lists "Plasma Centro de Transfusion" as
-  its town.
+- Known quirks: "DESDE LAS 17,00 HORAS" (open-ended, no closing time) is
+  assumed to close at 20:00 (`ASSUMED_CLOSING_TIME`); plasma-only sessions at
+  a CTTC name "plasma" in the town or venue (Almería writes "Plasma Centro de
+  Transfusion" as the town, which is replaced by the centre's municipality).
 - Blood levels: none. The CTTC pages and the entry page show no reserve or
   semáforo level, so there's no `scrape_blood_levels_andalucia`.
 - Boundary polygon: mainland Andalucía only (the Ceuta/Melilla and island

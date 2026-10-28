@@ -56,7 +56,7 @@ def test_parse_mobile_points_rebuilds_dates_and_normalizes_hours():
         "17:00 - 21:00",
         "17:00 - 21:00",
         "09:30 - 13:30 | 16:30 - 20:30",
-        "DESDE LAS 17,00 HORAS",
+        "17:00 - 20:00",
     ]
     assert set(df["url"]) == {andalucia.center_url("Sevilla")}
 
@@ -76,7 +76,9 @@ def test_parse_mobile_points_without_table_is_empty():
         ("16 a 20:30 HORAS", "16:00 - 20:30"),
         ("10 a 14 Y 17 a 21 HORAS", "10:00 - 14:00 | 17:00 - 21:00"),
         ("10:00-14:00 /17:00-21:00", "10:00 - 14:00 | 17:00 - 21:00"),
-        ("DESDE LAS 17,00 HORAS", "DESDE LAS 17,00 HORAS"),
+        ("DESDE LAS 17,00 HORAS", "17:00 - 20:00"),
+        ("DESDE LAS 9,30 HORAS", "09:30 - 20:00"),
+        ("DESDE LAS 20,30 HORAS", "DESDE LAS 20,30 HORAS"),
     ],
 )
 def test_normalize_hours(horario, expected):
