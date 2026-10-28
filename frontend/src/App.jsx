@@ -1,26 +1,26 @@
-import { useState, useMemo, useRef, useLayoutEffect, useEffect } from 'react'
+import { useState, useMemo, useRef, useLayoutEffect } from 'react'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import Header from './components/Header'
 import DateNav from './components/DateNav'
-import FilterChips from './components/FilterChips'
 import MapView from './components/MapView'
 import ListPanel from './components/ListPanel'
 import Popup from './components/Popup'
+import MedulaInfoCard from './components/MedulaInfoCard'
 import { useBloodPoints } from './hooks/useBloodPoints'
 import { useNowTick } from './hooks/useNowTick'
 import { getOpenStatus } from './lib/openingHours'
 import { regionAt, nearestCoveredRegion } from './lib/regions'
+import { medulaInfo, takesMedula } from './lib/medula'
 
 dayjs.locale('es')
 
 export default function App() {
-  // Defaults: "Abierto ahora" tab (selectedDate = null, see DateNav) and the
-  // "Sangre" filter chip.
+  // Defaults: "Abierto ahora" tab (selectedDate = null, see DateNav) and
+  // "sangre" as the donation type (picked from the header title).
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedPoint, setSelectedPoint] = useState(null)
   const [showList, setShowList] = useState(false)
-  const [showOnlyFixed, setShowOnlyFixed] = useState(false)
   // Single-select, not independent toggles: every point takes whole blood, but
   // plasma/médula are only taken at a handful of points, so showing "sangre OR
   // plasma OR médula" together read as noise in practice. One donation type is
@@ -59,43 +59,33 @@ export default function App() {
         )
       : features
 
-  // Every point takes "sangre" (whole blood) by default; plasma/médula are only
-  // taken where the corresponding flag is set — see getPointInfo in lib/pointHelpers.js.
+  // Every point takes "sangre" (whole blood) by default; plasma is only taken
+  // where its flag is set, and médula wherever the point's region's rule says
+  // (see takesMedula in lib/medula.js) — see getPointInfo in lib/pointHelpers.js.
   // "sangre" is the one type a point can explicitly opt *out* of rather than
   // into: Castilla-La Mancha's mobile points mark plasma-only stops with
   // sangre: false (every other point simply never sets the field, so the
   // default stays permissive there).
-  const filterByDonationType = features =>
-    donationType === 'sangre'
-      ? features.filter(f => f.properties?.sangre !== false)
-      : features.filter(f => Boolean(f.properties?.[donationType]))
+  const filterByDonationType = features => {
+    if (donationType === 'sangre') return features.filter(f => f.properties?.sangre !== false)
+    if (donationType === 'medula') return features.filter(takesMedula)
+    return features.filter(f => Boolean(f.properties?.[donationType]))
+  }
 
   // Bucketed to the minute, and only ticking at all while "Abierto ahora" is
   // active, so the memos below don't get invalidated by the clock when the
   // open-now filter isn't even in play.
   const openNowMinute = showOnlyOpenNow ? Math.floor(now.getTime() / 60_000) : null
 
-  // Everything below the date/"solo puntos fijos" filters but above the
-  // donation-type filter — shared by the visible points (further narrowed to
-  // the selected type) and the per-type counts shown on the chips (which need
-  // every type's count regardless of which one is currently selected).
+  // Everything below the date filter but above the donation-type filter.
   const openNowFixedPoints = useMemo(
     () => filterByOpenNow(fixedPoints),
     [fixedPoints, showOnlyOpenNow, openNowMinute]
   )
   const openNowMobilePoints = useMemo(
-    () => filterByOpenNow(showOnlyFixed ? [] : mobilePoints),
-    [mobilePoints, showOnlyOpenNow, openNowMinute, showOnlyFixed]
+    () => filterByOpenNow(mobilePoints),
+    [mobilePoints, showOnlyOpenNow, openNowMinute]
   )
-
-  const donationTypeCounts = useMemo(() => {
-    const all = [...openNowFixedPoints, ...openNowMobilePoints]
-    return {
-      sangre: all.filter(f => f.properties?.sangre !== false).length,
-      plasma: all.filter(f => Boolean(f.properties?.plasma)).length,
-      medula: all.filter(f => Boolean(f.properties?.medula)).length,
-    }
-  }, [openNowFixedPoints, openNowMobilePoints])
 
   // Memoized so MapView's marker-rebuild effects (keyed on these arrays) don't fire
   // on every render — e.g. after a flyTo's moveend updates mapCenter — which was
@@ -108,16 +98,6 @@ export default function App() {
     () => filterByDonationType(openNowMobilePoints),
     [openNowMobilePoints, donationType]
   )
-
-  // Médula is taken at exactly one point (see puntos_fijos_otras_donaciones.json), so
-  // rather than just fitting it like any other single marker, select it
-  // automatically; MapView frames it together with userLocation via focusCompanion
-  // below (whenever it's known — including if it resolves after this selection).
-  useEffect(() => {
-    if (donationType !== 'medula') return
-    const centro = fixedPoints.find(f => Boolean(f.properties?.medula))
-    if (centro) setSelectedPoint(centro)
-  }, [donationType, fixedPoints])
 
   // The region named in the header title (and driving which region's blood
   // levels are fetched) — whichever region's real boundary the map center
@@ -135,6 +115,11 @@ export default function App() {
   // of tracking a separately-held "selected region" — nearestRegion then picks
   // it back up on its own once the map settles (moveend), same as panning
   // there by hand would.
+  // In regions where bone marrow sign-up starts with a phone call or a form,
+  // the map rightly shows no points for it; MedulaInfoCard explains that, so
+  // the "nothing open right now" overlay below would only contradict it.
+  const medulaHasNoPoints = donationType === 'medula' && medulaInfo(currentRegion).where === 'none'
+
   const handleSelectRegion = region => {
     const coords = fixedPoints
       .filter(f => f.properties?.region === region)
@@ -161,7 +146,6 @@ export default function App() {
             onSelectPoint={setSelectedPoint}
             onUserLocation={setUserLocation}
             onCenterChange={setMapCenter}
-            focusCompanion={donationType === 'medula' ? userLocation : null}
           />
           {selectedPoint && (
             <Popup point={selectedPoint} onClose={() => setSelectedPoint(null)} />
@@ -170,6 +154,7 @@ export default function App() {
               exactly like a broken one — say so, and offer today's full list.
               Only once both point sets have loaded, so it doesn't flash. */}
           {showOnlyOpenNow &&
+            !medulaHasNoPoints &&
             fixedPoints.length > 0 &&
             !loadingMobile &&
             visibleFixedPoints.length + visibleMobilePoints.length === 0 && (
@@ -187,8 +172,8 @@ export default function App() {
             )}
         </div>
 
-        {/* Floating controls: date tabs + list on the left, filter chips on the
-            right — all overlaid on top of the full-width map. */}
+        {/* Floating controls: date tabs + list on the left, the médula info
+            card on the right — all overlaid on top of the full-width map. */}
         <div className="absolute inset-4 z-10 flex flex-col md:flex-row md:items-start md:justify-between gap-3 pointer-events-none">
           <div
             // max-w leaves clearance on mobile for the map's own geolocate button,
@@ -227,18 +212,16 @@ export default function App() {
               </button>
             )}
           </div>
-          {/* Mobile: pinned to the bottom edge instead of flowing after the date
-              tabs, which was crowding the middle of the map. Desktop keeps its
-              spot at the top, opposite the date tabs (see the md: overrides). */}
-          <div className="pointer-events-auto fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-10 md:static md:inset-auto md:bottom-auto md:z-auto">
-            <FilterChips
-              donationType={donationType}
-              onSelectDonationType={setDonationType}
-              counts={donationTypeCounts}
-              showOnlyFixed={showOnlyFixed}
-              onToggleFixed={() => setShowOnlyFixed(v => !v)}
-            />
-          </div>
+          {/* Mobile: pinned to the bottom edge, and hidden while a point's popup
+              (a bottom sheet there) is open. Desktop: top right, opposite the
+              date tabs. */}
+          {donationType === 'medula' && (
+            <div
+              className={`${selectedPoint ? 'hidden md:block' : ''} pointer-events-auto fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-10 flex justify-center md:static md:inset-auto md:bottom-auto md:z-auto md:block`}
+            >
+              <MedulaInfoCard region={currentRegion} />
+            </div>
+          )}
         </div>
       </div>
     </div>

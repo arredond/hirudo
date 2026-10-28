@@ -17,6 +17,10 @@ efectodonacion.com/plasma), Cantabria (Valdecilla), Castilla y León (every
 fixed point in a provincial capital), Illes Balears (Palma), La Rioja and
 Asturias (HUCA). Nothing official was found for Castilla-La Mancha's hospital
 points or Melilla; País Vasco's plasma page names provinces, not centres.
+Each region's official pages as shown in the app (main site, plasma and
+médula pages) and how to register as a bone marrow donor there live in
+`frontend/src/data/regions.json`, keyed by the exact `REGION` name.
+
 Points that only take donors by appointment can likewise be listed by hand in
 `etl/utils/cita_previa_fijos.json`.
 

@@ -1,0 +1,216 @@
+{
+  "Andalucía": {
+    "links": {
+      "sangre": "https://www.sspa.juntadeandalucia.es/servicioandaluzdesalud/ciudadania/donar-sangre",
+      "plasma": "https://www.sspa.juntadeandalucia.es/servicioandaluzdesalud/ciudadania/donar-sangre/donar-plasma",
+      "medula": "https://www.sspa.juntadeandalucia.es/servicioandaluzdesalud/ramttc/donantes/otras-donaciones/donar-medula"
+    },
+    "medula": {
+      "where": "fixed",
+      "summary": "Acude al Centro de Transfusión, Tejidos y Células de tu provincia (en Cádiz, también al Hospital de La Línea). Te sacarán una pequeña muestra de sangre."
+    }
+  },
+  "Aragón": {
+    "links": {
+      "sangre": "https://bancosangrearagon.org/",
+      "plasma": "https://bancosangrearagon.org/donacion-de-plasma-sanguineo/",
+      "medula": "https://bancosangrearagon.org/donacion-de-medula/"
+    },
+    "medula": {
+      "where": "all",
+      "summary": "Puedes registrarte en cualquier punto de donación de sangre de Aragón, unidades móviles incluidas. Díselo al personal y te sacarán una muestra.",
+      "phone": "876 764 300"
+    }
+  },
+  "Canarias": {
+    "links": {
+      "sangre": "https://efectodonacion.com/",
+      "plasma": "https://efectodonacion.com/plasma/",
+      "medula": "https://efectodonacion.com/donacion-de-medula/"
+    },
+    "medula": {
+      "where": "centres",
+      "centres": [
+        "Hospital Univ. de G.C. Dr. Negrin",
+        "Banco Provincial de las Palmas (Dghh)",
+        "Hospital Universitario de Canarias",
+        "Banco Provincial de S/C de Tenerife (Dghh)",
+        "San Isidro- Centro de Salud",
+        "Hospital Universitario Dr. José Molina Orosa",
+        "Hospital General de Fuerteventura",
+        "Hospital Universitario de la Palma",
+        "Hospital Insular Nª Sª de los Reyes",
+        "Hospital Nª Sª de Guadalupe"
+      ],
+      "summary": "Rellena y firma el consentimiento y llévalo cuando vayas a donar sangre a uno de estos puntos fijos del ICHH. También puedes inscribirte online.",
+      "phone": "900 234 061",
+      "formUrl": "https://canarias.medulaosea.org/"
+    }
+  },
+  "Cantabria": {
+    "links": {
+      "sangre": "https://www.hdsc.org/"
+    },
+    "medula": {
+      "where": "fixed",
+      "summary": "Pide cita en el Banco de Sangre y Tejidos de Cantabria: firmarás el consentimiento y te sacarán una pequeña muestra de sangre.",
+      "phone": "942 202 588"
+    }
+  },
+  "Castilla y León": {
+    "links": {
+      "sangre": "https://www.centrodehemoterapiacyl.es/",
+      "plasma": "https://www.centrodehemoterapiacyl.es/aferesis/",
+      "medula": "https://www.saludcastillayleon.es/es/donaciones-trasplantes/donacion-medula-osea"
+    },
+    "medula": {
+      "where": "none",
+      "summary": "Te inscribes online y te envían por correo un kit de saliva y el consentimiento, que devuelves en un sobre prefranqueado. No hace falta ir a ningún centro.",
+      "phone": "983 328 000 ext. 89133",
+      "formUrl": "https://castillayleon.medulaosea.org/"
+    }
+  },
+  "Castilla-La Mancha": {
+    "links": {
+      "sangre": "https://sanidad.castillalamancha.es/ciudadanos/hazte-donante-sangre/puntos-fijos-de-donacion",
+      "medula": "https://sanidad.castillalamancha.es/ciudadanos/donantes/donantes-de-medula-osea-en-castilla-la-mancha"
+    },
+    "medula": {
+      "where": "none",
+      "summary": "Envía la solicitud y te llamarán para darte cita en tu hospital más cercano, donde te sacarán una muestra de sangre.",
+      "phone": "925 274 225",
+      "formUrl": "https://sescam.jccm.es/domeos/"
+    }
+  },
+  "Cataluña": {
+    "links": {
+      "sangre": "https://www.bancsang.net/",
+      "plasma": "https://www.bancsang.net/es/donaciones/plasma/",
+      "medula": "https://www.bancsang.net/es/donaciones/medula-osea/"
+    },
+    "medula": {
+      "where": "all",
+      "summary": "Puedes registrarte en cualquier campaña de donación o hospital con banco de sangre: díselo al personal y te sacarán una muestra. Si quieres, inscríbete antes online.",
+      "phone": "93 557 35 00",
+      "formUrl": "https://catalunya.medulaosea.org/es/"
+    }
+  },
+  "Comunidad de Madrid": {
+    "links": {
+      "sangre": "https://www.comunidad.madrid/hospital/centrodetransfusion/",
+      "plasma": "https://www.comunidad.madrid/hospital/centrodetransfusion/ciudadanos/es-plasma",
+      "medula": "https://www.comunidad.madrid/donarmedula"
+    },
+    "medula": {
+      "where": "fixed",
+      "summary": "Acude a cualquier punto fijo de donación de sangre, no hace falta donar. En las unidades móviles solo si además donas sangre.",
+      "phone": "900 303 530"
+    }
+  },
+  "Comunidad Foral de Navarra": {
+    "links": {
+      "sangre": "https://adona.es/es/",
+      "plasma": "https://adona.es/es/dona-sangre/reservar-cita",
+      "medula": "https://adona.es/es/hazte-donante/puedo-donar-medula"
+    },
+    "medula": {
+      "where": "all",
+      "summary": "Acude a cualquier punto de donación (Pamplona, Tudela o la unidad móvil): rellenarás un cuestionario y te sacarán una muestra de sangre.",
+      "phone": "848 422 490"
+    }
+  },
+  "Comunidad Valenciana": {
+    "links": {
+      "sangre": "https://centro-transfusion.san.gva.es/",
+      "plasma": "https://centro-transfusion.san.gva.es/es/plasmaferesi",
+      "medula": "https://centro-transfusion.san.gva.es/es/registro-de-donantes-de-medula-osea"
+    },
+    "medula": {
+      "where": "centres",
+      "centres": [
+        "Centro de Transfusión de la Comunitat Valenciana",
+        "Centro de Transfusión de Alicante",
+        "Centro de Transfusión de Castellón"
+      ],
+      "summary": "Acude al Centro de Transfusión de tu provincia (Valencia, Alicante o Castellón), donde podrás registrarte.",
+      "phone": "900 102 688"
+    }
+  },
+  "Galicia": {
+    "links": {
+      "sangre": "https://ados.sergas.gal/",
+      "plasma": "https://ados.sergas.gal/cartafol/Sangue-Plasmaferesis",
+      "medula": "https://ados.sergas.gal/cartafol/medula-doazon"
+    },
+    "medula": {
+      "where": "none",
+      "summary": "Llama al teléfono de atención al donante de ADOS, que te explicará los pasos, o inscríbete online.",
+      "phone": "900 100 828",
+      "formUrl": "https://galicia.medulaosea.org/"
+    }
+  },
+  "Illes Balears": {
+    "links": {
+      "sangre": "https://www.donasang.org/es_index.php",
+      "plasma": "https://www.donasang.org/donacio-per-aferesis/es_index.php"
+    },
+    "medula": {
+      "where": "centres",
+      "centres": [
+        "Palma (Mallorca). Banco de sangre"
+      ],
+      "summary": "El registro se hace en el Banco de Sangre y Tejidos de Palma. Llama antes para confirmar cómo y cuándo.",
+      "phone": "971 764 433"
+    }
+  },
+  "La Rioja": {
+    "links": {
+      "sangre": "https://www.bancosangrerioja.org/",
+      "plasma": "https://www.bancosangrerioja.org/donacion/donacion-aferesis",
+      "medula": "https://www.riojasalud.es/servicios/trasplantes/articulos/donacion-de-medula-osea"
+    },
+    "medula": {
+      "where": "none",
+      "summary": "Contacta con la Coordinación de Trasplantes del Hospital San Pedro: tras una reunión informativa, te citarán para sacarte una muestra de sangre.",
+      "phone": "941 298 355"
+    }
+  },
+  "Melilla": {
+    "links": {
+      "sangre": "https://ingesa.sanidad.gob.es/melilla/Area-Sanitaria/Centros-de-Donaci-n.html"
+    },
+    "medula": {
+      "where": "centres",
+      "centres": [
+        "Centro de Transfusión de Melilla"
+      ],
+      "summary": "El registro se hace en el Centro de Transfusión de Melilla. Llama antes para confirmar cómo y cuándo.",
+      "phone": "951 320 224"
+    }
+  },
+  "País Vasco": {
+    "links": {
+      "sangre": "https://donantesdesangre.eus/",
+      "plasma": "https://donantesdesangre.eus/donar-plasma/",
+      "medula": "https://www.osakidetza.euskadi.eus/me-interesa/-/donacion-de-medula-osea/"
+    },
+    "medula": {
+      "where": "none",
+      "summary": "Inscríbete online y te darán cita con Coordinación de Trasplantes o el Centro Vasco de Transfusión para un análisis de sangre y firmar el consentimiento.",
+      "phone": "900 303 404",
+      "formUrl": "https://euskadi.medulaosea.org/"
+    }
+  },
+  "Principado de Asturias": {
+    "links": {
+      "sangre": "https://donasturias.org/",
+      "plasma": "https://donasturias.org/aferesis/",
+      "medula": "https://donasturias.org/medula-osea/"
+    },
+    "medula": {
+      "where": "none",
+      "summary": "Llama al Centro Comunitario de Sangre y Tejidos y te explicarán los pasos.",
+      "phone": "985 232 426"
+    }
+  }
+}

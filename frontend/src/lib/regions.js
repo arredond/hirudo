@@ -1,27 +1,26 @@
 import { haversine } from './geo'
 import regionBoundaries from '../data/regionBoundaries.json'
+import regionData from '../data/regions.json'
 
-// Every region the ETL covers (the REGION constants in etl/regions/) — also
-// the option list for the header's region dropdown, so kept in alphabetical
-// order.
-export const REGIONS = [
-  'Andalucía',
-  'Aragón',
-  'Canarias',
-  'Cantabria',
-  'Castilla y León',
-  'Castilla-La Mancha',
-  'Cataluña',
-  'Comunidad de Madrid',
-  'Comunidad Foral de Navarra',
-  'Comunidad Valenciana',
-  'Galicia',
-  'Illes Balears',
-  'La Rioja',
-  'Melilla',
-  'País Vasco',
-  'Principado de Asturias',
-]
+// Per-region app data, one entry per region the ETL covers (the REGION
+// constants in etl/regions/), keyed by that exact name:
+//   - links: the official page for each donation type ("sangre" is the
+//     region's transfusion centre / blood bank home page; "plasma" and
+//     "medula" are its pages for those, where it has one), opened from the
+//     info icon next to the header's region dropdown
+//   - medula: how to register as a bone marrow donor there (see lib/medula.js)
+// Kept in alphabetical order, since its keys are also the header's region
+// dropdown options.
+export const REGIONS = Object.keys(regionData)
+
+// The official page for a donation type in a region, falling back to the
+// region's main page when it has none for that type.
+export function regionLink(region, donationType) {
+  const links = regionData[region]?.links
+  if (!links) return null
+  const url = links[donationType] ?? links.sangre
+  return { url, isTypeSpecific: donationType !== 'sangre' && Boolean(links[donationType]) }
+}
 
 // regionBoundaries.json holds just these regions' real polygons, trimmed
 // from codeforgermany/click_that_hood's spain-communities.geojson (public

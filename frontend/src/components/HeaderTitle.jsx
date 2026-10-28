@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { REGIONS } from '../lib/regions'
+import { REGIONS, regionLink } from '../lib/regions'
 import { DONATION_TYPES, DONATION_TYPE_LABELS } from '../lib/donationTypes'
 
 function useOutsideClick(onOutside) {
@@ -52,6 +52,38 @@ function TitleDropdown({ label, value, options, renderOption, onSelect }) {
   )
 }
 
+// Info icon after the region dropdown, opening that region's official
+// transfusion centre page — or its plasma / bone marrow page while that
+// donation type is selected, where the region has one (see regionLink in
+// lib/regions.js).
+const TYPE_LINK_TITLES = { plasma: 'Donar plasma', medula: 'Donar médula' }
+
+function RegionInfoLink({ region, donationType }) {
+  const link = regionLink(region, donationType)
+  if (!link) return null
+  const href = link.url
+  const title = link.isTypeSpecific
+    ? `${TYPE_LINK_TITLES[donationType]} en ${region}: web oficial`
+    : `Web oficial de donación en ${region}`
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={title}
+      aria-label={title}
+      className="inline-flex align-middle ml-1.5 -mt-0.5 text-gray-700 hover:text-red-600 transition-colors"
+    >
+      <svg className="w-[0.8em] h-[0.8em]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg>
+    </a>
+  )
+}
+
 // "dónde donar [sangre] en [Castilla y León]" — the two bracketed words track
 // the donation-type filter and the region the map is currently centered on
 // (see nearestRegion in lib/regions.js), and are independently clickable to
@@ -74,6 +106,7 @@ export default function HeaderTitle({ donationType, onSelectDonationType, region
         options={REGIONS}
         onSelect={onSelectRegion}
       />
+      <RegionInfoLink region={region} donationType={donationType} />
     </div>
   )
 }

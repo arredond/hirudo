@@ -1,5 +1,4 @@
-// Matches FilterChips' options and App's `donationType` state values —
-// shared here so the header title's dropdown stays in sync with the chips.
+// App's `donationType` state values, picked from the header title's dropdown.
 export const DONATION_TYPES = ['sangre', 'medula', 'plasma']
 
 export const DONATION_TYPE_LABELS = {
