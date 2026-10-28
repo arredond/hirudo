@@ -118,3 +118,11 @@ def test_fetch_stop_coordinates_none_when_map_has_no_coords():
     responses.add(responses.GET, STOP_URL + "5014", body=LA_RIOJA_STOP_NO_MAP_HTML)
 
     assert la_rioja.fetch_stop_coordinates(STOP_URL + "5014") == (None, None)
+
+
+@responses.activate
+def test_fetch_stop_coordinates_none_when_map_is_pinned_at_zero():
+    html = LA_RIOJA_STOP_NO_MAP_HTML.replace("q=%2C", "q=0%2C0")
+    responses.add(responses.GET, STOP_URL + "5049", body=html)
+
+    assert la_rioja.fetch_stop_coordinates(STOP_URL + "5049") == (None, None)

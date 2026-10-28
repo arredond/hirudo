@@ -153,11 +153,17 @@ def parse_calendar(
 
 
 def fetch_stop_coordinates(url: str) -> tuple[float | None, float | None]:
-    """Read a stop's exact coordinates from its detail page's embedded map."""
+    """Read a stop's exact coordinates from its detail page's embedded map.
+
+    A map pinned at 0,0 (seen on some stops) counts as having none.
+    """
     match = STOP_MAP_RE.search(SESSION.get(url).text)
     if not match:
         return (None, None)
-    return (float(match.group(1)), float(match.group(2)))
+    latitude, longitude = float(match.group(1)), float(match.group(2))
+    if latitude == 0 and longitude == 0:
+        return (None, None)
+    return (latitude, longitude)
 
 
 def scrape_mobile_points(today: datetime.date | None = None) -> pd.DataFrame:
