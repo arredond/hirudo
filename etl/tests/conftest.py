@@ -998,3 +998,88 @@ ASTURIAS_EVENTS_JSON = r"""
  ]
 }
 """
+
+
+# Trimmed from https://www.donasang.org/on-puc-donar/es_calendari/index.php —
+# the "Puntos fijos" list of the three centres (Palma, Mahón, Eivissa).
+BALEARS_FIXED_POINTS_HTML = """<html><body>
+<div id="centresFixos" class="clearfix">
+			<h3>Puntos fijos</h3>
+<ul class='clearfix'><li>
+<h4><a href='/on-puc-donar/es_punts-fixes/1/palma-mallorca-banco-de-sangre'>Palma (Mallorca). Banco de sangre</a></h4>
+<p>Rosselló i Cazador, 20<br />Teléfono: <span>971 76 44 33</span><br />Horario de donaciones De lunes a viernes, de 8:00 a 20:30 h Sábados, de 9:00 a 13:30 h  Cómo llegar Ven a donar sangre en transporte público: líneas 11, 12, 20, 22, 24 y 40.  También dispones de parking y zona ORA en los alrededores.</p></li>
+<li>
+<h4><a href='/on-puc-donar/es_punts-fixes/4/mahon-menorca-centro-de-donaciones'>Mahón (Menorca). Centro de Donaciones</a></h4>
+<p>Pintor Calbó, 71<br />Teléfono: <span>971 36 97 54</span><br />Consultar calendario campañas</p></li>
+<li>
+<h4><a href='/on-puc-donar/es_punts-fixes/6/eivissa'>Eivissa</a></h4>
+<p>Hospital Can Misses. Antiguas Urgencias<br />Teléfono: <span>971302468</span><br />Consultar calendario campañas</p></li>
+</ul>
+</div>
+</body></html>
+"""
+
+# Trimmed from https://www.donasang.org/on-puc-donar/es_calendari/punts.php?PAGE=1
+# — the first page of the day calendar: three event days (28-30 Oct 2026),
+# its pager (18 pages), with the fixed centres' list beside it dropped.
+BALEARS_CALENDAR_HTML = """<html><body>
+<div id="colPunts" class="clearfix">
+			<ul id="dies">
+				
+				<li>
+				<h2>Miercoles,&nbsp;28&nbsp;de Octubre&nbsp;de&nbsp;2026</h2>
+				<ul class="llistatPobles clearfix"><li ><h3><a href="/on-puc-donar/es_calendari/46968/palma">Palma</a></h3><p><strong>Banc de Sang i Teixits</strong></p><p class="subtitle">Rosselló i Caçador, 20</p><span class="hores">de&nbsp;08:00h.&nbsp;a&nbsp;20:30h.</span></li><li ><h3><a href="/on-puc-donar/es_calendari/46970/palma">Palma</a></h3><p><strong>ESCOLA D'HOTELERIA DE LES ILLES BALEARS</strong></p><p class="subtitle">BUS DAVANT RODONA<br/>CTRA. VALLDEMOSSA, KM 7,5</p><span class="hores">de&nbsp;09:00h.&nbsp;a&nbsp;13:30h.</span></li><li class="tercer"><h3><a href="/on-puc-donar/es_calendari/46973/sant-jordi">Sant Jordi (Sant Josep)</a></h3><p><strong>IES ALGARB</strong></p><p class="subtitle">CARRETERA AEROPORT, KM. 3</p><span class="hores">de&nbsp;09:00h.&nbsp;a&nbsp;14:00h.</span></li><li ><h3><a href="/on-puc-donar/es_calendari/46971/algaida">Algaida</a></h3><p><strong>ALGAIDA</strong></p><p class="subtitle">UNITAT BASICA<br/>C/ JOAN ALCOVER, 5</p><span class="hores">de&nbsp;16:30h.&nbsp;a&nbsp;21:00h.</span></li><li ><h3><a href="/on-puc-donar/es_calendari/46969/consell">Consell</a></h3><p><strong>CONSELL</strong></p><p class="subtitle">UNITAT BASICA C/BARTOMEU FIOL COSME</p><span class="hores">de&nbsp;16:30h.&nbsp;a&nbsp;21:00h.</span></li><li class="tercer"><h3><a href="/on-puc-donar/es_calendari/46972/sant-climent">Sant Climent (Maó)</a></h3><p><strong>SANT CLIMENT</strong></p><p class="subtitle">LOCAL GROS ANTIGA ESCOLA</p><span class="hores">de&nbsp;17:00h.&nbsp;a&nbsp;21:00h.</span></li></ul>
+				</li>
+				
+				<li>
+				<h2>Jueves,&nbsp;29&nbsp;de Octubre&nbsp;de&nbsp;2026</h2>
+				<ul class="llistatPobles clearfix"><li ><h3><a href="/on-puc-donar/es_calendari/46974/palma">Palma</a></h3><p><strong>Banc de Sang i Teixits</strong></p><p class="subtitle">Rosselló i Caçador, 20</p><span class="hores">de&nbsp;08:00h.&nbsp;a&nbsp;20:30h.</span></li><li ><h3><a href="/on-puc-donar/es_calendari/46975/palma">Palma</a></h3><p><strong>PALMA BUS</strong></p><p class="subtitle">BUS PL. PORT PINTADA<br/>CANTONADA C/SANT MIQUEL</p><span class="hores">de&nbsp;09:30h.&nbsp;a&nbsp;14:00h.</span></li><li class="tercer"><h3><a href="/on-puc-donar/es_calendari/46979/eivissa">Eivissa</a></h3><p><strong>EIVISSA</strong></p><p class="subtitle">CENTRE EXTRACCIO HOSPITAL CAN MISSES<br/>C/ CORONA, S/N</p><span class="hores">de&nbsp;16:00h.&nbsp;a&nbsp;20:30h.</span></li><li ><h3><a href="/on-puc-donar/es_calendari/46977/manacor">Manacor</a></h3><p><strong>MANACOR</strong></p><p class="subtitle">CENTRE SANITARI<br/>C/ SIMO TORT, 19</p><span class="hores">de&nbsp;16:30h.&nbsp;a&nbsp;20:30h.</span></li><li ><h3><a href="/on-puc-donar/es_calendari/46976/porto-cristo">Porto Cristo (Manacor)</a></h3><p><strong>PORTO CRISTO</strong></p><p class="subtitle">CENTRE SANITARI<br/>C/ DEN VILLALONGA</p><span class="hores">de&nbsp;16:30h.&nbsp;a&nbsp;21:00h.</span></li><li class="tercer"><h3><a href="/on-puc-donar/es_calendari/46978/manacor">Manacor</a></h3><p><strong>AFERESI / AFERESIS  MANACOR</strong></p><p class="subtitle">CENTRE SANITARI<br/>C/ SIMO TORT, 19</p><span class="hores">de&nbsp;16:30h.&nbsp;a&nbsp;20:30h.</span></li></ul>
+				</li>
+				
+				<li>
+				<h2>Viernes,&nbsp;30&nbsp;de Octubre&nbsp;de&nbsp;2026</h2>
+				<ul class="llistatPobles clearfix"><li ><h3><a href="/on-puc-donar/es_calendari/46980/palma">Palma</a></h3><p><strong>Banc de Sang i Teixits</strong></p><p class="subtitle">Rosselló i Caçador, 20</p><span class="hores">de&nbsp;08:00h.&nbsp;a&nbsp;20:30h.</span></li><li ><h3><a href="/on-puc-donar/es_calendari/46983/sa-pobla">Sa Pobla</a></h3><p><strong>SA POBLA</strong></p><p class="subtitle">CENTRE SANITARI<br/>C/ TRAGINERS, 119</p><span class="hores">de&nbsp;16:30h.&nbsp;a&nbsp;21:00h.</span></li><li class="tercer"><h3><a href="/on-puc-donar/es_calendari/46984/sa-pobla">Sa Pobla</a></h3><p><strong>AFERESI / AFERESIS</strong></p><p class="subtitle">CENTRE SANITARI<br/>C/ TRAGINERS, 119</p><span class="hores">de&nbsp;16:30h.&nbsp;a&nbsp;21:00h.</span></li><li ><h3><a href="/on-puc-donar/es_calendari/46981/sineu">Sineu</a></h3><p><strong>SINEU</strong></p><p class="subtitle">CENTRE SANITARI<br/>C/ DOCTOR BERNADÍ FONT I QUETGLAS, 2</p><span class="hores">de&nbsp;16:30h.&nbsp;a&nbsp;21:00h.</span></li><li ><h3><a href="/on-puc-donar/es_calendari/46982/son-servera">Son Servera</a></h3><p><strong>SON SERVERA</strong></p><p class="subtitle">CENTRE SANITARI<br/>C/ PI GROS, 20</p><span class="hores">de&nbsp;16:30h.&nbsp;a&nbsp;21:00h.</span></li></ul>
+				</li>
+					
+			</ul>
+			<div id="paginacio">
+				<ul> <li id="pagCurrent">1</li> <li><a href="punts.php?PAGE=2">2</a></li> <li><a href="punts.php?PAGE=3">3</a></li> <li><a href="punts.php?PAGE=4">4</a></li> <li><a href="punts.php?PAGE=5">5</a></li><li style="margin-left:3px;"><a href="punts.php?PAGE=6">...</a></li><li>&nbsp;de&nbsp;<span id="pagTotal">18</span></li><li><a id="next" href="punts.php?PAGE=2"><span >Següent</span></a></li><li><a id="last" href="punts.php?PAGE=18"><span>...</span></a></li> </ul>
+			</div>
+		</div>
+</div>
+</body></html>
+"""
+
+# Trimmed from https://www.donasang.org/es_index.php — the "Niveles de la reserva"
+# grid of blood-bag images, one per blood type.
+BALEARS_HOME_HTML = """<html><body>
+<div id="reserves" class="txt">
+<ul id="nivells" class="clearfix">
+					
+           
+ <li><img src="/media/comu/reserves/3_O-.jpg" alt="O-" /></li> <li><img src="/media/comu/reserves/2_A-.jpg" alt="A-" /></li> <li><img src="/media/comu/reserves/2_AB-.jpg" alt="AB-" /></li> <li><img src="/media/comu/reserves/3_B-.jpg" alt="B-" /></li> <li><img src="/media/comu/reserves/2_O+.jpg" alt="O+" /></li> <li><img src="/media/comu/reserves/1_A+.jpg" alt="A+" /></li> <li><img src="/media/comu/reserves/1_AB+.jpg" alt="AB+" /></li> <li><img src="/media/comu/reserves/1_B+.jpg" alt="B+" /></li>          
+            
+           				</ul>
+</div>
+</body></html>
+"""
+
+
+def balears_detail_html(latitude: str, longitude: str) -> str:
+    """A detail page's map script, as the centre and stop pages carry it.
+
+    Trimmed from .../es_punts-fixes/1/... and .../es_calendari/46968/palma:
+    the map's centre and marker are both at the given coordinates.
+    """
+    return """<html><body>
+<div id="mapa"></div>
+<script>
+    var map = getMap(LAT, LON, 14,'mapa');
+    var myLatlng = new google.maps.LatLng(LAT, LON);
+    var marker = new google.maps.Marker({
+        position: myLatlng,
+        map: map
+    });
+</script>
+</body></html>
+""".replace("LAT", latitude).replace("LON", longitude)

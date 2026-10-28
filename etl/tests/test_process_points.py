@@ -202,6 +202,22 @@ def test_process_fixed_points_stamps_region(mocker):
     mocker.patch("main.navarra.scrape_fixed_points", return_value=scraped_navarra)
 
     mocker.patch("main.asturias.scrape_fixed_points", return_value=scraped_asturias)
+    mocker.patch(
+        "main.balears.scrape_fixed_points",
+        return_value=pd.DataFrame(
+            {
+                "name": ["Eivissa"],
+                "localidad": ["Eivissa"],
+                "direccion": ["Hospital Can Misses. Antiguas Urgencias"],
+                "horario": [None],
+                "latitude": [38.916526],
+                "longitude": [1.418271],
+                "url": [
+                    "https://www.donasang.org/on-puc-donar/es_punts-fixes/6/eivissa"
+                ],
+            }
+        ),
+    )
     mocker.patch("main.refresh_places_cache", side_effect=lambda q, cache, b: cache)
     mocker.patch("main.place_candidate", return_value=None)
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
@@ -230,6 +246,7 @@ def test_process_fixed_points_stamps_region(mocker):
         "Cantabria",
         "Comunidad Foral de Navarra",
         "Principado de Asturias",
+        "Illes Balears",
     }
 
 
@@ -509,6 +526,24 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
     mocker.patch("main.navarra.scrape_mobile_points", return_value=scraped_navarra)
 
     mocker.patch("main.asturias.scrape_mobile_points", return_value=scraped_asturias)
+    mocker.patch(
+        "main.balears.scrape_mobile_points",
+        return_value=pd.DataFrame(
+            {
+                "lugar": ["Banc de Sang i Teixits"],
+                "localidad": ["Palma"],
+                "direccion": ["Rosselló i Caçador, 20"],
+                "fecha": ["28/10/2026"],
+                "horario": ["08:00-20:30"],
+                "url": [
+                    "https://www.donasang.org/on-puc-donar/es_calendari/46968/palma"
+                ],
+                "aferesis": [False],
+                "latitude": [39.582059],
+                "longitude": [2.653558],
+            }
+        ),
+    )
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
     mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
     mocker.patch("main.place_candidate", return_value=None)
@@ -537,6 +572,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         "País Vasco",
         "Comunidad Foral de Navarra",
         "Principado de Asturias",
+        "Illes Balears",
     }
 
 
@@ -927,3 +963,64 @@ def test_scrape_mobile_points_pais_vasco_uses_listing_coords(mocker):
     assert df["sangre"].tolist() == [False, True]
     assert df["plasma"].tolist() == [True, False]
     assert df["opening_hours"].iloc[0] == "2026 Oct 27 08:30-13:00,14:00-18:30"
+
+
+def test_scrape_fixed_points_baleares_uses_hand_built_hours(mocker):
+    scraped = pd.DataFrame(
+        {
+            "name": ["Palma (Mallorca). Banco de sangre", "Eivissa"],
+            "localidad": ["Palma", "Eivissa"],
+            "direccion": ["Rosselló i Cazador, 20", "Hospital Can Misses"],
+            "horario": ["De lunes a viernes, de 8:00 a 20:30 h", None],
+            "latitude": [39.581953, 38.916526],
+            "longitude": [2.653389, 1.418271],
+            "url": ["https://www.donasang.org/a", "https://www.donasang.org/b"],
+        }
+    )
+    lookup = {
+        "Palma (Mallorca). Banco de sangre": "Mo-Fr 08:00-20:30; Sa 09:00-13:30; PH off"
+    }
+    mocker.patch("main.balears.scrape_fixed_points", return_value=scraped)
+    mocker.patch("main.load_opening_hours_fijos", return_value=lookup)
+
+    df = main.scrape_fixed_points_baleares()
+
+    assert df["opening_hours"].iloc[0] == "Mo-Fr 08:00-20:30; Sa 09:00-13:30; PH off"
+    # Eivissa publishes no fixed hours, so it has no lookup entry.
+    assert pd.isna(df["opening_hours"].iloc[1])
+    assert df["region"].tolist() == ["Illes Balears", "Illes Balears"]
+    assert df["gmaps_url"].iloc[0] == "https://www.google.com/maps?q=39.581953+2.653389"
+
+
+def test_scrape_mobile_points_baleares_flags_aferesis_as_plasma(mocker):
+    scraped = pd.DataFrame(
+        {
+            "lugar": ["Banc de Sang i Teixits", "AFERESI / AFERESIS MANACOR"],
+            "localidad": ["Palma", "Manacor"],
+            "direccion": ["Rosselló i Caçador, 20", "CENTRE SANITARI C/ SIMO TORT, 19"],
+            "fecha": ["28/10/2026", "29/10/2026"],
+            "horario": ["08:00-20:30", "16:30-20:30"],
+            "url": [
+                "https://www.donasang.org/on-puc-donar/es_calendari/46968/palma",
+                "https://www.donasang.org/on-puc-donar/es_calendari/46978/manacor",
+            ],
+            "aferesis": [False, True],
+            "latitude": [39.582059, 39.567614],
+            "longitude": [2.653558, 3.202958],
+        }
+    )
+    mocker.patch("main.balears.scrape_mobile_points", return_value=scraped)
+
+    df = main.scrape_mobile_points_baleares()
+
+    assert df["name"].tolist() == [
+        "Equipo móvil en Banc de Sang i Teixits",
+        "Equipo móvil en AFERESI / AFERESIS MANACOR",
+    ]
+    # Only aféresis sessions are flagged (plasma, not sangre); others stay unset.
+    assert pd.isna(df["plasma"].iloc[0])
+    assert pd.isna(df["sangre"].iloc[0])
+    assert df["plasma"].iloc[1] == True
+    assert df["sangre"].iloc[1] == False
+    assert df["opening_hours"].notna().all()
+    assert df["region"].tolist() == ["Illes Balears", "Illes Balears"]

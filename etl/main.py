@@ -18,6 +18,7 @@ from utils.crawl import (
     andalucia,
     aragon,
     asturias,
+    balears,
     cantabria,
     castilla_la_mancha,
     castilla_y_leon,
@@ -65,6 +66,7 @@ REGION_NAVARRA = "Comunidad Foral de Navarra"
 REGION_LA_RIOJA = "La Rioja"
 REGION_ANDALUCIA = "Andalucía"
 REGION_ASTURIAS = "Principado de Asturias"
+REGION_BALEARES = "Illes Balears"
 
 # Fixed points carry a handful of concepts every region has, under whatever
 # name that region's own source happens to spell them with. Renaming them to
@@ -672,6 +674,24 @@ def scrape_fixed_points_asturias() -> pd.DataFrame:
     return df.drop(columns=["address_direccion"])
 
 
+def scrape_fixed_points_baleares() -> pd.DataFrame:
+    """Scrape the Illes Balears' fixed donation centres (Palma, Mahón, Eivissa).
+
+    Each centre's detail page carries its coordinates in its map script, so
+    nothing is geocoded. Hours come from the hand-built opening_hours_fijos.json
+    lookup, keyed by name; Mahón and Eivissa publish no fixed hours (only "consult
+    the campaign calendar"), so they have no entry and surface as a warning.
+    """
+    df = balears.scrape_fixed_points()
+    df["gmaps_url"] = df.apply(crawl.gmaps_url_from_coords, axis=1)
+    opening_hours_lookup = load_opening_hours_fijos()
+    df["opening_hours"] = df.apply(
+        opening_hours_for_fixed_point, lookup=opening_hours_lookup, axis=1
+    )
+    df["region"] = REGION_BALEARES
+    return df
+
+
 def process_fixed_points():
     """Scrape, enrich, and upload fixed donation points for every region."""
     df = pd.concat(
@@ -689,6 +709,7 @@ def process_fixed_points():
             scrape_fixed_points_la_rioja(),
             scrape_fixed_points_andalucia(),
             scrape_fixed_points_asturias(),
+            scrape_fixed_points_baleares(),
         ],
         ignore_index=True,
     )
@@ -1438,6 +1459,40 @@ def scrape_mobile_points_asturias() -> pd.DataFrame:
     return df[output_cols + ["latitude", "longitude"]]
 
 
+def scrape_mobile_points_baleares() -> pd.DataFrame:
+    """Scrape the Illes Balears' mobile donation points (the day calendar).
+
+    Each stop's exact coordinates come from its detail page's map script, so
+    nothing is geocoded. Each stop is named by its venue. Aféresis sessions
+    (apheresis, i.e. plasma) are flagged plasma and not sangre, as Andalucía's
+    plasma-only sessions are; every other stop leaves both flags unset.
+    """
+    output_cols = [
+        "name",
+        "localidad",
+        "direccion",
+        "fecha",
+        "horario",
+        "opening_hours",
+        "url",
+        "plasma",
+        "sangre",
+        "region",
+    ]
+    df = balears.scrape_mobile_points()
+    if df.empty:
+        return pd.DataFrame(columns=output_cols + ["latitude", "longitude"])
+
+    df["name"] = "Equipo móvil en " + df["lugar"]
+    df["opening_hours"] = df.apply(
+        lambda row: parse_mobile_hours(row["fecha"], row["horario"] or ""), axis=1
+    )
+    df["plasma"] = df["aferesis"].where(df["aferesis"])
+    df["sangre"] = (~df["aferesis"]).where(df["aferesis"])
+    df["region"] = REGION_BALEARES
+    return df[output_cols + ["latitude", "longitude"]]
+
+
 def process_mobile_points():
     """Scrape, geocode, and upload mobile donation points for every region."""
     df = pd.concat(
@@ -1454,6 +1509,7 @@ def process_mobile_points():
             scrape_mobile_points_la_rioja(),
             scrape_mobile_points_andalucia(),
             scrape_mobile_points_asturias(),
+            scrape_mobile_points_baleares(),
         ],
         ignore_index=True,
     )
@@ -1509,6 +1565,14 @@ def scrape_blood_levels_asturias() -> pd.DataFrame:
     return df
 
 
+def scrape_blood_levels_baleares() -> pd.DataFrame:
+    """Scrape the Illes Balears' blood-reserve levels ("Niveles de la reserva")."""
+    df = balears.scrape_blood_levels()
+    df["region"] = REGION_BALEARES
+    df["source"] = "donasang.org"
+    return df
+
+
 def process_blood_levels():
     """Scrape and append blood-reserve levels for every region that has one.
 
@@ -1529,6 +1593,7 @@ def process_blood_levels():
             scrape_blood_levels_pais_vasco(),
             scrape_blood_levels_la_rioja(),
             scrape_blood_levels_asturias(),
+            scrape_blood_levels_baleares(),
         ],
         ignore_index=True,
     )
