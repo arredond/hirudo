@@ -111,6 +111,22 @@ def test_process_fixed_points_stamps_region(mocker):
         }
     )
 
+    scraped_cantabria = pd.DataFrame(
+        {
+            "name": [
+                "Banco de Sangre y Tejidos del Hospital Universitario Marqués de Valdecilla"
+            ],
+            "localidad": ["Santander"],
+            "direccion": ["Avenida de Valdecilla s/n., Pabellón 13, Planta 0"],
+            "telefono": ["942 202 689"],
+            "horario": ["lunes a viernes de 8:30 a 21:00h"],
+            "gmaps_url": ["https://maps.app.goo.gl/UwoRmWBNeAMJKgKMA"],
+            "url": ["https://www.hdsc.org/"],
+            "latitude": [43.4564414],
+            "longitude": [-3.8280688],
+        }
+    )
+
     def fake_geocode_points(df, geocoding_cache, address_column):
         df["longitude"] = -2.0
         df["latitude"] = 39.0
@@ -129,6 +145,7 @@ def test_process_fixed_points_stamps_region(mocker):
     mocker.patch("main.cataluna.scrape_fixed_points", return_value=scraped_cataluna)
     mocker.patch("main.galicia.scrape_fixed_points", return_value=scraped_galicia)
     mocker.patch("main.pais_vasco.scrape_fixed_points", return_value=scraped_pais_vasco)
+    mocker.patch("main.cantabria.scrape_fixed_points", return_value=scraped_cantabria)
     mocker.patch("main.refresh_places_cache", side_effect=lambda q, cache, b: cache)
     mocker.patch("main.place_candidate", return_value=None)
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
@@ -152,6 +169,7 @@ def test_process_fixed_points_stamps_region(mocker):
         "Cataluña",
         "Galicia",
         "País Vasco",
+        "Cantabria",
     }
 
 

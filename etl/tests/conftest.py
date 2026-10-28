@@ -553,3 +553,48 @@ PAIS_VASCO_LEVELS_HTML = (
     "donantesdesangre.eus/wp-content/themes/hello-elementor/niveles-sangre/"
     'ico-sangre-roja.svg" /></td><td class="texto_donar">Dona urgente</td></tr></table>'
 )
+
+
+# Trimmed from https://www.hdsc.org/ — the homepage's "dónde donar" slider
+# (a Revolution Slider module). Only the Banco's slide carries a Google Maps
+# link; the e-mail slide and the activities slide are the distractors.
+CANTABRIA_HOME_HTML = """
+<html><body>
+<sr7-module data-alias="donar-1" data-id="20" id="SR7_20_2" class="rs-ov-hidden" data-version="6.7.58">
+  <sr7-adjuster></sr7-adjuster>
+  <sr7-content>
+  <sr7-carousel>
+  <sr7-slide id="SR7_20_2-8" data-key="8">
+  <p id="SR7_20_2-8-1" class="sr7-layer"><a href="https://maps.app.goo.gl/UwoRmWBNeAMJKgKMA" style="text-decoration:none; color:#f5333f;"  target="_blank">Avenida de Valdecilla s/n.<br />
+Pabellón 13, Planta 0<br />
+Santander</a><br />
+<br />
+T. <a href="tel:+34942202689" style="text-decoration:none;color:#f5333f;">942 202 689</a></p>
+  <h2 id="SR7_20_2-8-2" class="sr7-layer">dónde donar</h2>
+  <h3 id="SR7_20_2-8-3" class="sr7-layer">Banco de Sangre y Tejidos del Hospital Universitario Marqués de Valdecilla</h3>
+  <p id="SR7_20_2-8-4" class="sr7-layer">Puedes acudir directamente o pedir cita previa en la aplicación si no quieres esperar.<br />
+<br />
+Estamos de <strong>lunes a viernes </strong> de <strong>8:30 a 21:00h</strong>.</p>
+  </sr7-slide>
+  <sr7-slide id="SR7_20_2-9" data-key="9">
+  <p id="SR7_20_2-9-1" class="sr7-layer"><a href="mailto:hermandad@hdsc.org" style="text-decoration:none;color:#f5333f;">hermandad@hdsc.org</a><br />
+<br />
+T. <a href="tel:+34942202689" style="text-decoration:none;color:#f5333f;">942 202 689</a></p>
+  <h2 id="SR7_20_2-9-2" class="sr7-layer">dónde donar</h2>
+  <h3 id="SR7_20_2-9-3" class="sr7-layer">Organiza eventos o<br />
+campañas especiales</h3>
+  <p id="SR7_20_2-9-4" class="sr7-layer">Si quieres organizar un evento o campañas especiales de donación en tu organización o comunidad ponte en contacto con nosotros. Estaremos encantados de ampliar las campañas de nuestra red de colaboradores.</p>
+  </sr7-slide>
+  <sr7-slide id="SR7_20_2-10" data-key="10">
+  <p id="SR7_20_2-10-1" class="sr7-layer"><a href="https://www.hdsc.org/actividades/" style="text-decoration:none; color:#f5333f;">Consulta el calendario de unidades móviles</a></p>
+  <h2 id="SR7_20_2-10-2" class="sr7-layer">dónde donar</h2>
+  <h3 id="SR7_20_2-10-3" class="sr7-layer">Unidades móviles</h3>
+  <p id="SR7_20_2-10-4" class="sr7-layer">que se desplazan a diferentes puntos de la región. Consulta el calendario y los  lugares donde estará en los próximos días.</p>
+  </sr7-slide>
+  <sr7-slide id="SR7_20_2-14" data-key="14">
+  </sr7-slide>
+  </sr7-carousel>
+  </sr7-content>
+    </sr7-module>
+</body></html>
+"""

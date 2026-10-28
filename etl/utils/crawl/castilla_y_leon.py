@@ -8,6 +8,7 @@ from io import StringIO
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from utils.crawl import crawl
 
 URL_BASE = "https://www.centrodehemoterapiacyl.es/"
 URL_POINTS_INDEX = urllib.parse.urljoin(URL_BASE, "puntos-de-donacion/")
@@ -37,14 +38,6 @@ BLOOD_LEVEL_STATUS = {
     "Medio": ("orange", 2),
     "Bajo": ("red", 1),
 }
-
-# A maps.app.goo.gl short link's first redirect (before Google's consent
-# flow) already carries the place's coordinates: a precise pin as
-# "!3d<lat>!4d<lon>" when available, else the viewport center as
-# "@<lat>,<lon>". Checking the precise pair first avoids falling back to the
-# coarser viewport center when both are present.
-GMAPS_PIN_RE = re.compile(r"!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)")
-GMAPS_VIEWPORT_RE = re.compile(r"@(-?\d+\.\d+),(-?\d+\.\d+)")
 
 DATE_RE = re.compile(r"\d{2}/\d{2}/\d{4}")
 
@@ -76,22 +69,6 @@ SESSION.headers.update(
 def province_url(province: str) -> str:
     """Build the donation-points page URL for a province slug."""
     return urllib.parse.urljoin(URL_POINTS_INDEX, f"{province}/")
-
-
-def resolve_gmaps_coords(short_url: str) -> tuple[float, float]:
-    """Resolve a maps.app.goo.gl short link to (latitude, longitude).
-
-    A single non-redirect-following GET is enough: the short link's first
-    redirect Location header already contains the coordinates, so there is
-    no need to follow it into Google's consent page (and no Geocoding API
-    call, or its cost, is needed either).
-    """
-    response = SESSION.get(short_url, allow_redirects=False)
-    location = response.headers["Location"]
-    match = GMAPS_PIN_RE.search(location) or GMAPS_VIEWPORT_RE.search(location)
-    if not match:
-        raise ValueError(f"Could not extract coordinates from redirect: {location}")
-    return float(match.group(1)), float(match.group(2))
 
 
 def parse_fixed_points(table, province: str) -> list[dict]:
@@ -177,7 +154,7 @@ def scrape_fixed_points() -> pd.DataFrame:
                 continue
             for point in parse_fixed_points(table, province):
                 if point["gmaps_url"]:
-                    point["latitude"], point["longitude"] = resolve_gmaps_coords(
+                    point["latitude"], point["longitude"] = crawl.resolve_gmaps_coords(
                         point["gmaps_url"]
                     )
                 point["url"] = url

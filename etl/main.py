@@ -16,6 +16,7 @@ import re
 import pandas as pd
 from utils.crawl import (
     aragon,
+    cantabria,
     castilla_la_mancha,
     castilla_y_leon,
     cataluna,
@@ -51,6 +52,7 @@ REGION_VALENCIA = "Comunidad Valenciana"
 REGION_CATALUNA = "Cataluña"
 REGION_GALICIA = "Galicia"
 REGION_PAIS_VASCO = "País Vasco"
+REGION_CANTABRIA = "Cantabria"
 
 # Fixed points carry a handful of concepts every region has, under whatever
 # name that region's own source happens to spell them with. Renaming them to
@@ -551,6 +553,23 @@ def scrape_fixed_points_pais_vasco() -> pd.DataFrame:
     return df.drop(columns=["schedule", "plasma_only"])
 
 
+def scrape_fixed_points_cantabria() -> pd.DataFrame:
+    """Scrape Cantabria's fixed donation spot (the Valdecilla hospital's Banco de Sangre).
+
+    It's the only fixed point the region's source lists. Its Google Maps
+    short link carries the coordinates (see cantabria.py), so nothing is
+    geocoded; the hours are a hand-built opening_hours_fijos.json lookup
+    keyed by name.
+    """
+    df = cantabria.scrape_fixed_points()
+    opening_hours_lookup = load_opening_hours_fijos()
+    df["opening_hours"] = df.apply(
+        opening_hours_for_fixed_point, lookup=opening_hours_lookup, axis=1
+    )
+    df["region"] = REGION_CANTABRIA
+    return df
+
+
 def process_fixed_points():
     """Scrape, enrich, and upload fixed donation points for every region."""
     df = pd.concat(
@@ -563,6 +582,7 @@ def process_fixed_points():
             scrape_fixed_points_cataluna(),
             scrape_fixed_points_galicia(),
             scrape_fixed_points_pais_vasco(),
+            scrape_fixed_points_cantabria(),
         ],
         ignore_index=True,
     )
@@ -1163,9 +1183,9 @@ def scrape_blood_levels_pais_vasco() -> pd.DataFrame:
 def process_blood_levels():
     """Scrape and append blood-reserve levels for every region that has one.
 
-    Castilla-La Mancha, Aragón, Comunidad Valenciana and Cataluña have no
-    such source at all (no scrape_blood_levels_clm/_aragon/_valencia/
-    _cataluna exists), so they're simply left out
+    Castilla-La Mancha, Aragón, Comunidad Valenciana, Cataluña and Cantabria
+    have no such source at all (no scrape_blood_levels_clm/_aragon/_valencia/
+    _cataluna/_cantabria exists), so they're simply left out
     here — the frontend shows a "no data for this region" placeholder
     instead of blank/stale badges for them.
 

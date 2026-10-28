@@ -79,57 +79,6 @@ def test_parse_fixed_points_multiple_points_in_one_table():
 
 
 # ---------------------------------------------------------------------------
-# resolve_gmaps_coords
-# ---------------------------------------------------------------------------
-
-
-@responses.activate
-def test_resolve_gmaps_coords_prefers_precise_pin():
-    url = "https://maps.app.goo.gl/hRDcjSERk7mN4TSaA"
-    responses.add(
-        responses.GET,
-        url,
-        status=302,
-        headers={
-            "Location": "https://www.google.es/maps/place/X/@40.65,-4.69,17z/"
-            "data=!3m2!4b1!8m2!3d40.6503096!4d-4.6924824"
-        },
-    )
-
-    lat, lon = castilla_y_leon.resolve_gmaps_coords(url)
-
-    assert lat == pytest.approx(40.6503096)
-    assert lon == pytest.approx(-4.6924824)
-
-
-@responses.activate
-def test_resolve_gmaps_coords_falls_back_to_viewport():
-    url = "https://maps.app.goo.gl/example"
-    responses.add(
-        responses.GET,
-        url,
-        status=302,
-        headers={"Location": "https://www.google.es/maps/place/X/@40.65,-4.69,17z"},
-    )
-
-    lat, lon = castilla_y_leon.resolve_gmaps_coords(url)
-
-    assert lat == pytest.approx(40.65)
-    assert lon == pytest.approx(-4.69)
-
-
-@responses.activate
-def test_resolve_gmaps_coords_raises_when_unparseable():
-    url = "https://maps.app.goo.gl/example"
-    responses.add(
-        responses.GET, url, status=302, headers={"Location": "https://google.es/maps"}
-    )
-
-    with pytest.raises(ValueError):
-        castilla_y_leon.resolve_gmaps_coords(url)
-
-
-# ---------------------------------------------------------------------------
 # clean_mobile_point_row
 # ---------------------------------------------------------------------------
 

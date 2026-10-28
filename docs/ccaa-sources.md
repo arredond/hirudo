@@ -150,13 +150,33 @@ wired in once its sources are known.
 - Boundary polygon keeps the Treviño (Burgos) and Villaverde (Cantabria)
   enclave holes.
 
+### Cantabria
+- Fixed points: one spot, the Banco de Sangre y Tejidos del Hospital
+  Universitario Marqués de Valdecilla (Santander), listed in the
+  "dónde donar" slider on the homepage <https://www.hdsc.org/> — address,
+  phone and "Estamos de lunes a viernes de 8:30 a 21:00h" are plain text
+  there. Its Google Maps short link (`maps.app.goo.gl`) carries the
+  coordinates, resolved with `crawl.resolve_gmaps_coords`, so nothing is
+  geocoded. Hours come from the `opening_hours_fijos.json` lookup (the source
+  says nothing about public holidays, so none are stated there either).
+  The same slider's e-mail and activities slides are ignored.
+- Mobile points: **not scraped.** The weekly "Agenda semanal unidad móvil"
+  (<https://www.hdsc.org/agenda-semanal-unidad-movil/>) is published only as
+  images: the post's `<img>` tags have no alt text, the media-library
+  attachments are named generically ("Agenda-Semanal-Unidad-Movil-ilustrado-
+  azul-y-rojo-6.png") with no schedule in their descriptions, and there is no
+  PDF, iCal, feed or events-API (`tribe/events`, 404) alternative. Reading the
+  images would need OCR, which isn't a dependency here. Revisit if the Banco
+  starts publishing the agenda as text.
+- Blood levels: none. The homepage and the donation page have no
+  "niveles de sangre" or semáforo widget.
+
 ## Not yet researched
 
 - Andalucía
 - Principado de Asturias
 - Illes Balears
 - Canarias
-- Cantabria
 - Extremadura
 - Región de Murcia
 - Comunidad Foral de Navarra
