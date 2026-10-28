@@ -19,6 +19,28 @@ function nominatimObjectFor(region) {
   return { address: { country_code: 'es', ...(state ? { state } : {}) } }
 }
 
+// Every point's hours are published in its own local time. That's
+// Europe/Madrid everywhere except Canarias, an hour behind.
+const DEFAULT_TIME_ZONE = 'Europe/Madrid'
+const REGION_TIME_ZONES = { Canarias: 'Atlantic/Canary' }
+
+// opening_hours.js reads a Date's local (viewer's clock) fields. To evaluate
+// a point's hours at the viewer's current instant, build a Date whose local
+// fields are that instant's wall-clock time in the point's own time zone.
+function wallClockIn(date, timeZone) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hourCycle: 'h23',
+      year: 'numeric', month: 'numeric', day: 'numeric',
+      hour: 'numeric', minute: 'numeric', second: 'numeric',
+    })
+      .formatToParts(date)
+      .map(({ type, value }) => [type, Number(value)])
+  )
+  return new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)
+}
+
 // Hand-maintained sentinels in etl/utils/opening_hours_fijos.json, checked before
 // generic OSM parsing — not valid opening_hours syntax on their own.
 const CLOSED_SENTINEL = 'closed'
@@ -35,7 +57,9 @@ export function isTemporarilyClosed(openingHoursString) {
 // Returns { isOpen, nextChange, permanentlyClosed, temporarilyClosed }, or null if
 // openingHoursString is missing or fails to parse (e.g. a fixed point not yet added
 // to the lookup table). `region` is a point's own region (e.g. "Comunidad de
-// Madrid") — see nominatimObjectFor above.
+// Madrid") — see nominatimObjectFor above. `date` is the viewer's instant; the
+// hours are checked at that instant's wall-clock time in the point's own
+// time zone (see wallClockIn), so nextChange is in that local time too.
 export function getOpenStatus(openingHoursString, date = new Date(), region = null) {
   if (!openingHoursString) return null
   if (isPermanentlyClosed(openingHoursString)) {
@@ -47,9 +71,10 @@ export function getOpenStatus(openingHoursString, date = new Date(), region = nu
 
   try {
     const oh = new OpeningHours(openingHoursString, nominatimObjectFor(region))
+    const localDate = wallClockIn(date, REGION_TIME_ZONES[region] ?? DEFAULT_TIME_ZONE)
     return {
-      isOpen: oh.getState(date),
-      nextChange: oh.getNextChange(date) ?? null,
+      isOpen: oh.getState(localDate),
+      nextChange: oh.getNextChange(localDate) ?? null,
       permanentlyClosed: false,
       temporarilyClosed: false,
     }
