@@ -150,10 +150,33 @@ wired in once its sources are known.
 - Boundary polygon keeps the Treviño (Burgos) and Villaverde (Cantabria)
   enclave holes.
 
+### Principado de Asturias
+- Fixed points: <https://donasturias.org/puntos-fijos/> — four centres on one
+  page (HUCA in Oviedo, Centro de Salud Puerta de la Villa, Cruz Roja and the
+  Asociación de Donantes in Avilés), each with a weekly free-text schedule
+  (hand-translated into `opening_hours_fijos.json`, keyed by name) and a
+  Google Maps embed. The embed carries the coordinates (`!2d…!3d…` or
+  `ll=`), so they're used as-is; nothing is geocoded.
+- Mobile points: The Events Calendar REST API,
+  <https://donasturias.org/wp-json/tribe/events/v1/events> (from today,
+  paginated via `next_rest_url`). One event per town and day; each paragraph
+  of its description is one spot ("09.00-14.00 y 16.00-21.00 | **La Arena.**
+  C/ …"), so each spot becomes its own row. The calendar also carries the
+  fixed centres' own days, titled "PUNTOS FIJOS"; those are skipped since the
+  fixed points come from the page. Events have no coordinates, so spots are
+  geocoded: a Places search for "venue, town" plus the Geocoding API for the
+  address, best score kept (see `scrape_mobile_points_asturias`).
+- Blood levels ("Estado de las reservas de hematíes"): eight gauge images on
+  the homepage, no legend and no text. The blood type comes from the filename
+  (`omas…` = O+, `o-…` = O-, `Amas…` = A+, …); the level is read off the
+  image: the needle's angle picks the rim band it points at, and that band's
+  colour is the status (red, yellow, green — three levels, like Madrid and
+  Castilla y León). The numbers in the filenames are not the level.
+- Everything is in Spanish.
+
 ## Not yet researched
 
 - Andalucía
-- Principado de Asturias
 - Illes Balears
 - Canarias
 - Cantabria

@@ -111,6 +111,19 @@ def test_process_fixed_points_stamps_region(mocker):
         }
     )
 
+    scraped_asturias = pd.DataFrame(
+        {
+            "name": ["Centro de Salud Puerta de la Villa"],
+            "direccion": ["Calle Donato Argüelles, 20, 33206 Gijón, Asturias"],
+            "localidad": ["Gijón"],
+            "codigo_postal": ["33206"],
+            "horario": ["Lunes y Miércoles: 16.00-21.00 h. | Viernes: 10.00-20.00 h."],
+            "latitude": [43.539316],
+            "longitude": [-5.664576],
+            "url": ["https://donasturias.org/puntos-fijos/"],
+        }
+    )
+
     def fake_geocode_points(df, geocoding_cache, address_column):
         df["longitude"] = -2.0
         df["latitude"] = 39.0
@@ -129,6 +142,7 @@ def test_process_fixed_points_stamps_region(mocker):
     mocker.patch("main.cataluna.scrape_fixed_points", return_value=scraped_cataluna)
     mocker.patch("main.galicia.scrape_fixed_points", return_value=scraped_galicia)
     mocker.patch("main.pais_vasco.scrape_fixed_points", return_value=scraped_pais_vasco)
+    mocker.patch("main.asturias.scrape_fixed_points", return_value=scraped_asturias)
     mocker.patch("main.refresh_places_cache", side_effect=lambda q, cache, b: cache)
     mocker.patch("main.place_candidate", return_value=None)
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
@@ -152,6 +166,7 @@ def test_process_fixed_points_stamps_region(mocker):
         "Cataluña",
         "Galicia",
         "País Vasco",
+        "Principado de Asturias",
     }
 
 
@@ -355,6 +370,17 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         }
     )
 
+    scraped_asturias = pd.DataFrame(
+        {
+            "localidad": ["Gijón"],
+            "lugar": ["La Arena"],
+            "direccion": ["La Arena. C/ Menéndez Pelayo, entre núm. 13 y 17."],
+            "fecha": ["01/10/2026"],
+            "horario": ["09:00 a 14:00, 16:00 a 21:00"],
+            "url": ["https://donasturias.org/eventos/gijon-27/"],
+        }
+    )
+
     def fake_geocode_mobile(df, geocoding_cache):
         df["longitude"] = -3.7
         df["latitude"] = 40.4
@@ -380,6 +406,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
     mocker.patch(
         "main.pais_vasco.scrape_mobile_points", return_value=scraped_pais_vasco
     )
+    mocker.patch("main.asturias.scrape_mobile_points", return_value=scraped_asturias)
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
     mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
     mocker.patch("main.place_candidate", return_value=None)
@@ -404,6 +431,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         "Cataluña",
         "Galicia",
         "País Vasco",
+        "Principado de Asturias",
     }
 
 
