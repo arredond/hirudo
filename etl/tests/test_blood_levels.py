@@ -26,6 +26,7 @@ def test_process_blood_levels_appends_to_blood_levels_table(mocker):
         "main.castilla_y_leon.scrape_blood_levels", return_value=_scraped_levels()
     )
     mocker.patch("main.galicia.scrape_blood_levels", return_value=_scraped_levels())
+    mocker.patch("main.la_rioja.scrape_blood_levels", return_value=_scraped_levels())
     mocker.patch("main.pais_vasco.scrape_blood_levels", return_value=_scraped_levels())
     mock_to_db = mocker.patch("main.to_db")
 
@@ -43,6 +44,7 @@ def test_process_blood_levels_adds_source_and_single_timestamp(mocker):
         "main.castilla_y_leon.scrape_blood_levels", return_value=_scraped_levels()
     )
     mocker.patch("main.galicia.scrape_blood_levels", return_value=_scraped_levels())
+    mocker.patch("main.la_rioja.scrape_blood_levels", return_value=_scraped_levels())
     mocker.patch("main.pais_vasco.scrape_blood_levels", return_value=_scraped_levels())
     mock_to_db = mocker.patch("main.to_db")
 
@@ -53,12 +55,14 @@ def test_process_blood_levels_adds_source_and_single_timestamp(mocker):
         "donarsangre.org",
         "centrodehemoterapiacyl.es",
         "ados.sergas.gal",
+        "bancosangrerioja.org",
         "donantesdesangre.eus",
     }
     assert set(uploaded["region"]) == {
         "Comunidad de Madrid",
         "Castilla y León",
         "Galicia",
+        "La Rioja",
         "País Vasco",
     }
     # One snapshot per run: every row shares the same timestamp

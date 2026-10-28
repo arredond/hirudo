@@ -97,6 +97,18 @@ def test_process_fixed_points_stamps_region(mocker):
         }
     )
 
+    scraped_la_rioja = pd.DataFrame(
+        {
+            "name": ["Banco de Sangre del Hospital San Pedro"],
+            "localidad": ["Logroño"],
+            "direccion": ["Hospital San Pedro"],
+            "latitude": [42.451333],
+            "longitude": [-2.427574],
+            "horario": ["De lunes a viernes de 8 a 20 horas Sábados de 9 a 14 horas"],
+            "url": ["https://www.bancosangrerioja.org/donacion/donde-donar-sangre"],
+        }
+    )
+
     scraped_pais_vasco = pd.DataFrame(
         {
             "name": ["Ambulatorio Olaguibel (Vitoria-Gasteiz)"],
@@ -128,6 +140,7 @@ def test_process_fixed_points_stamps_region(mocker):
     )
     mocker.patch("main.cataluna.scrape_fixed_points", return_value=scraped_cataluna)
     mocker.patch("main.galicia.scrape_fixed_points", return_value=scraped_galicia)
+    mocker.patch("main.la_rioja.scrape_fixed_points", return_value=scraped_la_rioja)
     mocker.patch("main.pais_vasco.scrape_fixed_points", return_value=scraped_pais_vasco)
     mocker.patch("main.refresh_places_cache", side_effect=lambda q, cache, b: cache)
     mocker.patch("main.place_candidate", return_value=None)
@@ -151,6 +164,7 @@ def test_process_fixed_points_stamps_region(mocker):
         "Comunidad Valenciana",
         "Cataluña",
         "Galicia",
+        "La Rioja",
         "País Vasco",
     }
 
@@ -340,6 +354,19 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         }
     )
 
+    scraped_la_rioja = pd.DataFrame(
+        {
+            "lugar": ["Logroño - Cosme García"],
+            "localidad": ["Logroño"],
+            "direccion": ["Ies Cosme García"],
+            "fecha": ["28/10/2026"],
+            "horario": ["09:30-13:45"],
+            "url": ["https://www.bancosangrerioja.org/colecta?c=5013"],
+            "latitude": [42.455],
+            "longitude": [-2.451745],
+        }
+    )
+
     scraped_pais_vasco = pd.DataFrame(
         {
             "province": ["Bizkaia"],
@@ -377,6 +404,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
     )
     mocker.patch("main.cataluna.scrape_mobile_points", return_value=scraped_cataluna)
     mocker.patch("main.galicia.scrape_mobile_points", return_value=scraped_galicia)
+    mocker.patch("main.la_rioja.scrape_mobile_points", return_value=scraped_la_rioja)
     mocker.patch(
         "main.pais_vasco.scrape_mobile_points", return_value=scraped_pais_vasco
     )
@@ -403,8 +431,77 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         "Comunidad Valenciana",
         "Cataluña",
         "Galicia",
+        "La Rioja",
         "País Vasco",
     }
+
+
+def test_scrape_mobile_points_la_rioja_geocodes_only_stops_without_map(mocker):
+    scraped = pd.DataFrame(
+        {
+            "lugar": ["Logroño - Cosme García", "LARDERO"],
+            "localidad": ["Logroño", "LARDERO"],
+            "direccion": ["Ies Cosme García", "C/ Los Cedros, 2"],
+            "fecha": ["28/10/2026", "03/11/2026"],
+            "horario": ["09:30-13:45", "17:30-21:00"],
+            "url": [
+                "https://www.bancosangrerioja.org/colecta?c=5013",
+                "https://www.bancosangrerioja.org/colecta?c=5042",
+            ],
+            "latitude": [42.455, None],
+            "longitude": [-2.451745, None],
+        }
+    )
+
+    def fake_geocode_points(df, geocoding_cache, address_column):
+        df["longitude"] = -2.5
+        df["latitude"] = 42.5
+        return df
+
+    mocker.patch("main.la_rioja.scrape_mobile_points", return_value=scraped)
+    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
+    geocode = mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+
+    df = main.scrape_mobile_points_la_rioja()
+
+    assert geocode.call_args.args[2] == "address_direccion"
+    addresses = geocode.call_args.args[0]["address_direccion"]
+    assert pd.isna(addresses.iloc[0])
+    assert addresses.iloc[1] == "C/ Los Cedros, 2, LARDERO, La Rioja, Spain"
+    # The page's own coordinates win; only the map-less stop takes the geocode
+    assert df["latitude"].tolist() == [42.455, 42.5]
+    assert df["longitude"].tolist() == [-2.451745, -2.5]
+    assert df["name"].tolist() == [
+        "Equipo móvil en Logroño - Cosme García",
+        "Equipo móvil en LARDERO",
+    ]
+    assert df["opening_hours"].iloc[0] == "2026 Oct 28 09:30-13:45"
+    assert df["region"].tolist() == ["La Rioja", "La Rioja"]
+
+
+def test_scrape_fixed_points_la_rioja_uses_hand_built_hours(mocker):
+    scraped = pd.DataFrame(
+        {
+            "name": ["Banco de Sangre del Hospital San Pedro"],
+            "localidad": ["Logroño"],
+            "direccion": ["Hospital San Pedro"],
+            "latitude": [42.451333],
+            "longitude": [-2.427574],
+            "horario": ["De lunes a viernes de 8 a 20 horas Sábados de 9 a 14 horas"],
+            "url": ["https://www.bancosangrerioja.org/donacion/donde-donar-sangre"],
+        }
+    )
+    lookup = {"Banco de Sangre del Hospital San Pedro": "Mo-Fr 08:00-20:00; PH off"}
+    mocker.patch("main.la_rioja.scrape_fixed_points", return_value=scraped)
+    mocker.patch("main.load_opening_hours_fijos", return_value=lookup)
+
+    df = main.scrape_fixed_points_la_rioja()
+
+    assert df["opening_hours"].iloc[0] == "Mo-Fr 08:00-20:00; PH off"
+    assert df["region"].iloc[0] == "La Rioja"
+    assert (
+        df["gmaps_url"].iloc[0] == "https://www.google.com/maps?q=42.451333+-2.427574"
+    )
 
 
 def test_scrape_mobile_points_aragon_builds_title_and_venue_candidates(mocker):

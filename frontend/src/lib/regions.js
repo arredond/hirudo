@@ -3,8 +3,8 @@ import regionBoundaries from '../data/regionBoundaries.json'
 
 // Every region the ETL covers (etl/main.py: REGION_MADRID, REGION_CYL,
 // REGION_CLM, REGION_ARAGON, REGION_VALENCIA, REGION_CATALUNA, REGION_GALICIA,
-// REGION_PAIS_VASCO) — also the option list for the header's region dropdown,
-// so kept in alphabetical order.
+// REGION_LA_RIOJA, REGION_PAIS_VASCO) — also the option list for the header's
+// region dropdown, so kept in alphabetical order.
 export const REGIONS = [
   'Aragón',
   'Castilla y León',
@@ -13,6 +13,7 @@ export const REGIONS = [
   'Comunidad de Madrid',
   'Comunidad Valenciana',
   'Galicia',
+  'La Rioja',
   'País Vasco',
 ]
 

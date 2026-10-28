@@ -22,6 +22,7 @@ from utils.crawl import (
     comunidad_valenciana,
     crawl,
     galicia,
+    la_rioja,
     madrid,
     pais_vasco,
 )
@@ -50,6 +51,7 @@ REGION_ARAGON = "Aragón"
 REGION_VALENCIA = "Comunidad Valenciana"
 REGION_CATALUNA = "Cataluña"
 REGION_GALICIA = "Galicia"
+REGION_LA_RIOJA = "La Rioja"
 REGION_PAIS_VASCO = "País Vasco"
 
 # Fixed points carry a handful of concepts every region has, under whatever
@@ -551,6 +553,23 @@ def scrape_fixed_points_pais_vasco() -> pd.DataFrame:
     return df.drop(columns=["schedule", "plasma_only"])
 
 
+def scrape_fixed_points_la_rioja() -> pd.DataFrame:
+    """Scrape La Rioja's fixed donation point (the Banco de Sangre).
+
+    Its coordinates come from the page's own map marker, so nothing is
+    geocoded. Hours come from the hand-built opening_hours_fijos.json lookup,
+    keyed by name.
+    """
+    df = la_rioja.scrape_fixed_points()
+    df["gmaps_url"] = df.apply(crawl.gmaps_url_from_coords, axis=1)
+    opening_hours_lookup = load_opening_hours_fijos()
+    df["opening_hours"] = df.apply(
+        opening_hours_for_fixed_point, lookup=opening_hours_lookup, axis=1
+    )
+    df["region"] = REGION_LA_RIOJA
+    return df
+
+
 def process_fixed_points():
     """Scrape, enrich, and upload fixed donation points for every region."""
     df = pd.concat(
@@ -562,6 +581,7 @@ def process_fixed_points():
             scrape_fixed_points_valencia(),
             scrape_fixed_points_cataluna(),
             scrape_fixed_points_galicia(),
+            scrape_fixed_points_la_rioja(),
             scrape_fixed_points_pais_vasco(),
         ],
         ignore_index=True,
@@ -1109,6 +1129,51 @@ def scrape_mobile_points_pais_vasco() -> pd.DataFrame:
     return df[output_cols + ["latitude", "longitude"]]
 
 
+def scrape_mobile_points_la_rioja() -> pd.DataFrame:
+    """Scrape and geocode La Rioja's mobile donation points.
+
+    Each stop's exact coordinates come from its detail page's embedded map.
+    Some stops' maps carry none, so those are geocoded from their street
+    address (or their town) through the geocoding cache, and the page's
+    coordinates win wherever they exist.
+    """
+    output_cols = [
+        "name",
+        "localidad",
+        "direccion",
+        "fecha",
+        "horario",
+        "opening_hours",
+        "url",
+        "region",
+    ]
+    df = la_rioja.scrape_mobile_points()
+    if df.empty:
+        return pd.DataFrame(columns=output_cols + ["latitude", "longitude"])
+
+    missing = df["latitude"].isna()
+    df["address_direccion"] = df.apply(
+        lambda row: build_full_address(
+            row["direccion"] or row["localidad"], row["localidad"], REGION_LA_RIOJA
+        ),
+        axis=1,
+    ).where(missing)
+    page_coords = df[["longitude", "latitude"]]
+    df = geocode_points(
+        df.drop(columns=["longitude", "latitude"]),
+        load_geocoding_cache(),
+        "address_direccion",
+    )
+    df[["longitude", "latitude"]] = page_coords.fillna(df[["longitude", "latitude"]])
+
+    df["name"] = "Equipo móvil en " + df["lugar"]
+    df["opening_hours"] = df.apply(
+        lambda row: parse_mobile_hours(row["fecha"], row["horario"]), axis=1
+    )
+    df["region"] = REGION_LA_RIOJA
+    return df[output_cols + ["latitude", "longitude"]]
+
+
 def process_mobile_points():
     """Scrape, geocode, and upload mobile donation points for every region."""
     df = pd.concat(
@@ -1120,6 +1185,7 @@ def process_mobile_points():
             scrape_mobile_points_valencia(),
             scrape_mobile_points_cataluna(),
             scrape_mobile_points_galicia(),
+            scrape_mobile_points_la_rioja(),
             scrape_mobile_points_pais_vasco(),
         ],
         ignore_index=True,
@@ -1160,6 +1226,14 @@ def scrape_blood_levels_pais_vasco() -> pd.DataFrame:
     return df
 
 
+def scrape_blood_levels_la_rioja() -> pd.DataFrame:
+    """Scrape La Rioja's blood-reserve levels ("Estado de las reservas")."""
+    df = la_rioja.scrape_blood_levels()
+    df["region"] = REGION_LA_RIOJA
+    df["source"] = "bancosangrerioja.org"
+    return df
+
+
 def process_blood_levels():
     """Scrape and append blood-reserve levels for every region that has one.
 
@@ -1178,6 +1252,7 @@ def process_blood_levels():
             scrape_blood_levels_madrid(),
             scrape_blood_levels_cyl(),
             scrape_blood_levels_galicia(),
+            scrape_blood_levels_la_rioja(),
             scrape_blood_levels_pais_vasco(),
         ],
         ignore_index=True,
