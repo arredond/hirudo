@@ -2,9 +2,9 @@
 
 import pandas as pd
 import pytest
+from utils import geocode
 
-from main import geocode_mobile_points
-
+REGION = "Comunidad de Madrid"
 CACHE_COLS = ["address", "longitude", "latitude", "location_type", "score"]
 
 
@@ -54,10 +54,10 @@ def test_fully_cached_makes_no_api_calls(mocker):
         (LUGAR_ADDR, -3.70, 40.41, 9),
         (DIR_ADDR, -3.71, 40.42, 9),
     )
-    mock_geocode = mocker.patch("main.geocode_address")
-    mock_to_db = mocker.patch("main.to_db")
+    mock_geocode = mocker.patch("utils.geocode.geocode_address")
+    mock_to_db = mocker.patch("utils.db.to_db")
 
-    geocode_mobile_points(_mobile_df(), cache)
+    geocode.geocode_mobile_points(_mobile_df(), cache, REGION)
 
     mock_geocode.assert_not_called()
     mock_to_db.assert_not_called()
@@ -67,11 +67,11 @@ def test_partially_cached_geocodes_only_missing(mocker):
     # lugar is cached, direccion is not
     cache = _cache((LUGAR_ADDR, -3.70, 40.41, 9))
     mock_geocode = mocker.patch(
-        "main.geocode_address", return_value=(-3.71, 40.42, "ROOFTOP", 9)
+        "utils.geocode.geocode_address", return_value=(-3.71, 40.42, "ROOFTOP", 9)
     )
-    mocker.patch("main.to_db")
+    mocker.patch("utils.db.to_db")
 
-    geocode_mobile_points(_mobile_df(), cache)
+    geocode.geocode_mobile_points(_mobile_df(), cache, REGION)
 
     assert mock_geocode.call_count == 1
     mock_geocode.assert_called_once_with(DIR_ADDR)
@@ -79,11 +79,11 @@ def test_partially_cached_geocodes_only_missing(mocker):
 
 def test_nothing_cached_geocodes_all_unique_addresses(mocker):
     mock_geocode = mocker.patch(
-        "main.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9)
+        "utils.geocode.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9)
     )
-    mocker.patch("main.to_db")
+    mocker.patch("utils.db.to_db")
 
-    geocode_mobile_points(_mobile_df(), _empty_cache())
+    geocode.geocode_mobile_points(_mobile_df(), _empty_cache(), REGION)
 
     # Two unique addresses: lugar and direccion
     assert mock_geocode.call_count == 2
@@ -95,11 +95,11 @@ def test_same_address_in_lugar_and_direccion_geocoded_once(mocker):
     """When lugar and direccion resolve to the same address string, geocode only once."""
     df = _mobile_df(lugar=["Plaza Mayor, 1"], direccion=["Plaza Mayor, 1"])
     mock_geocode = mocker.patch(
-        "main.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9)
+        "utils.geocode.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9)
     )
-    mocker.patch("main.to_db")
+    mocker.patch("utils.db.to_db")
 
-    geocode_mobile_points(df, _empty_cache())
+    geocode.geocode_mobile_points(df, _empty_cache(), REGION)
 
     assert mock_geocode.call_count == 1
 
@@ -110,10 +110,12 @@ def test_same_address_in_lugar_and_direccion_geocoded_once(mocker):
 
 
 def test_new_geocoding_results_saved_to_db(mocker):
-    mocker.patch("main.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9))
-    mock_to_db = mocker.patch("main.to_db")
+    mocker.patch(
+        "utils.geocode.geocode_address", return_value=(-3.70, 40.41, "ROOFTOP", 9)
+    )
+    mock_to_db = mocker.patch("utils.db.to_db")
 
-    geocode_mobile_points(_mobile_df(), _empty_cache())
+    geocode.geocode_mobile_points(_mobile_df(), _empty_cache(), REGION)
 
     mock_to_db.assert_called_once()
     saved_cache = mock_to_db.call_args.args[0]
@@ -125,10 +127,10 @@ def test_cache_not_saved_when_nothing_new(mocker):
         (LUGAR_ADDR, -3.70, 40.41, 9),
         (DIR_ADDR, -3.71, 40.42, 9),
     )
-    mocker.patch("main.geocode_address")
-    mock_to_db = mocker.patch("main.to_db")
+    mocker.patch("utils.geocode.geocode_address")
+    mock_to_db = mocker.patch("utils.db.to_db")
 
-    geocode_mobile_points(_mobile_df(), cache)
+    geocode.geocode_mobile_points(_mobile_df(), cache, REGION)
 
     mock_to_db.assert_not_called()
 
@@ -143,10 +145,10 @@ def test_direccion_used_when_higher_score(mocker):
         (LUGAR_ADDR, -3.70, 40.41, 4),  # APPROXIMATE
         (DIR_ADDR, -3.80, 40.50, 9),  # ROOFTOP
     )
-    mocker.patch("main.geocode_address")
-    mocker.patch("main.to_db")
+    mocker.patch("utils.geocode.geocode_address")
+    mocker.patch("utils.db.to_db")
 
-    result = geocode_mobile_points(_mobile_df(), cache)
+    result = geocode.geocode_mobile_points(_mobile_df(), cache, REGION)
 
     assert result["longitude"].iloc[0] == pytest.approx(-3.80)
     assert result["latitude"].iloc[0] == pytest.approx(40.50)
@@ -157,10 +159,10 @@ def test_lugar_used_when_higher_score(mocker):
         (LUGAR_ADDR, -3.70, 40.41, 9),  # ROOFTOP
         (DIR_ADDR, -3.80, 40.50, 4),  # APPROXIMATE
     )
-    mocker.patch("main.geocode_address")
-    mocker.patch("main.to_db")
+    mocker.patch("utils.geocode.geocode_address")
+    mocker.patch("utils.db.to_db")
 
-    result = geocode_mobile_points(_mobile_df(), cache)
+    result = geocode.geocode_mobile_points(_mobile_df(), cache, REGION)
 
     assert result["longitude"].iloc[0] == pytest.approx(-3.70)
     assert result["latitude"].iloc[0] == pytest.approx(40.41)
@@ -171,10 +173,10 @@ def test_lugar_used_when_scores_equal(mocker):
         (LUGAR_ADDR, -3.70, 40.41, 7),
         (DIR_ADDR, -3.80, 40.50, 7),
     )
-    mocker.patch("main.geocode_address")
-    mocker.patch("main.to_db")
+    mocker.patch("utils.geocode.geocode_address")
+    mocker.patch("utils.db.to_db")
 
-    result = geocode_mobile_points(_mobile_df(), cache)
+    result = geocode.geocode_mobile_points(_mobile_df(), cache, REGION)
 
     assert result["longitude"].iloc[0] == pytest.approx(-3.70)
 
@@ -184,10 +186,10 @@ def test_lugar_used_when_direccion_score_is_none(mocker):
         (LUGAR_ADDR, -3.70, 40.41, 7),
         (DIR_ADDR, None, None, None),
     )
-    mocker.patch("main.geocode_address")
-    mocker.patch("main.to_db")
+    mocker.patch("utils.geocode.geocode_address")
+    mocker.patch("utils.db.to_db")
 
-    result = geocode_mobile_points(_mobile_df(), cache)
+    result = geocode.geocode_mobile_points(_mobile_df(), cache, REGION)
 
     assert result["longitude"].iloc[0] == pytest.approx(-3.70)
 
@@ -216,10 +218,10 @@ def test_multiple_rows_each_get_coords(mocker):
         (addr_lugar_2, -3.72, 40.43, 6),
         (addr_dir_2, -3.73, 40.44, 9),
     )
-    mocker.patch("main.geocode_address")
-    mocker.patch("main.to_db")
+    mocker.patch("utils.geocode.geocode_address")
+    mocker.patch("utils.db.to_db")
 
-    result = geocode_mobile_points(df, cache)
+    result = geocode.geocode_mobile_points(df, cache, REGION)
 
     # Row 0: lugar wins (score 9 > 4)
     assert result["longitude"].iloc[0] == pytest.approx(-3.70)

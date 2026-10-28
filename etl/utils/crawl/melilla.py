@@ -3,7 +3,7 @@
 The page (ingesa.sanidad.gob.es/melilla) describes a single spot, the Centro
 de Transfusión, as plain text: street address, phone and hours. It has no
 map link, so the spot is geocoded from its address (see
-main.scrape_fixed_points_melilla). The page publishes no donation drives
+regions/melilla.py). The page publishes no donation drives
 (its campaigns pages list none) and no blood-levels widget, so there's no
 scrape_mobile_points() or scrape_blood_levels() here.
 """

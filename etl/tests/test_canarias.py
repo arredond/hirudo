@@ -6,9 +6,9 @@ import urllib.parse
 import pandas as pd
 import pytest
 import responses
+from regions import canarias as regions_canarias
 from utils.crawl import canarias
 
-import main
 from tests.conftest import (
     CANARIAS_FIXED_RESULTS_HTML,
     CANARIAS_HOME_HTML,
@@ -139,11 +139,11 @@ def test_scrape_mobile_points_canarias_geocodes_only_stops_without_map(mocker):
         df["latitude"] = 28.1
         return df
 
-    mocker.patch("main.canarias.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.crawl.canarias.scrape_mobile_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    df = main.scrape_mobile_points_canarias()
+    df = regions_canarias.scrape_mobile_points()
 
     # Only the stop without a map link is sent for geocoding
     assert seen["addresses"][0] == (
@@ -171,17 +171,17 @@ def test_scrape_fixed_points_canarias_uses_hand_built_hours(mocker):
         }
     )
     lookup = {"Hospiten Bellevue": "Mo-Fr 11:00-13:30,15:00-17:30; PH off"}
-    mocker.patch("main.canarias.scrape_fixed_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.load_opening_hours_fijos", return_value=lookup)
+    mocker.patch("utils.crawl.canarias.scrape_fixed_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.points.load_opening_hours_fijos", return_value=lookup)
     mocker.patch(
-        "main.geocode_points",
+        "utils.geocode.geocode_points",
         side_effect=lambda df, cache, col: df.assign(
             longitude=-16.544069, latitude=28.407359
         ),
     )
 
-    df = main.scrape_fixed_points_canarias()
+    df = regions_canarias.scrape_fixed_points()
 
     assert df["opening_hours"].iloc[0] == "Mo-Fr 11:00-13:30,15:00-17:30; PH off"
     assert df["region"].iloc[0] == "Canarias"

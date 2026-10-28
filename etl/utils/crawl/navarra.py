@@ -8,7 +8,7 @@ the spot's coordinates (with decimal commas, so they're read off by hand here).
 Mobile stops ("Unidad móvil", the Autohemoteca) come from the JSON feed behind
 the calendar page: one event per stop, titled "TOWN HH:MM - HH:MM" with the
 venue on the next line. There's no address or coordinates, so those are
-geocoded in main.py.
+geocoded in regions/navarra.py.
 
 No blood-levels ("niveles de sangre") widget exists on this site, so, like
 Castilla-La Mancha, there's no scrape_blood_levels() here.

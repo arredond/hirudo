@@ -3,8 +3,7 @@ pre-built full-address columns, keeping the best-scoring candidate per row."""
 
 import pandas as pd
 import pytest
-
-from main import geocode_points
+from utils import geocode
 
 CACHE_COLS = ["address", "longitude", "latitude", "location_type", "score"]
 
@@ -35,10 +34,10 @@ ADDR = "Plaza Mayor, 1, Ávila, Castilla y León, Spain"
 def test_fully_cached_makes_no_api_calls(mocker):
     df = pd.DataFrame({"full_address": [ADDR]})
     cache = _cache((ADDR, -4.69, 40.65, 9))
-    mock_geocode = mocker.patch("main.geocode_address")
-    mock_to_db = mocker.patch("main.to_db")
+    mock_geocode = mocker.patch("utils.geocode.geocode_address")
+    mock_to_db = mocker.patch("utils.db.to_db")
 
-    result = geocode_points(df, cache, "full_address")
+    result = geocode.geocode_points(df, cache, "full_address")
 
     mock_geocode.assert_not_called()
     mock_to_db.assert_not_called()
@@ -48,10 +47,12 @@ def test_fully_cached_makes_no_api_calls(mocker):
 
 def test_missing_address_is_geocoded_and_cached(mocker):
     df = pd.DataFrame({"full_address": [ADDR]})
-    mocker.patch("main.geocode_address", return_value=(-4.69, 40.65, "ROOFTOP", 9))
-    mock_to_db = mocker.patch("main.to_db")
+    mocker.patch(
+        "utils.geocode.geocode_address", return_value=(-4.69, 40.65, "ROOFTOP", 9)
+    )
+    mock_to_db = mocker.patch("utils.db.to_db")
 
-    result = geocode_points(df, _empty_cache(), "full_address")
+    result = geocode.geocode_points(df, _empty_cache(), "full_address")
 
     mock_to_db.assert_called_once()
     saved_cache = mock_to_db.call_args.args[0]
@@ -62,11 +63,11 @@ def test_missing_address_is_geocoded_and_cached(mocker):
 def test_duplicate_addresses_geocoded_once_and_both_rows_get_coords(mocker):
     df = pd.DataFrame({"full_address": [ADDR, ADDR]})
     mock_geocode = mocker.patch(
-        "main.geocode_address", return_value=(-4.69, 40.65, "ROOFTOP", 9)
+        "utils.geocode.geocode_address", return_value=(-4.69, 40.65, "ROOFTOP", 9)
     )
-    mocker.patch("main.to_db")
+    mocker.patch("utils.db.to_db")
 
-    result = geocode_points(df, _empty_cache(), "full_address")
+    result = geocode.geocode_points(df, _empty_cache(), "full_address")
 
     assert mock_geocode.call_count == 1
     assert len(result) == 2
@@ -77,7 +78,7 @@ def test_drops_the_helper_address_column():
     df = pd.DataFrame({"full_address": [ADDR]})
     cache = _cache((ADDR, -4.69, 40.65, 9))
 
-    result = geocode_points(df, cache, "full_address")
+    result = geocode.geocode_points(df, cache, "full_address")
 
     assert "address" not in result.columns
     assert "full_address" in result.columns
@@ -101,10 +102,10 @@ def test_poi_candidate_wins_when_better_scored(mocker):
         (STREET_ADDR, -5.6578, 40.9718, 6),  # GEOMETRIC_CENTER
         (POI_ADDR, -5.6573, 40.9739, 9),  # ROOFTOP
     )
-    mocker.patch("main.geocode_address")
-    mocker.patch("main.to_db")
+    mocker.patch("utils.geocode.geocode_address")
+    mocker.patch("utils.db.to_db")
 
-    result = geocode_points(df, cache, ["address_direccion", "address_campana"])
+    result = geocode.geocode_points(df, cache, ["address_direccion", "address_campana"])
 
     assert result["longitude"].iloc[0] == pytest.approx(-5.6573)
     assert result["latitude"].iloc[0] == pytest.approx(40.9739)
@@ -119,7 +120,7 @@ def test_street_candidate_wins_when_better_scored():
         (POI_ADDR, -5.6572, 40.9736, 6),
     )
 
-    result = geocode_points(df, cache, ["address_direccion", "address_campana"])
+    result = geocode.geocode_points(df, cache, ["address_direccion", "address_campana"])
 
     assert result["longitude"].iloc[0] == pytest.approx(-5.6554)
 
@@ -129,7 +130,7 @@ def test_falls_back_to_street_when_no_campana():
     df = pd.DataFrame({"address_direccion": [STREET_ADDR], "address_campana": [None]})
     cache = _cache((STREET_ADDR, -5.6578, 40.9718, 6))
 
-    result = geocode_points(df, cache, ["address_direccion", "address_campana"])
+    result = geocode.geocode_points(df, cache, ["address_direccion", "address_campana"])
 
     assert result["longitude"].iloc[0] == pytest.approx(-5.6578)
 
@@ -143,7 +144,7 @@ def test_falls_back_to_street_on_tied_score():
         (POI_ADDR, -5.6572, 40.9736, 7),
     )
 
-    result = geocode_points(df, cache, ["address_direccion", "address_campana"])
+    result = geocode.geocode_points(df, cache, ["address_direccion", "address_campana"])
 
     assert result["longitude"].iloc[0] == pytest.approx(-5.6578)
 
@@ -152,10 +153,11 @@ def test_geocodes_only_addresses_actually_present(mocker):
     """A null 'campana' candidate must not trigger a geocode call for None."""
     df = pd.DataFrame({"address_direccion": [STREET_ADDR], "address_campana": [None]})
     mock_geocode = mocker.patch(
-        "main.geocode_address", return_value=(-5.6578, 40.9718, "GEOMETRIC_CENTER", 6)
+        "utils.geocode.geocode_address",
+        return_value=(-5.6578, 40.9718, "GEOMETRIC_CENTER", 6),
     )
-    mocker.patch("main.to_db")
+    mocker.patch("utils.db.to_db")
 
-    geocode_points(df, _empty_cache(), ["address_direccion", "address_campana"])
+    geocode.geocode_points(df, _empty_cache(), ["address_direccion", "address_campana"])
 
     mock_geocode.assert_called_once_with(STREET_ADDR)

@@ -10,7 +10,7 @@ const BLOOD_TYPE_ORDER = ['O+', 'A+', 'AB+', 'B+', 'O-', 'A-', 'AB-', 'B-']
 
 // hasLoaded distinguishes "still fetching" from "fetched, and this region
 // genuinely has no rows" (e.g. Castilla-La Mancha, which has no blood-levels
-// source at all — see REGION_CLM in etl/main.py) — both look like an empty
+// source at all — see etl/regions/castilla_la_mancha.py) — both look like an empty
 // bloodLevels array otherwise, but the UI wants to tell them apart.
 //
 // Each region's levels are cached for the session (they change once a day at

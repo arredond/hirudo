@@ -28,7 +28,7 @@ export default function BloodLevelBadges({ region }) {
   if (!hasLoaded) return <div className={SLOT} />
 
   // Loaded, but genuinely nothing for this region (e.g. Castilla-La Mancha,
-  // which has no blood-levels source at all — see REGION_CLM in etl/main.py).
+  // which has no blood-levels source at all — see etl/regions/castilla_la_mancha.py).
   // Clamped to two lines so it fits the slot.
   if (bloodLevels.length === 0) {
     const message = `En este momento no disponemos de niveles de donación para ${region}.`

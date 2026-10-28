@@ -1,8 +1,8 @@
 """Crawl Castilla-La Mancha pages and retrieve fixed and mobile blood donation spots.
 
 No blood-levels ("niveles de sangre") page has been found for this region —
-scrape_blood_levels() here simply doesn't exist; main.py handles a region
-with no blood-levels source by just not calling one (see REGION_CLM there).
+scrape_blood_levels() here simply doesn't exist; main.py skips any region
+whose regions/<region>.py has none.
 """
 
 import re

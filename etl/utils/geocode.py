@@ -1,10 +1,15 @@
 """Geocoding utilities using the Google Maps API."""
 
 import difflib
+import logging
 import os
 import re
 
+import pandas as pd
 import unidecode
+from utils import db
+
+log = logging.getLogger(__name__)
 
 # A Places "Find Place" match has no location_type to score, so it gets a
 # fixed score: above every non-ROOFTOP geocoding result (a Places hit is a
@@ -167,3 +172,241 @@ def build_full_address(*parts: str) -> str:
     region-specific parts (e.g. street, locality, region).
     """
     return ", ".join([*parts, "Spain"])
+
+
+# Places ("Find Place") results share the geocoding_cache table with
+# geocoding results; this prefix on their cache key keeps a free-text query
+# from colliding with the same text geocoded as an address.
+PLACE_CACHE_PREFIX = "place: "
+
+
+def refresh_geocoding_cache(
+    addresses: set[str], geocoding_cache: pd.DataFrame
+) -> pd.DataFrame:
+    """Geocode any addresses missing from the cache and persist the update.
+
+    Returns geocoding_cache, extended with newly geocoded addresses when
+    there were any missing (and left untouched, with no DB write, when the
+    cache already covered every address).
+    """
+    cached_addresses = set(geocoding_cache["address"])
+    new_rows = []
+    for address in addresses - cached_addresses:
+        log.info("Geocoding: %s", address)
+        lng, lat, location_type, score = geocode_address(address)
+        new_rows.append(
+            {
+                "address": address,
+                "longitude": lng,
+                "latitude": lat,
+                "location_type": location_type,
+                "score": score,
+            }
+        )
+
+    if new_rows:
+        geocoding_cache = pd.concat(
+            [geocoding_cache, pd.DataFrame(new_rows)], ignore_index=True
+        )
+        geocoding_cache = geocoding_cache.drop_duplicates(subset=["address"])
+        db.to_db(geocoding_cache, "geocoding_cache")
+
+    return geocoding_cache
+
+
+def refresh_places_cache(
+    queries: set[str], geocoding_cache: pd.DataFrame, bounds: tuple
+) -> pd.DataFrame:
+    """Run a Places search for any query missing from the cache and persist it.
+
+    Same contract as refresh_geocoding_cache, but keyed by
+    PLACE_CACHE_PREFIX + query and keeping the matched place's name and
+    address too, so place_candidate can check the match later without
+    another API call. Not-found queries are cached as well (with no
+    coordinates), so they aren't retried every run.
+    """
+    south, west, north, east = bounds
+    location_bias = f"rectangle:{south},{west}|{north},{east}"
+    cached_addresses = set(geocoding_cache["address"])
+    new_rows = []
+    for query in queries:
+        key = PLACE_CACHE_PREFIX + query
+        if key in cached_addresses:
+            continue
+        log.info("Place search: %s", query)
+        lng, lat, name, address = find_place(query, location_bias)
+        new_rows.append(
+            {
+                "address": key,
+                "longitude": lng,
+                "latitude": lat,
+                "location_type": "PLACE",
+                "score": PLACE_SCORE if lng is not None else None,
+                "place_name": name,
+                "place_address": address,
+            }
+        )
+
+    if new_rows:
+        geocoding_cache = pd.concat(
+            [geocoding_cache, pd.DataFrame(new_rows)], ignore_index=True
+        )
+        geocoding_cache = geocoding_cache.drop_duplicates(subset=["address"])
+        db.to_db(geocoding_cache, "geocoding_cache")
+
+    return geocoding_cache
+
+
+def place_candidate(
+    query: str, expected: str, geocoding_cache: pd.DataFrame, bounds: tuple
+) -> str | None:
+    """Return a query's Places cache key if its result is trustworthy, else None.
+
+    The result must fall inside bounds and mention the expected town or
+    organization name (see place_matches) — Places otherwise happily returns
+    a same-named place in another region (or country). The key returned can
+    be passed to geocode_points as one more candidate column.
+    """
+    key = PLACE_CACHE_PREFIX + query
+    cached = geocoding_cache.loc[geocoding_cache["address"] == key]
+    if cached.empty or pd.isna(cached["latitude"].iloc[0]):
+        return None
+    place = cached.iloc[0]
+    south, west, north, east = bounds
+    in_bounds = (
+        south <= place["latitude"] <= north and west <= place["longitude"] <= east
+    )
+    if in_bounds and place_matches(
+        expected, place["place_name"], place["place_address"]
+    ):
+        return key
+    return None
+
+
+def geocode_mobile_points(
+    df: pd.DataFrame, geocoding_cache: pd.DataFrame, region: str
+) -> pd.DataFrame:
+    """Geocode mobile points with both a 'lugar' and a 'direccion', using and
+    updating the cache (Comunidad de Madrid's are shaped this way).
+
+    Collects all unique addresses across both 'lugar' and 'direccion' fields,
+    geocodes only addresses missing from the cache (one API call each), then
+    picks the better-scored coordinate for each row.
+    """
+    all_addresses: set[str] = set()
+    for field in ["lugar", "direccion"]:
+        all_addresses.update(
+            df.apply(
+                lambda row, field=field: build_full_address(
+                    row[field], row.localidad, region
+                ),
+                axis=1,
+            ).unique()
+        )
+
+    geocoding_cache = refresh_geocoding_cache(all_addresses, geocoding_cache)
+
+    def best_coords(row):
+        addr_lugar = build_full_address(row["lugar"], row.localidad, region)
+        addr_dir = build_full_address(row["direccion"], row.localidad, region)
+        score_lugar = geocoding_cache.loc[
+            geocoding_cache.address == addr_lugar, "score"
+        ].iloc[0]
+        score_dir = geocoding_cache.loc[
+            geocoding_cache.address == addr_dir, "score"
+        ].iloc[0]
+        # Fall back to lugar when scores are equal or either is missing
+        if pd.notna(score_dir) and pd.notna(score_lugar) and score_dir > score_lugar:
+            row_data = geocoding_cache.loc[geocoding_cache.address == addr_dir].iloc[0]
+        else:
+            row_data = geocoding_cache.loc[geocoding_cache.address == addr_lugar].iloc[
+                0
+            ]
+        return row_data["longitude"], row_data["latitude"]
+
+    df[["longitude", "latitude"]] = pd.DataFrame(
+        df.apply(best_coords, axis=1).tolist(),
+        index=df.index,
+        columns=["longitude", "latitude"],
+    )
+    return df
+
+
+def geocode_points(
+    df: pd.DataFrame, geocoding_cache: pd.DataFrame, address_columns: str | list[str]
+) -> pd.DataFrame:
+    """Geocode points from one or more pre-built full-address columns.
+
+    With a single column this is a plain cache-backed geocode. With several,
+    every candidate is geocoded and the best-scoring one is kept per row —
+    e.g. a POI-name-based address alongside a raw street-address one: the
+    POI-name candidate tends to resolve precisely (ROOFTOP/point_of_interest)
+    exactly where the street text is too messy for Google to parse a house
+    number out of, but a row without a usable POI name (NaN in that column)
+    just falls back to the street-address candidate. Ties fall back to the
+    first listed column, mirroring geocode_mobile_points' lugar-first rule.
+    """
+    if isinstance(address_columns, str):
+        address_columns = [address_columns]
+
+    all_addresses = {
+        address for column in address_columns for address in df[column].dropna()
+    }
+    geocoding_cache = refresh_geocoding_cache(all_addresses, geocoding_cache)
+    scored = geocoding_cache.set_index("address")
+
+    def best_candidate(row) -> pd.Series:
+        best_column, best_score = address_columns[0], -1
+        for column in address_columns:
+            address = row[column]
+            if pd.isna(address) or address not in scored.index:
+                continue
+            score = scored.loc[address, "score"]
+            if pd.notna(score) and score > best_score:
+                best_column, best_score = column, score
+
+        address = row[best_column]
+        if pd.isna(address) or address not in scored.index:
+            return pd.Series({"longitude": None, "latitude": None})
+        return scored.loc[address, ["longitude", "latitude"]]
+
+    coords = df.apply(best_candidate, axis=1)
+    return pd.concat([df, coords], axis=1)
+
+
+def load_geocoding_cache() -> pd.DataFrame:
+    """Load the shared geocoding cache, or an empty one on first run."""
+    try:
+        return db.from_db("geocoding_cache")
+    except pd.errors.DatabaseError:  # table may not exist yet on first run
+        return pd.DataFrame(
+            columns=[
+                "address",
+                "longitude",
+                "latitude",
+                "location_type",
+                "score",
+                "place_name",
+                "place_address",
+            ]
+        )
+
+
+def geocode_missing_coords(
+    df: pd.DataFrame, address_columns: str | list[str]
+) -> pd.DataFrame:
+    """Keep the source's own coordinates and geocode only the rows without them.
+
+    For regions whose pages give most points' coordinates (a map link or
+    embed) but not all. The address columns should be set only on rows
+    missing coordinates (e.g. built with .where(df["latitude"].isna())), so
+    nothing else reaches the geocoding cache or API (see geocode_points).
+    """
+    page_coords = df[["longitude", "latitude"]]
+    df = geocode_points(
+        df.drop(columns=["longitude", "latitude"]),
+        load_geocoding_cache(),
+        address_columns,
+    )
+    df[["longitude", "latitude"]] = page_coords.fillna(df[["longitude", "latitude"]])
+    return df

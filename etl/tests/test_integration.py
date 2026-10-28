@@ -147,7 +147,7 @@ def test_blood_levels_returns_all_types():
 
 def test_process_blood_levels_builds_uploadable_frame_without_writing(mocker):
     """Full ETL step against the live site, but with the DB write stubbed out."""
-    mock_to_db = mocker.patch("main.to_db")
+    mock_to_db = mocker.patch("utils.db.to_db")
 
     main.process_blood_levels()
 

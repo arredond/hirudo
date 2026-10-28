@@ -10,7 +10,7 @@ same template. A page gives:
   (colectas): date, town, venue and hours, a few weeks ahead.
 
 Neither part carries coordinates, so every point is geocoded from its text
-(see main.py). The pages publish no blood-reserve levels, so there's no
+(see regions/andalucia.py). The pages publish no blood-reserve levels, so there's no
 scrape_blood_levels() here. Mobile collections aren't split by donation type
 (sangre or plasma) either, except for the plasma-only sessions some centres
 hold at their own premises, which name "plasma" in the town or venue

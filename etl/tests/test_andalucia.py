@@ -1,12 +1,12 @@
-"""Tests for utils/crawl/andalucia.py and the Andalucía steps in main.py."""
+"""Tests for utils/crawl/andalucia.py and regions/andalucia.py."""
 
 import pandas as pd
 import pytest
 import responses
 from bs4 import BeautifulSoup
+from regions import andalucia as regions_andalucia
 from utils.crawl import andalucia
 
-import main
 from tests.conftest import ANDALUCIA_CENTER_HTML
 
 
@@ -132,11 +132,11 @@ def test_scrape_fixed_points_andalucia_builds_weekly_opening_hours(mocker):
         df["latitude"] = 37.39
         return df
 
-    mocker.patch("main.andalucia.scrape_fixed_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.crawl.andalucia.scrape_fixed_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    df = main.scrape_fixed_points_andalucia()
+    df = regions_andalucia.scrape_fixed_points()
 
     assert addresses == ["Avda. Manuel Siurot, 39, 41013, Sevilla, Andalucía, Spain"]
     assert df.iloc[0]["opening_hours"] == "Mo 08:30-14:30,15:30-21:30; Sa 09:00-15:00"
@@ -162,11 +162,11 @@ def test_scrape_mobile_points_andalucia_names_and_parses_hours(mocker):
         df["latitude"] = 37.28
         return df
 
-    mocker.patch("main.andalucia.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.crawl.andalucia.scrape_mobile_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    df = main.scrape_mobile_points_andalucia()
+    df = regions_andalucia.scrape_mobile_points()
 
     row = df.iloc[0]
     assert row["name"] == "Equipo móvil en HERMANDAD DEL ROCÍO, Dos Hermanas"

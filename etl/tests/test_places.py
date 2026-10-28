@@ -1,11 +1,10 @@
 """Tests for the Places ("Find Place") candidate: utils/geocode.py's
-find_place/place_matches and main.py's refresh_places_cache/place_candidate."""
+find_place/place_matches and geocode.py's refresh_places_cache/place_candidate."""
 
 import pandas as pd
 import pytest
+from regions import aragon as regions_aragon
 from utils import geocode
-
-import main
 
 CACHE_COLS = [
     "address",
@@ -16,14 +15,14 @@ CACHE_COLS = [
     "place_name",
     "place_address",
 ]
-BOUNDS = main.ARAGON_PLACES_BOUNDS
+BOUNDS = regions_aragon.PLACES_BOUNDS
 
 
 def _cache_with_place(query, lat, lng, name, address):
     return pd.DataFrame(
         [
             {
-                "address": main.PLACE_CACHE_PREFIX + query,
+                "address": geocode.PLACE_CACHE_PREFIX + query,
                 "longitude": lng,
                 "latitude": lat,
                 "location_type": "PLACE",
@@ -120,10 +119,12 @@ def test_find_place_no_candidates(mocker, monkeypatch):
 
 def test_refresh_places_cache_skips_cached_queries(mocker):
     cache = _cache_with_place("Hecho, en el Centro de Salud", 42.7, -0.75, "x", "y")
-    mock_find = mocker.patch("main.find_place")
-    mock_to_db = mocker.patch("main.to_db")
+    mock_find = mocker.patch("utils.geocode.find_place")
+    mock_to_db = mocker.patch("utils.db.to_db")
 
-    result = main.refresh_places_cache({"Hecho, en el Centro de Salud"}, cache, BOUNDS)
+    result = geocode.refresh_places_cache(
+        {"Hecho, en el Centro de Salud"}, cache, BOUNDS
+    )
 
     mock_find.assert_not_called()
     mock_to_db.assert_not_called()
@@ -133,16 +134,16 @@ def test_refresh_places_cache_skips_cached_queries(mocker):
 def test_refresh_places_cache_stores_new_and_not_found_queries(mocker):
     cache = pd.DataFrame(columns=CACHE_COLS)
     mocker.patch(
-        "main.find_place",
+        "utils.geocode.find_place",
         side_effect=lambda query, bias: (
             (-1.28, 40.07, "Ademuz Centro de Salud", "46140 Ademuz, Valencia")
             if query.startswith("Ademuz")
             else (None, None, None, None)
         ),
     )
-    mock_to_db = mocker.patch("main.to_db")
+    mock_to_db = mocker.patch("utils.db.to_db")
 
-    result = main.refresh_places_cache(
+    result = geocode.refresh_places_cache(
         {"Ademuz, en el Centro de Salud", "Nowhere"}, cache, BOUNDS
     ).set_index("address")
 
@@ -165,7 +166,7 @@ def test_place_candidate_accepts_matching_place_in_bounds():
     cache = _cache_with_place(
         query, 40.066, -1.283, "Ademuz Centro de Salud", "46140 Ademuz, Valencia"
     )
-    assert main.place_candidate(query, "Ademuz", cache, BOUNDS) == (
+    assert geocode.place_candidate(query, "Ademuz", cache, BOUNDS) == (
         "place: Ademuz, en el Centro de Salud"
     )
 
@@ -175,7 +176,7 @@ def test_place_candidate_rejects_out_of_bounds_match():
     cache = _cache_with_place(
         query, 38.08, -0.94, "Centro de Salud de Orihuela", "03300 Orihuela, Alicante"
     )
-    assert main.place_candidate(query, "Orihuela", cache, BOUNDS) is None
+    assert geocode.place_candidate(query, "Orihuela", cache, BOUNDS) is None
 
 
 def test_place_candidate_rejects_non_matching_place():
@@ -183,12 +184,12 @@ def test_place_candidate_rejects_non_matching_place():
     cache = _cache_with_place(
         query, 41.65, -0.89, "Centro de Día S.E.D. Estrella", "50014 Zaragoza"
     )
-    assert main.place_candidate(query, "Zuera", cache, BOUNDS) is None
+    assert geocode.place_candidate(query, "Zuera", cache, BOUNDS) is None
 
 
 def test_place_candidate_not_cached_or_not_found():
     cache = pd.DataFrame(columns=CACHE_COLS)
-    assert main.place_candidate("x", "x", cache, BOUNDS) is None
+    assert geocode.place_candidate("x", "x", cache, BOUNDS) is None
 
 
 @pytest.mark.parametrize(

@@ -78,7 +78,7 @@ RESTRICTION_RE = re.compile(
 # Plasma-only mobile stops (hospitals taking plasmapheresis by appointment),
 # e.g. "ELCHE-SOLO DONACIÓN DE PLASMA CON CITA PREVIA-ELCHE HOSPITAL GENERAL".
 # Like Castilla-La Mancha's "(SÓLO PLASMA)" stops, these don't take whole
-# blood, so they get sangre: False (see scrape_mobile_points_valencia).
+# blood, so they get sangre: False (see regions/comunidad_valenciana.py).
 PLASMA_ONLY_RE = re.compile(
     r"[-\s]*s[oó]lo\s+donaci[oó]n\s+de\s+plasma(?:\s+con\s+cita\s+previa)?[-\s]*",
     re.IGNORECASE,

@@ -1,7 +1,7 @@
 import { haversine } from './geo'
 import regionBoundaries from '../data/regionBoundaries.json'
 
-// Every region the ETL covers (the REGION_* constants in etl/main.py) — also
+// Every region the ETL covers (the REGION constants in etl/regions/) — also
 // the option list for the header's region dropdown, so kept in alphabetical
 // order.
 export const REGIONS = [

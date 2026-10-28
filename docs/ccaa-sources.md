@@ -5,9 +5,9 @@ publishes (or doesn't) its own donation-point and blood-level pages — there's
 no national source. This tracks what's been found for each, so extending the
 ETL to a new region doesn't mean re-researching from scratch.
 
-Each region's scraper lives at `etl/utils/crawl/<region>.py`; see `main.py`'s
-`REGION_*` constants and `scrape_*_<region>` functions for how a region is
-wired in once its sources are known.
+Each region's raw scraper lives at `etl/utils/crawl/<region>.py`, and its
+enrichment/geocoding at `etl/regions/<region>.py` (registered in
+`main.REGIONS`).
 
 Where a region's scraped pages don't say which fixed points take plasma but
 its official plasma page does, those points are listed by hand in
@@ -65,7 +65,7 @@ Points that only take donors by appointment can likewise be listed by hand in
   <https://bancosangrearagon.org/wp-json/tribe/events/v1/events> (paginated,
   `next_rest_url`). Events carry **no venue/address/locality** — only a title
   like "Sariñena, en el Centro de Salud" (town *or* organization, then venue),
-  so geocoding is title-only (see `scrape_mobile_points_aragon`): Geocoding
+  so geocoding is title-only (see `regions/aragon.py`): Geocoding
   API + a Places "Find Place" free-text candidate, plus hand-pinned
   locations in `etl/utils/aragon_mobile_locations.json` for the stops
   neither gets right (add to it when a new one shows up mislocated).
@@ -251,7 +251,7 @@ Points that only take donors by appointment can likewise be listed by hand in
   a CTTC name "plasma" in the town or venue (Almería writes "Plasma Centro de
   Transfusion" as the town, which is replaced by the centre's municipality).
 - Blood levels: none. The CTTC pages and the entry page show no reserve or
-  semáforo level, so there's no `scrape_blood_levels_andalucia`.
+  semáforo level, so `regions/andalucia.py` has no `scrape_blood_levels()`.
 - Boundary polygon: mainland Andalucía only (the Ceuta/Melilla and island
   slivers in the source are dropped).
 
@@ -270,7 +270,7 @@ Points that only take donors by appointment can likewise be listed by hand in
   fixed centres' own days, titled "PUNTOS FIJOS"; those are skipped since the
   fixed points come from the page. Events have no coordinates, so spots are
   geocoded: a Places search for "venue, town" plus the Geocoding API for the
-  address, best score kept (see `scrape_mobile_points_asturias`).
+  address, best score kept (see `regions/asturias.py`).
 - Blood levels ("Estado de las reservas de hematíes"): eight gauge images on
   the homepage, no legend and no text. The blood type comes from the filename
   (`omas…` = O+, `o-…` = O-, `Amas…` = A+, …); the level is read off the
@@ -285,7 +285,7 @@ Points that only take donors by appointment can likewise be listed by hand in
   (INGESA's page). Name, address, phone and hours are plain text there; the
   page has no map link, so the spot is geocoded from its street address
   ("C. Cuerpo Nacional de Policia, n 4") through the geocoding cache (see
-  `scrape_fixed_points_melilla`). The page says the centre sits in the Zona
+  `regions/melilla.py`). The page says the centre sits in the Zona
   Centro health centre.
 - Hours: the page gives only "De 8:30 h. a 14:30 h." with no weekdays. The
   hand-built lookup entry assumes **Mo-Fr 08:30-14:30; PH off**. This is an

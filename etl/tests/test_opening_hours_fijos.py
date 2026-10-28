@@ -11,8 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 from opening_hours import OpeningHours, ParserError
-
-import main
+from utils import points
 
 LOOKUP_PATH = Path(__file__).parent.parent / "utils" / "opening_hours_fijos.json"
 with open(LOOKUP_PATH, encoding="utf-8") as f:
@@ -33,18 +32,18 @@ def test_all_lookup_entries_are_valid_opening_hours_strings():
 def test_opening_hours_for_fixed_point_matches_by_center_id():
     row = pd.Series({"center_id": "2544", "name": "Some Hospital"})
     lookup = {"2544": "Mo-Fr 09:00-14:00"}
-    assert main.opening_hours_for_fixed_point(row, lookup) == "Mo-Fr 09:00-14:00"
+    assert points.opening_hours_for_fixed_point(row, lookup) == "Mo-Fr 09:00-14:00"
 
 
 def test_opening_hours_for_fixed_point_falls_back_to_name():
     row = pd.Series({"center_id": None, "name": "Manual Center"})
     lookup = {"Manual Center": "Mo-Fr 09:00-14:00"}
-    assert main.opening_hours_for_fixed_point(row, lookup) == "Mo-Fr 09:00-14:00"
+    assert points.opening_hours_for_fixed_point(row, lookup) == "Mo-Fr 09:00-14:00"
 
 
 def test_opening_hours_for_fixed_point_missing_entry_returns_none(mocker):
-    mock_log = mocker.patch("main.log")
+    mock_log = mocker.patch("utils.points.log")
     row = pd.Series({"center_id": "9999", "name": "Unknown Center"})
 
-    assert main.opening_hours_for_fixed_point(row, {}) is None
+    assert points.opening_hours_for_fixed_point(row, {}) is None
     mock_log.warning.assert_called_once()

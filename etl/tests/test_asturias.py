@@ -1,4 +1,4 @@
-"""Tests for utils/crawl/asturias.py and the Asturias wiring in main.py.
+"""Tests for utils/crawl/asturias.py and regions/asturias.py.
 
 The gauge tests draw synthetic dials with Pillow (a blue hub, three rim bands,
 a red needle), so they don't depend on the live site's images.
@@ -16,9 +16,9 @@ import pytest
 import responses
 from bs4 import BeautifulSoup
 from PIL import Image
+from regions import asturias as regions_asturias
 from utils.crawl import asturias
 
-import main
 from tests.conftest import (
     ASTURIAS_EVENTS_JSON,
     ASTURIAS_FIXED_POINTS_HTML,
@@ -426,7 +426,7 @@ def test_scrape_blood_levels_reads_every_gauge_on_the_homepage():
 
 
 # ---------------------------------------------------------------------------
-# main.py wiring
+# regions/asturias.py
 # ---------------------------------------------------------------------------
 
 
@@ -442,23 +442,25 @@ def fixed_points_frame() -> pd.DataFrame:
 def test_scrape_fixed_points_asturias_uses_page_coordinates_without_geocoding(
     mocker,
 ):
-    mocker.patch("main.asturias.scrape_fixed_points", return_value=fixed_points_frame())
     mocker.patch(
-        "main.load_opening_hours_fijos",
+        "utils.crawl.asturias.scrape_fixed_points", return_value=fixed_points_frame()
+    )
+    mocker.patch(
+        "utils.points.load_opening_hours_fijos",
         return_value=json.loads(OPENING_HOURS_LOOKUP.read_text(encoding="utf-8")),
     )
     empty_cache = pd.DataFrame(columns=["address", "longitude", "latitude", "score"])
-    mocker.patch("main.load_geocoding_cache", return_value=empty_cache)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=empty_cache)
     mock_refresh = mocker.patch(
-        "main.refresh_geocoding_cache", return_value=empty_cache
+        "utils.geocode.refresh_geocoding_cache", return_value=empty_cache
     )
 
-    df = main.scrape_fixed_points_asturias()
+    df = regions_asturias.scrape_fixed_points()
 
     # Every centre has coordinates on its page, so nothing is sent to the API.
     mock_refresh.assert_called_once()
     assert mock_refresh.call_args.args[0] == set()
-    assert df["region"].eq(main.REGION_ASTURIAS).all()
+    assert df["region"].eq(regions_asturias.REGION).all()
     assert df["latitude"].notna().all()
     assert df["opening_hours"].notna().all()
     assert df["gmaps_url"].str.startswith("https://www.google.com/maps").all()
@@ -469,21 +471,21 @@ def test_scrape_mobile_points_asturias_one_row_per_spot(mocker):
     spots = pd.DataFrame(
         asturias.parse_event(gijon), columns=asturias.MOBILE_POINT_COLUMNS
     )
-    mocker.patch("main.asturias.scrape_mobile_points", return_value=spots)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
-    mocker.patch("main.place_candidate", return_value=None)
+    mocker.patch("utils.crawl.asturias.scrape_mobile_points", return_value=spots)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.refresh_places_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.place_candidate", return_value=None)
 
     def fake_geocode_points(df, geocoding_cache, address_columns):
         df["longitude"] = -5.66
         df["latitude"] = 43.54
         return df
 
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    df = main.scrape_mobile_points_asturias()
+    df = regions_asturias.scrape_mobile_points()
 
     assert list(df["name"]) == ["Equipo móvil en La Arena", "Equipo móvil en Natahoyo"]
-    assert set(df["region"]) == {main.REGION_ASTURIAS}
+    assert set(df["region"]) == {regions_asturias.REGION}
     assert df["opening_hours"].notna().all()
     assert df["medula"].eq(False).all()

@@ -8,8 +8,8 @@ export function getPointInfo(point) {
       : (p.name ?? ''),
     // "direccion"/"localidad"/"horario" are consolidated names every region's
     // ETL output uses regardless of how its own source spells them (see
-    // MADRID_FIXED_POINT_COLUMN_ALIASES / CYL_LOCATION_COLUMN_ALIASES in
-    // etl/main.py), so this stays region-agnostic rather than branching here.
+    // FIXED_POINT_COLUMN_ALIASES / LOCATION_COLUMN_ALIASES in
+    // etl/regions/madrid.py and castilla_y_leon.py), so this stays region-agnostic rather than branching here.
     address: p.direccion,
     locality: p.localidad,
     hours: p.horario,

@@ -21,20 +21,33 @@ def _scraped_levels():
 
 
 def _patch_all_blood_level_sources(mocker):
-    mocker.patch("main.madrid.scrape_blood_levels", return_value=_scraped_levels())
     mocker.patch(
-        "main.castilla_y_leon.scrape_blood_levels", return_value=_scraped_levels()
+        "utils.crawl.madrid.scrape_blood_levels", return_value=_scraped_levels()
     )
-    mocker.patch("main.galicia.scrape_blood_levels", return_value=_scraped_levels())
-    mocker.patch("main.la_rioja.scrape_blood_levels", return_value=_scraped_levels())
-    mocker.patch("main.pais_vasco.scrape_blood_levels", return_value=_scraped_levels())
-    mocker.patch("main.asturias.scrape_blood_levels", return_value=_scraped_levels())
-    mocker.patch("main.balears.scrape_blood_levels", return_value=_scraped_levels())
+    mocker.patch(
+        "utils.crawl.castilla_y_leon.scrape_blood_levels",
+        return_value=_scraped_levels(),
+    )
+    mocker.patch(
+        "utils.crawl.galicia.scrape_blood_levels", return_value=_scraped_levels()
+    )
+    mocker.patch(
+        "utils.crawl.la_rioja.scrape_blood_levels", return_value=_scraped_levels()
+    )
+    mocker.patch(
+        "utils.crawl.pais_vasco.scrape_blood_levels", return_value=_scraped_levels()
+    )
+    mocker.patch(
+        "utils.crawl.asturias.scrape_blood_levels", return_value=_scraped_levels()
+    )
+    mocker.patch(
+        "utils.crawl.balears.scrape_blood_levels", return_value=_scraped_levels()
+    )
 
 
 def test_process_blood_levels_appends_to_blood_levels_table(mocker):
     _patch_all_blood_level_sources(mocker)
-    mock_to_db = mocker.patch("main.to_db")
+    mock_to_db = mocker.patch("utils.db.to_db")
 
     main.process_blood_levels()
 
@@ -46,7 +59,7 @@ def test_process_blood_levels_appends_to_blood_levels_table(mocker):
 
 def test_process_blood_levels_adds_source_and_single_timestamp(mocker):
     _patch_all_blood_level_sources(mocker)
-    mock_to_db = mocker.patch("main.to_db")
+    mock_to_db = mocker.patch("utils.db.to_db")
 
     main.process_blood_levels()
 

@@ -18,7 +18,7 @@ export async function fetchMobilePoints(date) {
 }
 
 // blood_levels is append-only (one snapshot of 8 rows per ETL run) and covers
-// several regions (see REGION_MADRID/REGION_CYL in etl/main.py) — this fetches
+// several regions (see main.REGIONS in etl/main.py) — this fetches
 // enough recent rows of the given region to cover its latest snapshot and lets
 // the caller dedupe by blood_type, keeping the most recent row for each.
 export async function fetchBloodLevels(region) {

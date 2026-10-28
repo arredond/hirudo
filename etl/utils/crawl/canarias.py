@@ -11,7 +11,7 @@ its page sends when you click "next"), and no island or municipality filter is
 needed.
 
 Each row's Google Maps link carries the point's coordinates, so nothing is
-geocoded unless a row has no usable link (see geocode in main.py). Blood
+geocoded unless a row has no usable link (see regions/canarias.py). Blood
 levels are not published by the Canarian blood bank (ICHH) in a scrapable form,
 so this module does not scrape any.
 """

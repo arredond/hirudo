@@ -9,6 +9,18 @@ import pathlib
 import geopandas as gpd
 import pandas as pd
 import pytest
+from regions import aragon as regions_aragon
+from regions import balears as regions_balears
+from regions import castilla_la_mancha as regions_castilla_la_mancha
+from regions import castilla_y_leon as regions_castilla_y_leon
+from regions import cataluna as regions_cataluna
+from regions import comunidad_valenciana as regions_comunidad_valenciana
+from regions import galicia as regions_galicia
+from regions import la_rioja as regions_la_rioja
+from regions import madrid as regions_madrid
+from regions import melilla as regions_melilla
+from regions import pais_vasco as regions_pais_vasco
+from utils import geocode, points
 
 import main
 
@@ -185,10 +197,10 @@ def test_process_fixed_points_stamps_region(mocker):
         df["latitude"] = 39.0
         return df
 
-    mocker.patch("main.pd.read_json", side_effect=[manual_points, other_donations])
-    mocker.patch("main.madrid.scrape_fixed_points", return_value=scraped_madrid)
+    mocker.patch("pandas.read_json", side_effect=[manual_points, other_donations])
+    mocker.patch("utils.crawl.madrid.scrape_fixed_points", return_value=scraped_madrid)
     mocker.patch(
-        "main.andalucia.scrape_fixed_points",
+        "utils.crawl.andalucia.scrape_fixed_points",
         return_value=pd.DataFrame(
             {
                 "name": ["Centro de transfusión, tejidos y células de Sevilla"],
@@ -201,24 +213,41 @@ def test_process_fixed_points_stamps_region(mocker):
             }
         ),
     )
-    mocker.patch("main.castilla_y_leon.scrape_fixed_points", return_value=scraped_cyl)
     mocker.patch(
-        "main.castilla_la_mancha.scrape_fixed_points", return_value=scraped_clm
+        "utils.crawl.castilla_y_leon.scrape_fixed_points", return_value=scraped_cyl
     )
-    mocker.patch("main.aragon.scrape_fixed_points", return_value=scraped_aragon)
     mocker.patch(
-        "main.comunidad_valenciana.scrape_fixed_points", return_value=scraped_valencia
+        "utils.crawl.castilla_la_mancha.scrape_fixed_points", return_value=scraped_clm
     )
-    mocker.patch("main.cataluna.scrape_fixed_points", return_value=scraped_cataluna)
-    mocker.patch("main.galicia.scrape_fixed_points", return_value=scraped_galicia)
-    mocker.patch("main.la_rioja.scrape_fixed_points", return_value=scraped_la_rioja)
-    mocker.patch("main.pais_vasco.scrape_fixed_points", return_value=scraped_pais_vasco)
-    mocker.patch("main.cantabria.scrape_fixed_points", return_value=scraped_cantabria)
-    mocker.patch("main.navarra.scrape_fixed_points", return_value=scraped_navarra)
+    mocker.patch("utils.crawl.aragon.scrape_fixed_points", return_value=scraped_aragon)
+    mocker.patch(
+        "utils.crawl.comunidad_valenciana.scrape_fixed_points",
+        return_value=scraped_valencia,
+    )
+    mocker.patch(
+        "utils.crawl.cataluna.scrape_fixed_points", return_value=scraped_cataluna
+    )
+    mocker.patch(
+        "utils.crawl.galicia.scrape_fixed_points", return_value=scraped_galicia
+    )
+    mocker.patch(
+        "utils.crawl.la_rioja.scrape_fixed_points", return_value=scraped_la_rioja
+    )
+    mocker.patch(
+        "utils.crawl.pais_vasco.scrape_fixed_points", return_value=scraped_pais_vasco
+    )
+    mocker.patch(
+        "utils.crawl.cantabria.scrape_fixed_points", return_value=scraped_cantabria
+    )
+    mocker.patch(
+        "utils.crawl.navarra.scrape_fixed_points", return_value=scraped_navarra
+    )
 
-    mocker.patch("main.asturias.scrape_fixed_points", return_value=scraped_asturias)
     mocker.patch(
-        "main.canarias.scrape_fixed_points",
+        "utils.crawl.asturias.scrape_fixed_points", return_value=scraped_asturias
+    )
+    mocker.patch(
+        "utils.crawl.canarias.scrape_fixed_points",
         return_value=pd.DataFrame(
             {
                 "name": ["Hospital Insular Nª Sª de los Reyes"],
@@ -233,10 +262,12 @@ def test_process_fixed_points_stamps_region(mocker):
             }
         ),
     )
-    mocker.patch("main.melilla.scrape_fixed_points", return_value=scraped_melilla)
+    mocker.patch(
+        "utils.crawl.melilla.scrape_fixed_points", return_value=scraped_melilla
+    )
 
     mocker.patch(
-        "main.balears.scrape_fixed_points",
+        "utils.crawl.balears.scrape_fixed_points",
         return_value=pd.DataFrame(
             {
                 "name": ["Eivissa"],
@@ -251,13 +282,15 @@ def test_process_fixed_points_stamps_region(mocker):
             }
         ),
     )
-    mocker.patch("main.refresh_places_cache", side_effect=lambda q, cache, b: cache)
-    mocker.patch("main.place_candidate", return_value=None)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
-    mocker.patch("main.open", mocker.mock_open())
-    mocker.patch("main.json.load", return_value={})
-    mock_to_db = mocker.patch("main.to_db")
+    mocker.patch(
+        "utils.geocode.refresh_places_cache", side_effect=lambda q, cache, b: cache
+    )
+    mocker.patch("utils.geocode.place_candidate", return_value=None)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.points.open", mocker.mock_open())
+    mocker.patch("utils.points.json.load", return_value={})
+    mock_to_db = mocker.patch("utils.db.to_db")
 
     main.process_fixed_points()
 
@@ -307,12 +340,12 @@ def test_scrape_fixed_points_melilla_geocodes_and_uses_hand_built_hours(mocker):
         df["latitude"] = 35.2904
         return df
 
-    mocker.patch("main.melilla.scrape_fixed_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
-    mocker.patch("main.load_opening_hours_fijos", return_value=lookup)
+    mocker.patch("utils.crawl.melilla.scrape_fixed_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.points.load_opening_hours_fijos", return_value=lookup)
 
-    df = main.scrape_fixed_points_melilla()
+    df = regions_melilla.scrape_fixed_points()
 
     assert df["opening_hours"].iloc[0] == "Mo-Fr 08:30-14:30; PH off"
     assert df["region"].iloc[0] == "Melilla"
@@ -334,16 +367,16 @@ def test_scrape_mobile_points_madrid_fixes_known_horario_typo(mocker):
         }
     )
 
-    def fake_geocode(df, geocoding_cache):
+    def fake_geocode(df, geocoding_cache, region):
         df["longitude"] = -3.7
         df["latitude"] = 40.4
         return df
 
-    mocker.patch("main.madrid.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.geocode_mobile_points", side_effect=fake_geocode)
+    mocker.patch("utils.crawl.madrid.scrape_mobile_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.geocode_mobile_points", side_effect=fake_geocode)
 
-    df = main.scrape_mobile_points_madrid()
+    df = regions_madrid.scrape_mobile_points()
 
     assert df["horario"].iloc[0] == "10:00 a 13:45"
     assert df["opening_hours"].iloc[0] is not None
@@ -373,11 +406,13 @@ def test_scrape_mobile_points_cyl_builds_poi_and_street_candidates(mocker):
         df["latitude"] = 40.97
         return df
 
-    mocker.patch("main.castilla_y_leon.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch(
+        "utils.crawl.castilla_y_leon.scrape_mobile_points", return_value=scraped
+    )
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    main.scrape_mobile_points_cyl()
+    regions_castilla_y_leon.scrape_mobile_points()
 
     assert captured["address_columns"] == ["address_direccion", "address_campana"]
     seen = captured["df"]
@@ -413,11 +448,13 @@ def test_scrape_mobile_points_clm_sets_donation_type_flags(mocker):
         df["latitude"] = 39.8
         return df
 
-    mocker.patch("main.castilla_la_mancha.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch(
+        "utils.crawl.castilla_la_mancha.scrape_mobile_points", return_value=scraped
+    )
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    df = main.scrape_mobile_points_clm()
+    df = regions_castilla_la_mancha.scrape_mobile_points()
 
     assert df["plasma"].tolist() == [False, True]
     assert df["sangre"].tolist() == [True, False]
@@ -556,7 +593,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         }
     )
 
-    def fake_geocode_mobile(df, geocoding_cache):
+    def fake_geocode_mobile(df, geocoding_cache, region):
         df["longitude"] = -3.7
         df["latitude"] = 40.4
         return df
@@ -566,9 +603,9 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         df["latitude"] = 40.6
         return df
 
-    mocker.patch("main.madrid.scrape_mobile_points", return_value=scraped_madrid)
+    mocker.patch("utils.crawl.madrid.scrape_mobile_points", return_value=scraped_madrid)
     mocker.patch(
-        "main.andalucia.scrape_mobile_points",
+        "utils.crawl.andalucia.scrape_mobile_points",
         return_value=pd.DataFrame(
             {
                 "fecha": ["28/10/2026"],
@@ -580,26 +617,38 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
             }
         ),
     )
-    mocker.patch("main.castilla_y_leon.scrape_mobile_points", return_value=scraped_cyl)
     mocker.patch(
-        "main.castilla_la_mancha.scrape_mobile_points", return_value=scraped_clm
+        "utils.crawl.castilla_y_leon.scrape_mobile_points", return_value=scraped_cyl
     )
-    mocker.patch("main.aragon.scrape_mobile_points", return_value=scraped_aragon)
     mocker.patch(
-        "main.comunidad_valenciana.scrape_mobile_points",
+        "utils.crawl.castilla_la_mancha.scrape_mobile_points", return_value=scraped_clm
+    )
+    mocker.patch("utils.crawl.aragon.scrape_mobile_points", return_value=scraped_aragon)
+    mocker.patch(
+        "utils.crawl.comunidad_valenciana.scrape_mobile_points",
         return_value=scraped_valencia,
     )
-    mocker.patch("main.cataluna.scrape_mobile_points", return_value=scraped_cataluna)
-    mocker.patch("main.galicia.scrape_mobile_points", return_value=scraped_galicia)
-    mocker.patch("main.la_rioja.scrape_mobile_points", return_value=scraped_la_rioja)
     mocker.patch(
-        "main.pais_vasco.scrape_mobile_points", return_value=scraped_pais_vasco
+        "utils.crawl.cataluna.scrape_mobile_points", return_value=scraped_cataluna
     )
-    mocker.patch("main.navarra.scrape_mobile_points", return_value=scraped_navarra)
-
-    mocker.patch("main.asturias.scrape_mobile_points", return_value=scraped_asturias)
     mocker.patch(
-        "main.canarias.scrape_mobile_points",
+        "utils.crawl.galicia.scrape_mobile_points", return_value=scraped_galicia
+    )
+    mocker.patch(
+        "utils.crawl.la_rioja.scrape_mobile_points", return_value=scraped_la_rioja
+    )
+    mocker.patch(
+        "utils.crawl.pais_vasco.scrape_mobile_points", return_value=scraped_pais_vasco
+    )
+    mocker.patch(
+        "utils.crawl.navarra.scrape_mobile_points", return_value=scraped_navarra
+    )
+
+    mocker.patch(
+        "utils.crawl.asturias.scrape_mobile_points", return_value=scraped_asturias
+    )
+    mocker.patch(
+        "utils.crawl.canarias.scrape_mobile_points",
         return_value=pd.DataFrame(
             {
                 "lugar": ["Escuela de Ingenieria Industrial"],
@@ -616,7 +665,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         ),
     )
     mocker.patch(
-        "main.balears.scrape_mobile_points",
+        "utils.crawl.balears.scrape_mobile_points",
         return_value=pd.DataFrame(
             {
                 "lugar": ["Banc de Sang i Teixits"],
@@ -633,13 +682,13 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
             }
         ),
     )
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
-    mocker.patch("main.place_candidate", return_value=None)
-    mocker.patch("main.pd.read_json", return_value=NO_LOCATION_OVERRIDES)
-    mocker.patch("main.geocode_mobile_points", side_effect=fake_geocode_mobile)
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
-    mock_to_db = mocker.patch("main.to_db")
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.refresh_places_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.place_candidate", return_value=None)
+    mocker.patch("pandas.read_json", return_value=NO_LOCATION_OVERRIDES)
+    mocker.patch("utils.geocode.geocode_mobile_points", side_effect=fake_geocode_mobile)
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
+    mock_to_db = mocker.patch("utils.db.to_db")
 
     main.process_mobile_points()
 
@@ -688,11 +737,13 @@ def test_scrape_mobile_points_la_rioja_geocodes_only_stops_without_map(mocker):
         df["latitude"] = 42.5
         return df
 
-    mocker.patch("main.la_rioja.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    geocode = mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.crawl.la_rioja.scrape_mobile_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    geocode = mocker.patch(
+        "utils.geocode.geocode_points", side_effect=fake_geocode_points
+    )
 
-    df = main.scrape_mobile_points_la_rioja()
+    df = regions_la_rioja.scrape_mobile_points()
 
     assert geocode.call_args.args[2] == "address_direccion"
     addresses = geocode.call_args.args[0]["address_direccion"]
@@ -722,10 +773,10 @@ def test_scrape_fixed_points_la_rioja_uses_hand_built_hours(mocker):
         }
     )
     lookup = {"Banco de Sangre del Hospital San Pedro": "Mo-Fr 08:00-20:00; PH off"}
-    mocker.patch("main.la_rioja.scrape_fixed_points", return_value=scraped)
-    mocker.patch("main.load_opening_hours_fijos", return_value=lookup)
+    mocker.patch("utils.crawl.la_rioja.scrape_fixed_points", return_value=scraped)
+    mocker.patch("utils.points.load_opening_hours_fijos", return_value=lookup)
 
-    df = main.scrape_fixed_points_la_rioja()
+    df = regions_la_rioja.scrape_fixed_points()
 
     assert df["opening_hours"].iloc[0] == "Mo-Fr 08:00-20:00; PH off"
     assert df["region"].iloc[0] == "La Rioja"
@@ -755,19 +806,19 @@ def test_scrape_mobile_points_aragon_builds_title_and_venue_candidates(mocker):
         df["latitude"] = 41.8
         return df
 
-    mocker.patch("main.aragon.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
-    mocker.patch("main.pd.read_json", return_value=NO_LOCATION_OVERRIDES)
+    mocker.patch("utils.crawl.aragon.scrape_mobile_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.refresh_places_cache", return_value=pd.DataFrame())
+    mocker.patch("pandas.read_json", return_value=NO_LOCATION_OVERRIDES)
     mocker.patch(
-        "main.place_candidate",
+        "utils.geocode.place_candidate",
         side_effect=lambda query, expected, cache, bounds: (
-            main.PLACE_CACHE_PREFIX + query if expected == "Sariñena" else None
+            geocode.PLACE_CACHE_PREFIX + query if expected == "Sariñena" else None
         ),
     )
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    df = main.scrape_mobile_points_aragon()
+    df = regions_aragon.scrape_mobile_points()
 
     assert captured["address_columns"] == [
         "address_title",
@@ -817,7 +868,7 @@ def test_apply_location_overrides_matches_title_or_who():
         }
     )
 
-    df = main.apply_location_overrides(df, overrides, ["who", "title"])
+    df = points.apply_location_overrides(df, overrides, ["who", "title"])
 
     # Organization overrides cover any room; town overrides only that venue
     assert df["latitude"].tolist() == [41.65, 41.65, 42.26, 0.0, 0.0]
@@ -850,13 +901,15 @@ def test_scrape_mobile_points_valencia_flags_restriction_and_plasma(mocker):
         df["latitude"] = 39.98
         return df
 
-    mocker.patch("main.comunidad_valenciana.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
-    mocker.patch("main.place_candidate", return_value=None)
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch(
+        "utils.crawl.comunidad_valenciana.scrape_mobile_points", return_value=scraped
+    )
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.refresh_places_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.place_candidate", return_value=None)
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    df = main.scrape_mobile_points_valencia()
+    df = regions_comunidad_valenciana.scrape_mobile_points()
 
     assert df["name"].tolist() == [
         "Equipo móvil en PROP (SOLO EMPLEADOS)",
@@ -896,14 +949,14 @@ def test_scrape_mobile_points_cataluna_skips_places_for_mobile_units(mocker):
         df["latitude"] = 41.3
         return df
 
-    mocker.patch("main.cataluna.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.refresh_places_cache", side_effect=fake_refresh)
-    mocker.patch("main.place_candidate", return_value=None)
-    mocker.patch("main.pd.read_json", return_value=NO_LOCATION_OVERRIDES)
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.crawl.cataluna.scrape_mobile_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.refresh_places_cache", side_effect=fake_refresh)
+    mocker.patch("utils.geocode.place_candidate", return_value=None)
+    mocker.patch("pandas.read_json", return_value=NO_LOCATION_OVERRIDES)
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    df = main.scrape_mobile_points_cataluna()
+    df = regions_cataluna.scrape_mobile_points()
 
     # The bus stop's venue text isn't searched; its street address is the spot
     assert captured["queries"] == {"Palau d'Esports, Vielha e Mijaran"}
@@ -940,14 +993,14 @@ def test_scrape_mobile_points_cataluna_pins_by_venue_or_street(mocker):
         df["latitude"] = 0.0
         return df
 
-    mocker.patch("main.cataluna.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.refresh_places_cache", side_effect=lambda q, c, b: c)
-    mocker.patch("main.place_candidate", return_value=None)
-    mocker.patch("main.pd.read_json", return_value=overrides)
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.crawl.cataluna.scrape_mobile_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.refresh_places_cache", side_effect=lambda q, c, b: c)
+    mocker.patch("utils.geocode.place_candidate", return_value=None)
+    mocker.patch("pandas.read_json", return_value=overrides)
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    df = main.scrape_mobile_points_cataluna()
+    df = regions_cataluna.scrape_mobile_points()
 
     # Venue-keyed pin, street-keyed pin, and a different bus stop in the
     # same town left alone
@@ -995,14 +1048,14 @@ def test_scrape_mobile_points_galicia_builds_queries_and_marks_provisional(mocke
         df["latitude"] = 43.3
         return df
 
-    mocker.patch("main.galicia.scrape_mobile_points", return_value=scraped)
-    mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
-    mocker.patch("main.refresh_places_cache", side_effect=fake_refresh)
-    mocker.patch("main.place_candidate", side_effect=fake_place_candidate)
-    mocker.patch("main.pd.read_json", return_value=overrides)
-    mocker.patch("main.geocode_points", side_effect=fake_geocode_points)
+    mocker.patch("utils.crawl.galicia.scrape_mobile_points", return_value=scraped)
+    mocker.patch("utils.geocode.load_geocoding_cache", return_value=pd.DataFrame())
+    mocker.patch("utils.geocode.refresh_places_cache", side_effect=fake_refresh)
+    mocker.patch("utils.geocode.place_candidate", side_effect=fake_place_candidate)
+    mocker.patch("pandas.read_json", return_value=overrides)
+    mocker.patch("utils.geocode.geocode_points", side_effect=fake_geocode_points)
 
-    df = main.scrape_mobile_points_galicia()
+    df = regions_galicia.scrape_mobile_points()
 
     # A place that's just the concello isn't repeated; a neighbourhood loses
     # its "Bº" marker and parenthesized town
@@ -1025,9 +1078,11 @@ def test_scrape_mobile_points_galicia_builds_queries_and_marks_provisional(mocke
 
 
 def test_title_galicia_name_keeps_particles_lowercase():
-    assert main.title_galicia_name("O BARCO DE VALDEORRAS") == "O Barco de Valdeorras"
-    assert main.title_galicia_name("ZONA DA FERRARÍA") == "Zona da Ferraría"
-    assert main.title_galicia_name("DE PONTEVEDRA") == "De Pontevedra"
+    assert (
+        regions_galicia.title_name("O BARCO DE VALDEORRAS") == "O Barco de Valdeorras"
+    )
+    assert regions_galicia.title_name("ZONA DA FERRARÍA") == "Zona da Ferraría"
+    assert regions_galicia.title_name("DE PONTEVEDRA") == "De Pontevedra"
 
 
 def test_scrape_mobile_points_pais_vasco_uses_listing_coords(mocker):
@@ -1045,10 +1100,10 @@ def test_scrape_mobile_points_pais_vasco_uses_listing_coords(mocker):
             "url": ["https://donantesdesangre.eus/donde-donar/"] * 2,
         }
     )
-    mocker.patch("main.pais_vasco.scrape_mobile_points", return_value=scraped)
-    geocode = mocker.patch("main.geocode_points")
+    mocker.patch("utils.crawl.pais_vasco.scrape_mobile_points", return_value=scraped)
+    geocode = mocker.patch("utils.geocode.geocode_points")
 
-    df = main.scrape_mobile_points_pais_vasco()
+    df = regions_pais_vasco.scrape_mobile_points()
 
     geocode.assert_not_called()
     assert df["latitude"].tolist() == [43.2584, 43.2613]
@@ -1072,10 +1127,10 @@ def test_scrape_fixed_points_baleares_uses_hand_built_hours(mocker):
     lookup = {
         "Palma (Mallorca). Banco de sangre": "Mo-Fr 08:00-20:30; Sa 09:00-13:30; PH off"
     }
-    mocker.patch("main.balears.scrape_fixed_points", return_value=scraped)
-    mocker.patch("main.load_opening_hours_fijos", return_value=lookup)
+    mocker.patch("utils.crawl.balears.scrape_fixed_points", return_value=scraped)
+    mocker.patch("utils.points.load_opening_hours_fijos", return_value=lookup)
 
-    df = main.scrape_fixed_points_baleares()
+    df = regions_balears.scrape_fixed_points()
 
     assert df["opening_hours"].iloc[0] == "Mo-Fr 08:00-20:30; Sa 09:00-13:30; PH off"
     # Eivissa publishes no fixed hours, so it has no lookup entry.
@@ -1101,9 +1156,9 @@ def test_scrape_mobile_points_baleares_flags_aferesis_as_plasma(mocker):
             "longitude": [2.653558, 3.202958],
         }
     )
-    mocker.patch("main.balears.scrape_mobile_points", return_value=scraped)
+    mocker.patch("utils.crawl.balears.scrape_mobile_points", return_value=scraped)
 
-    df = main.scrape_mobile_points_baleares()
+    df = regions_balears.scrape_mobile_points()
 
     assert df["name"].tolist() == [
         "Equipo móvil en Banc de Sang i Teixits",
@@ -1132,7 +1187,7 @@ def test_flag_appointments_combines_text_names_and_scraper_flags():
         }
     )
 
-    df = main.flag_appointments(df, {"Hospital Clínic"})
+    df = points.flag_appointments(df, {"Hospital Clínic"})
 
     assert df["cita_previa"].tolist() == [True, True, True, False]
 
@@ -1140,7 +1195,7 @@ def test_flag_appointments_combines_text_names_and_scraper_flags():
 def test_plasma_fijos_maps_names_to_source_urls(monkeypatch):
     # main loads its data files relative to etl/, the Cloud Run job's cwd
     monkeypatch.chdir(pathlib.Path(main.__file__).parent)
-    entries = main.load_plasma_fijos()
+    entries = points.load_plasma_fijos()
 
     assert entries
     assert all(isinstance(name, str) and name for name in entries)
