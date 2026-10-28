@@ -7,6 +7,7 @@ import regionBoundaries from '../data/regionBoundaries.json'
 export const REGIONS = [
   'Andalucía',
   'Aragón',
+  'Canarias',
   'Cantabria',
   'Castilla y León',
   'Castilla-La Mancha',

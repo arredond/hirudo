@@ -18,6 +18,7 @@ from utils.crawl import (
     andalucia,
     aragon,
     asturias,
+    canarias,
     cantabria,
     castilla_la_mancha,
     castilla_y_leon,
@@ -65,6 +66,7 @@ REGION_NAVARRA = "Comunidad Foral de Navarra"
 REGION_LA_RIOJA = "La Rioja"
 REGION_ANDALUCIA = "Andalucía"
 REGION_ASTURIAS = "Principado de Asturias"
+REGION_CANARIAS = "Canarias"
 
 # Fixed points carry a handful of concepts every region has, under whatever
 # name that region's own source happens to spell them with. Renaming them to
@@ -672,6 +674,40 @@ def scrape_fixed_points_asturias() -> pd.DataFrame:
     return df.drop(columns=["address_direccion"])
 
 
+def scrape_fixed_points_canarias() -> pd.DataFrame:
+    """Scrape and geocode Canarias' fixed donation points.
+
+    Each point's map link carries its coordinates, used as-is; only a point
+    whose link has none is geocoded from its address (see geocode_points).
+    Hours come from the hand-built opening_hours_fijos.json lookup, keyed by
+    name.
+    """
+    df = canarias.scrape_fixed_points()
+    missing = df["latitude"].isna()
+    df["address_direccion"] = df.apply(
+        lambda row: build_full_address(
+            row["direccion"] if pd.notna(row["direccion"]) else row["localidad"],
+            row["localidad"],
+            REGION_CANARIAS,
+        ),
+        axis=1,
+    ).where(missing)
+    page_coords = df[["longitude", "latitude"]]
+    df = geocode_points(
+        df.drop(columns=["longitude", "latitude"]),
+        load_geocoding_cache(),
+        "address_direccion",
+    )
+    df[["longitude", "latitude"]] = page_coords.fillna(df[["longitude", "latitude"]])
+    df["gmaps_url"] = df.apply(crawl.gmaps_url_from_coords, axis=1)
+    opening_hours_lookup = load_opening_hours_fijos()
+    df["opening_hours"] = df.apply(
+        opening_hours_for_fixed_point, lookup=opening_hours_lookup, axis=1
+    )
+    df["region"] = REGION_CANARIAS
+    return df.drop(columns=["address_direccion"])
+
+
 def process_fixed_points():
     """Scrape, enrich, and upload fixed donation points for every region."""
     df = pd.concat(
@@ -689,6 +725,7 @@ def process_fixed_points():
             scrape_fixed_points_la_rioja(),
             scrape_fixed_points_andalucia(),
             scrape_fixed_points_asturias(),
+            scrape_fixed_points_canarias(),
         ],
         ignore_index=True,
     )
@@ -1438,6 +1475,52 @@ def scrape_mobile_points_asturias() -> pd.DataFrame:
     return df[output_cols + ["latitude", "longitude"]]
 
 
+def scrape_mobile_points_canarias() -> pd.DataFrame:
+    """Scrape and geocode Canarias' mobile donation points.
+
+    Each stop's map link carries its coordinates. A stop whose link has none
+    is geocoded from its street address (or its town) through the geocoding
+    cache, and the page's coordinates win wherever they exist.
+    """
+    output_cols = [
+        "name",
+        "localidad",
+        "direccion",
+        "fecha",
+        "horario",
+        "opening_hours",
+        "url",
+        "region",
+    ]
+    df = canarias.scrape_mobile_points()
+    if df.empty:
+        return pd.DataFrame(columns=output_cols + ["latitude", "longitude"])
+
+    missing = df["latitude"].isna()
+    df["address_direccion"] = df.apply(
+        lambda row: build_full_address(
+            row["direccion"] if pd.notna(row["direccion"]) else row["lugar"],
+            row["localidad"],
+            REGION_CANARIAS,
+        ),
+        axis=1,
+    ).where(missing)
+    page_coords = df[["longitude", "latitude"]]
+    df = geocode_points(
+        df.drop(columns=["longitude", "latitude"]),
+        load_geocoding_cache(),
+        "address_direccion",
+    )
+    df[["longitude", "latitude"]] = page_coords.fillna(df[["longitude", "latitude"]])
+
+    df["name"] = "Equipo móvil en " + df["lugar"]
+    df["opening_hours"] = df.apply(
+        lambda row: parse_mobile_hours(row["fecha"], row["horario"]), axis=1
+    )
+    df["region"] = REGION_CANARIAS
+    return df[output_cols + ["latitude", "longitude"]]
+
+
 def process_mobile_points():
     """Scrape, geocode, and upload mobile donation points for every region."""
     df = pd.concat(
@@ -1454,6 +1537,7 @@ def process_mobile_points():
             scrape_mobile_points_la_rioja(),
             scrape_mobile_points_andalucia(),
             scrape_mobile_points_asturias(),
+            scrape_mobile_points_canarias(),
         ],
         ignore_index=True,
     )

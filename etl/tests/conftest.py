@@ -998,3 +998,153 @@ ASTURIAS_EVENTS_JSON = r"""
  ]
 }
 """
+
+
+# Canarias: trimmed from the live PrimeFaces results page (results.xhtml) for
+# an unfiltered "Colectas Fijas" search. Two of the 17 fixed points, one with
+# a map link and one without.
+CANARIAS_HOME_HTML = """<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><body>
+<form id="form" name="form" method="post">
+<input type="hidden" name="form" value="form" />
+<input type="hidden" name="javax.faces.ViewState" id="j_id1:javax.faces.ViewState:1" value="HOME-VS" autocomplete="off" />
+</form>
+</body></html>
+"""
+
+CANARIAS_FIXED_RESULTS_HTML = """<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><body>
+<form id="results" name="results" method="post">
+<div class="ui-panelgrid-cell ui-g-12 ui-md-4 ui-lg-3">
+<span class="bold">Colectas encontradas</span>
+</div>
+<div class="ui-panelgrid-cell ui-g-12 ui-md-8 ui-lg-9">2</div>
+<div id="results:dataView" class="ui-datatable ui-widget shadowed">
+<div class="ui-datatable-tablewrapper">
+<table role="grid">
+<tbody id="results:dataView_data" class="ui-datatable-data ui-widget-content">
+<tr data-ri="0" class="ui-widget-content ui-datatable-even">
+<td role="gridcell" class="">GRAN CANARIA</td>
+<td role="gridcell" class="">LAS PALMAS DE GRAN CANARIA</td>
+<td role="gridcell" class="pre-wrap">HOSPITAL UNIVERSITARIO MATERNO- INFANTIL DE CANARIAS
+Avda. Maritima del sur s/n  Planta 3 - Edificio del Mar</td>
+<td role="gridcell" class="pre-wrap">De lunes a viernes de 10:30 a 13:30h. Excepto festivos. Atención telefónica: 928 308 581 | 928 308 578</td>
+<td role="gridcell" class="">
+<span id="results:dataView:0:j_idt52" class="ui-linkbutton ui-button-icon-only" title="Ubicación (tecla de acceso: b)">
+<a href="http://maps.google.es/maps?f=q&amp;hl=es&amp;q=28.081056%2C+-15.417814" accesskey="b" target="_blank" title="Ubicación (tecla de acceso: b)">
+<span class="ui-button-text ui-c">ui-button</span>
+</a>
+</span>
+</td>
+</tr>
+<tr data-ri="1" class="ui-widget-content ui-datatable-odd">
+<td role="gridcell" class="">GRAN CANARIA</td>
+<td role="gridcell" class="">SANTA LUCIA DE TIRAJANA</td>
+<td role="gridcell" class="pre-wrap">Anexo Centro Salud de Vecindario</td>
+<td role="gridcell" class="pre-wrap">De lunes a miércoles: 17:15 a 20:15 h. Excepto festivos.</td>
+<td role="gridcell" class="">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input type="hidden" name="javax.faces.ViewState" id="j_id1:javax.faces.ViewState:1" value="RESULTS-VS" autocomplete="off" />
+</form>
+</body></html>
+"""
+
+# Mobile ("Colectas Itinerantes") rows as the paginator's partial response
+# carries them: one stop with a map link, one without, one already past.
+CANARIAS_MOBILE_ROWS_HTML = """<tbody id="results:dataView_data" class="ui-datatable-data ui-widget-content">
+<tr data-ri="0" class="ui-widget-content ui-datatable-even">
+<td role="gridcell" class="pre">28-oct-2026</td>
+<td role="gridcell" class="">GRAN CANARIA</td>
+<td role="gridcell" class="">LAS PALMAS DE GRAN CANARIA</td>
+<td role="gridcell" class="pre-wrap">ESCUELA DE  INGENIERIA INDUSTRIAL,CIVILE
+</td>
+<td role="gridcell" class="pre">09:00-19:45</td>
+<td role="gridcell" class="">
+<span id="results:dataView:0:j_idt52" class="ui-linkbutton ui-button-icon-only">
+<a href="http://maps.google.es/maps?f=q&amp;hl=es&amp;q=28.131688879942423%2C+-15.432121753692627" title="Ubicación">
+<span class="ui-button-text ui-c">ui-button</span>
+</a>
+</span>
+</td>
+</tr>
+<tr data-ri="1" class="ui-widget-content ui-datatable-odd">
+<td role="gridcell" class="pre">29-oct-2026</td>
+<td role="gridcell" class="">GRAN CANARIA</td>
+<td role="gridcell" class="">MOYA</td>
+<td role="gridcell" class="pre-wrap">JUNTO AL AYUNTAMIENTO
+C/MIGUEL HERNANDEZ ,13</td>
+<td role="gridcell" class="pre-wrap">09:15-13:30
+16:15-20:30</td>
+<td role="gridcell" class="">
+<span id="results:dataView:1:j_idt52" class="ui-linkbutton ui-button-icon-only">
+<a href="http://maps.google.es/maps?f=q&amp;hl=es&amp;q=28.110843393055166%2C+-15.583666563034057" title="Ubicación">
+<span class="ui-button-text ui-c">ui-button</span>
+</a>
+</span>
+</td>
+</tr>
+<tr data-ri="2" class="ui-widget-content ui-datatable-even">
+<td role="gridcell" class="pre">29-oct-2026</td>
+<td role="gridcell" class="">GRAN CANARIA</td>
+<td role="gridcell" class="">LAS PALMAS DE GRAN CANARIA</td>
+<td role="gridcell" class="pre-wrap">PHILIP MORRIS SPAIN
+BRAVO MURILLO
+28</td>
+<td role="gridcell" class="pre">08:30-14:00</td>
+<td role="gridcell" class="">
+</td>
+</tr>
+<tr data-ri="3" class="ui-widget-content ui-datatable-odd">
+<td role="gridcell" class="pre">01-oct-2026</td>
+<td role="gridcell" class="">TENERIFE</td>
+<td role="gridcell" class="">ARONA</td>
+<td role="gridcell" class="pre-wrap">Arona - Pabellon Municipal
+Avda. Principe Felipe Nº 20 las Galletas</td>
+<td role="gridcell" class="pre">09:30-13:30</td>
+<td role="gridcell" class="">
+<span id="results:dataView:3:j_idt52" class="ui-linkbutton ui-button-icon-only">
+<a href="http://maps.google.es/maps?f=q&amp;hl=es&amp;q=28.09%2C+-16.67" title="Ubicación">
+<span class="ui-button-text ui-c">ui-button</span>
+</a>
+</span>
+</td>
+</tr>
+</tbody>"""
+
+CANARIAS_MOBILE_RESULTS_HTML = (
+    """<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><body>
+<form id="results" name="results" method="post">
+<div class="ui-panelgrid-cell ui-g-12 ui-md-4 ui-lg-3">
+<span class="bold">Colectas encontradas</span>
+</div>
+<div class="ui-panelgrid-cell ui-g-12 ui-md-8 ui-lg-9">4</div>
+<div id="results:dataView" class="ui-datatable ui-widget shadowed">
+<div class="ui-datatable-tablewrapper">
+<table role="grid">
+"""
+    + CANARIAS_MOBILE_ROWS_HTML
+    + """
+</table>
+</div>
+</div>
+<input type="hidden" name="javax.faces.ViewState" id="j_id1:javax.faces.ViewState:1" value="RESULTS-VS" autocomplete="off" />
+</form>
+</body></html>
+"""
+)
+
+# The partial response the paginator returns: the refreshed table inside a
+# CDATA update, plus the new ViewState.
+CANARIAS_PARTIAL_RESPONSE_XML = (
+    """<?xml version='1.0' encoding='UTF-8'?>
+<partial-response><changes><update id="results:dataView"><![CDATA["""
+    + CANARIAS_MOBILE_ROWS_HTML
+    + """]]></update><update id="j_id1:javax.faces.ViewState:0"><![CDATA[PARTIAL-VS]]></update></changes></partial-response>
+"""
+)

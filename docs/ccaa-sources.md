@@ -267,6 +267,32 @@ wired in once its sources are known.
   Castilla y León). The numbers in the filenames are not the level.
 - Everything is in Spanish.
 
+### Canarias
+- Fixed and mobile points: the Servicio Canario de la Salud's donation-point
+  finder, <https://www3.gobiernodecanarias.org/sanidad/scs/PuntosHemodonacion/index.xhtml>
+  (PrimeFaces/JSF). An unfiltered search lists both campaigns: "Colectas
+  Fijas" (17 spots) and "Colectas Itinerantes" (76 stops from today on), ten
+  rows a page. The search is a GET for the ViewState, then a POST that
+  redirects to `results.xhtml`. Further pages come from the DataTable's own
+  paginator request (`results:dataView_first` and friends, against the
+  refreshed ViewState); see `fetch_page` in `canarias.py`.
+- Coordinates come from each row's Google Maps link (`q=<lat>%2C+<lng>`): 16
+  of 17 fixed spots and 65 of 76 stops. A link with an empty pair, or one
+  outside the Canaries, counts as missing; those rows are geocoded from their
+  address through the geocoding cache (12 rows at the time of writing).
+- Fixed points' hours are free text, hand-translated into
+  `opening_hours_fijos.json` keyed by name (every name is listed there).
+  Mobile hours are "HH:MM-HH:MM" and go through `parse_mobile_hours`.
+- Dates are "28-oct-2026" (Spanish month abbreviations). Stops are kept from
+  today on, where "today" is Atlantic/Canary's date (`canarias_today`).
+- Blood levels: none. The ICHH (Instituto Canario de Hemodonación y
+  Hemoterapia) homepage has no levels page, and the only coverage found is
+  news articles; nothing scrapable was found.
+- Plasma: not flagged; the source does not separate plasma donations.
+- Open/closed status in the app is computed against the viewer's own clock
+  (`frontend/src/lib/openingHours.js`), not Atlantic/Canary time. Canarian
+  points are therefore shown an hour off when viewed from the Peninsula.
+
 ## Blocked
 
 ### Región de Murcia
@@ -288,4 +314,3 @@ wired in once its sources are known.
 ## Not yet researched
 
 - Illes Balears
-- Canarias

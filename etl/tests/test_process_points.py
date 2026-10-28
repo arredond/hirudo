@@ -202,6 +202,22 @@ def test_process_fixed_points_stamps_region(mocker):
     mocker.patch("main.navarra.scrape_fixed_points", return_value=scraped_navarra)
 
     mocker.patch("main.asturias.scrape_fixed_points", return_value=scraped_asturias)
+    mocker.patch(
+        "main.canarias.scrape_fixed_points",
+        return_value=pd.DataFrame(
+            {
+                "name": ["Hospital Insular Nª Sª de los Reyes"],
+                "localidad": ["Valverde"],
+                "direccion": ["C/ Barriales 1"],
+                "horario": ["Lunes de 10:00 a 12:30h."],
+                "latitude": [27.81453],
+                "longitude": [-17.91221],
+                "url": [
+                    "https://www3.gobiernodecanarias.org/sanidad/scs/PuntosHemodonacion/"
+                ],
+            }
+        ),
+    )
     mocker.patch("main.refresh_places_cache", side_effect=lambda q, cache, b: cache)
     mocker.patch("main.place_candidate", return_value=None)
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
@@ -230,6 +246,7 @@ def test_process_fixed_points_stamps_region(mocker):
         "Cantabria",
         "Comunidad Foral de Navarra",
         "Principado de Asturias",
+        "Canarias",
     }
 
 
@@ -509,6 +526,23 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
     mocker.patch("main.navarra.scrape_mobile_points", return_value=scraped_navarra)
 
     mocker.patch("main.asturias.scrape_mobile_points", return_value=scraped_asturias)
+    mocker.patch(
+        "main.canarias.scrape_mobile_points",
+        return_value=pd.DataFrame(
+            {
+                "lugar": ["Escuela de Ingenieria Industrial"],
+                "localidad": ["Las Palmas de Gran Canaria"],
+                "direccion": [None],
+                "fecha": ["28/10/2026"],
+                "horario": ["09:00-19:45"],
+                "url": [
+                    "https://www3.gobiernodecanarias.org/sanidad/scs/PuntosHemodonacion/"
+                ],
+                "latitude": [28.131689],
+                "longitude": [-15.432122],
+            }
+        ),
+    )
     mocker.patch("main.load_geocoding_cache", return_value=pd.DataFrame())
     mocker.patch("main.refresh_places_cache", return_value=pd.DataFrame())
     mocker.patch("main.place_candidate", return_value=None)
@@ -537,6 +571,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         "País Vasco",
         "Comunidad Foral de Navarra",
         "Principado de Asturias",
+        "Canarias",
     }
 
 
