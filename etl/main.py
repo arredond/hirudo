@@ -27,6 +27,7 @@ from utils.crawl import (
     galicia,
     la_rioja,
     madrid,
+    melilla,
     navarra,
     pais_vasco,
 )
@@ -65,6 +66,7 @@ REGION_NAVARRA = "Comunidad Foral de Navarra"
 REGION_LA_RIOJA = "La Rioja"
 REGION_ANDALUCIA = "Andalucía"
 REGION_ASTURIAS = "Principado de Asturias"
+REGION_MELILLA = "Melilla"
 
 # Fixed points carry a handful of concepts every region has, under whatever
 # name that region's own source happens to spell them with. Renaming them to
@@ -672,6 +674,27 @@ def scrape_fixed_points_asturias() -> pd.DataFrame:
     return df.drop(columns=["address_direccion"])
 
 
+def scrape_fixed_points_melilla() -> pd.DataFrame:
+    """Scrape and geocode Melilla's fixed donation spot (the Centro de Transfusión).
+
+    The page gives only a street address, no map link, so the spot goes
+    through the geocoding cache (see geocode_points). Hours come from the
+    hand-built opening_hours_fijos.json lookup, keyed by name.
+    """
+    df = melilla.scrape_fixed_points()
+    df["full_address"] = df.apply(
+        lambda row: build_full_address(row["direccion"], row["localidad"]), axis=1
+    )
+    df = geocode_points(df, load_geocoding_cache(), "full_address")
+    df["gmaps_url"] = df.apply(crawl.gmaps_url_from_coords, axis=1)
+    opening_hours_lookup = load_opening_hours_fijos()
+    df["opening_hours"] = df.apply(
+        opening_hours_for_fixed_point, lookup=opening_hours_lookup, axis=1
+    )
+    df["region"] = REGION_MELILLA
+    return df.drop(columns=["full_address"])
+
+
 def process_fixed_points():
     """Scrape, enrich, and upload fixed donation points for every region."""
     df = pd.concat(
@@ -689,6 +712,7 @@ def process_fixed_points():
             scrape_fixed_points_la_rioja(),
             scrape_fixed_points_andalucia(),
             scrape_fixed_points_asturias(),
+            scrape_fixed_points_melilla(),
         ],
         ignore_index=True,
     )

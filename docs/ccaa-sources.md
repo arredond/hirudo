@@ -267,6 +267,28 @@ wired in once its sources are known.
   Castilla y León). The numbers in the filenames are not the level.
 - Everything is in Spanish.
 
+### Melilla
+- Fixed points: one spot, the Centro de Transfusión, on the "Centro de
+  Donación" block of <https://ingesa.sanidad.gob.es/melilla/Area-Sanitaria/Centros-de-Donaci-n.html>
+  (INGESA's page). Name, address, phone and hours are plain text there; the
+  page has no map link, so the spot is geocoded from its street address
+  ("C. Cuerpo Nacional de Policia, n 4") through the geocoding cache (see
+  `scrape_fixed_points_melilla`). The page says the centre sits in the Zona
+  Centro health centre.
+- Hours: the page gives only "De 8:30 h. a 14:30 h." with no weekdays. The
+  hand-built lookup entry assumes **Mo-Fr 08:30-14:30; PH off**. This is an
+  assumption, not from the source: confirm it with the centre (951 320 224).
+- Mobile points: **not scraped.** The campaigns pages (`Campañas y eventos`,
+  2023-25 and older) list no donation drives, and the only other source is an
+  old 2009-10 history PDF (`donar_sangre.pdf`) that mentions rotating
+  barracks drives without any schedule.
+- Blood levels: none. The page has no reserve or semáforo widget.
+- Public holidays: the `region` string "Melilla" matches opening_hours.js's
+  bundled state data, which has a Melilla-only "Día de Melilla" (15 Sep) on
+  top of the nationwide holidays. Python-side validation doesn't evaluate
+  holidays at all, so "PH off" parses there unchanged.
+- Boundary polygon: the source's Melilla feature, rounded to 6 decimals.
+
 ## Blocked
 
 ### Región de Murcia
@@ -287,5 +309,12 @@ wired in once its sources are known.
 
 ## Not yet researched
 
+- Ceuta: INGESA's Ceuta site is <https://ingesa.sanidad.gob.es/ceuta/>. A
+  quick look (2026-10-28) found no donation page. The Melilla page's path
+  (`/ceuta/Area-Sanitaria/Centros-de-Donaci-n.html`) and
+  `/ceuta/Ciudadano/Centros-de-Donaci-n.html` both 404, and neither the
+  homepage, the Centros de salud page nor the Hospital Universitario page
+  mention donation or a transfusion centre. Next step: search the site
+  (Mapa Web or the site search) for "donación", or ask the centre.
 - Illes Balears
 - Canarias
