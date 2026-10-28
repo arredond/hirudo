@@ -29,14 +29,15 @@ MONTH_ABBREVIATIONS = [
 ]
 
 # Matches one "HH:MM a HH:MM" (or "HH:MM-HH:MM", Castilla-La Mancha's own
-# phrasing) range, tolerating the "." separator some rows use instead of ":"
-# (e.g. "10.00 a 14.00") and rows with several ranges in a day (e.g.
+# phrasing) range, tolerating the other hour/minute separators sources
+# use or mistype instead of ":" ("10.00", "17,00", "14;00", "9'30"), en/em
+# dashes between the two times, and rows with several ranges in a day (e.g.
 # "10:00 a 14:00 17:00 a 21:00" for a split morning/afternoon shift). Not
 # anchored to the string start, so Castilla y León's "De HH:MM a HH:MM"
 # phrasing (Madrid's omits the leading "De") matches just as well without
 # special-casing.
 TIME_RANGE_PATTERN = re.compile(
-    r"(\d{1,2})[:.](\d{2})\s*(?:a|-)\s*(\d{1,2})[:.](\d{2})"
+    r"(\d{1,2})[:.,;'](\d{2})\s*(?:a|-|–|—)\s*(\d{1,2})[:.,;'](\d{2})"
 )
 
 DATE_PATTERN = re.compile(r"^(\d{1,2})/(\d{1,2})/(\d{4})$")

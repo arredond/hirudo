@@ -1,5 +1,6 @@
 """Tests for opening_hours.py — building OSM opening_hours strings for mobile points."""
 
+import pytest
 from utils.opening_hours import parse_mobile_hours, parse_weekly_hours
 
 
@@ -56,3 +57,18 @@ def test_parse_weekly_hours_skips_days_without_hours():
         "Tu 09:00-14:00"
     )
     assert parse_weekly_hours([("Mo", "Cerrado")]) is None
+
+
+@pytest.mark.parametrize(
+    "horario",
+    [
+        "10:00 a 14;00",
+        "De 10;00 a 14:00",
+        "10,00 a 14,00",
+        "10'00 a 14'00",
+        "10:00 – 14:00",
+        "10:00—14:00",
+    ],
+)
+def test_parse_mobile_hours_tolerates_odd_separators(horario):
+    assert parse_mobile_hours("10/09/2026", horario) == "2026 Sep 10 10:00-14:00"
