@@ -1,7 +1,10 @@
 """Logic shared across region-specific crawl modules."""
 
+import pathlib
 import re
+import tempfile
 
+import certifi
 import requests
 
 # A maps.app.goo.gl short link's first redirect (before Google's consent
@@ -11,6 +14,8 @@ import requests
 # coarser viewport center when both are present.
 GMAPS_PIN_RE = re.compile(r"!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)")
 GMAPS_VIEWPORT_RE = re.compile(r"@(-?\d+\.\d+),(-?\d+\.\d+)")
+
+CERTS_DIR = pathlib.Path(__file__).resolve().parent.parent / "certs"
 
 SESSION = requests.Session()
 SESSION.headers["User-Agent"] = (
@@ -38,3 +43,22 @@ def resolve_gmaps_coords(short_url: str) -> tuple[float, float]:
     if not match:
         raise ValueError(f"Could not extract coordinates from redirect: {location}")
     return float(match.group(1)), float(match.group(2))
+
+
+def ca_bundle_with(*cert_names: str) -> str:
+    """Return the path of a CA bundle: certifi's roots plus extra certs.
+
+    For sites whose server omits an intermediate certificate from its TLS
+    chain. Browsers and macOS curl fetch the missing intermediate themselves
+    (via the leaf's AIA URL), but requests doesn't, so verification fails
+    there and on Cloud Run. Appending the intermediate (shipped in
+    utils/certs/) to certifi's roots keeps verification on.
+    """
+    bundle = pathlib.Path(certifi.where()).read_text()
+    for name in cert_names:
+        bundle += "\n" + (CERTS_DIR / name).read_text()
+    with tempfile.NamedTemporaryFile(
+        "w", suffix=".pem", prefix="ca_bundle_", delete=False
+    ) as f:
+        f.write(bundle)
+    return f.name

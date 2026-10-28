@@ -1,5 +1,8 @@
 """Tests for utils/crawl/crawl.py — logic shared across region crawl modules."""
 
+import pathlib
+
+import certifi
 import pytest
 import responses
 from utils.crawl import crawl
@@ -66,3 +69,12 @@ def test_resolve_gmaps_coords_raises_when_unparseable():
 
     with pytest.raises(ValueError):
         crawl.resolve_gmaps_coords(url)
+
+
+def test_ca_bundle_with_appends_extra_cert_to_certifi_roots():
+    path = crawl.ca_bundle_with("sectigo_public_server_authentication_ca_dv_r36.pem")
+    bundle = pathlib.Path(path).read_text()
+    assert bundle.startswith(pathlib.Path(certifi.where()).read_text())
+    assert bundle.count("BEGIN CERTIFICATE") == (
+        pathlib.Path(certifi.where()).read_text().count("BEGIN CERTIFICATE") + 1
+    )

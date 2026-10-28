@@ -689,3 +689,120 @@ NAVARRA_CALENDAR_EVENTS = {
         {"id": 4, "title": ".  - \n", "start": "2026-10-30", "end": "2026-10-30"},
     ]
 }
+
+# Trimmed from https://www.bancosangrerioja.org/donacion/donde-donar-sangre —
+# the Banco's map legend and its marker's coordinates (the page's own script).
+LA_RIOJA_FIXED_POINT_HTML = """
+<html><body>
+<script>
+    function initMap() {
+            var myLatLngBS = {lat: 42.451333, lng: -2.427574};
+            mapBS = new google.maps.Map(document.getElementById('mapBS'), {
+                center: {lat: 42.451333, lng: -2.427574},
+                zoom: 16
+            });
+    }
+</script>
+<div id="mapBS"></div>
+<div id="leyendaMapaBS">
+    <strong><i class="fa fa-tint" aria-hidden="true"></i> Banco de Sangre del Hospital San Pedro</strong><br />
+    Horario:
+    De lunes a viernes de 8 a 20 horas
+    Sábados de 9 a 14 horas<br />
+</div>
+</body></html>
+"""
+
+# Trimmed from https://www.bancosangrerioja.org/ — the "Estado de las reservas"
+# blood-bag grid, one image per blood type, plus the legend under it.
+LA_RIOJA_HOME_HTML = """
+<html><body>
+<div class="estadosReservas">
+    <div class="row">
+    <div class="col"><img src="https://www.bancosangrerioja.org/images/estados/estado-0-neg-2.png" /></div>
+    <div class="col"><img src="https://www.bancosangrerioja.org/images/estados/estado-0-pos-3.png" /></div>
+    <div class="col"><img src="https://www.bancosangrerioja.org/images/estados/estado-A-neg-1.png" /></div>
+    <div class="col"><img src="https://www.bancosangrerioja.org/images/estados/estado-A-pos-1.png" /></div>
+     </div>
+    <div class="row">
+    <div class="col"><img src="https://www.bancosangrerioja.org/images/estados/estado-B-neg-2.png" /></div>
+    <div class="col"><img src="https://www.bancosangrerioja.org/images/estados/estado-B-pos-2.png" /></div>
+    <div class="col"><img src="https://www.bancosangrerioja.org/images/estados/estado-AB-neg-2.png" /></div>
+    <div class="col"><img src="https://www.bancosangrerioja.org/images/estados/estado-AB-pos-3.png" /></div>
+     </div>
+</div>
+<div class="row estadosReservasLeyenda">
+    <div class="col">
+        <img src="https://www.bancosangrerioja.org/images/estados/estado-1.png" /> <small>Dona hoy</small>
+    </div>
+    <div class="col">
+        <img src="https://www.bancosangrerioja.org/images/estados/estado-2.png" /> <small>Dona en 2 ó 3 días</small>
+    </div>
+    <div class="col">
+        <img src="https://www.bancosangrerioja.org/images/estados/estado-3.png" /> <small>Dona en tu próxima colecta</small>
+    </div>
+</div>
+</body></html>
+"""
+
+# Trimmed from .../calendario-extracciones?f=10-2026 — the month grid's
+# "#calCuerpo" cells. Day 1 is in the past (dropped when today is the 28th),
+# the 28th has two stops, and an empty cell has no day number.
+LA_RIOJA_CALENDAR_HTML = """
+<html><body>
+<div id="calCuerpo">
+    <div class="row hidden-xs">
+        <div class="col">Lunes</div>
+        <div class="col">Martes</div>
+    </div>
+    <div class="row">
+        <div class="col"><span class="visually-hidden"> deOctubre 2026</span>
+        </div>
+        <div class="col">1<span class="visually-hidden"> deOctubre 2026</span>
+                    <a href="https://www.bancosangrerioja.org/el-banco-de-sangre/calendario-extracciones/colecta?c=4992">
+                        <i class="fa fa-tint" aria-hidden="true"></i> <strong>Logroño - S. Millán.</strong>10:00 -13:45
+                        <br />Calle San Millán 20  <br />
+                    </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">28<span class="visually-hidden"> deOctubre 2026</span>
+                    <a href="https://www.bancosangrerioja.org/el-banco-de-sangre/calendario-extracciones/colecta?c=5013">
+                        <i class="fa fa-tint" aria-hidden="true"></i> <strong>Logroño - Cosme García</strong>09:30 -13:45
+                        <br />Ies Cosme García  <br />
+                    </a>
+                    <a href="https://www.bancosangrerioja.org/el-banco-de-sangre/calendario-extracciones/colecta?c=5014">
+                        <i class="fa fa-tint" aria-hidden="true"></i> <strong>Rincón de Soto</strong>17:30 -21:00
+                        <br />Avda. La Rioja, parada de autobús<br />
+                    </a>
+        </div>
+        <div class="col">29<span class="visually-hidden"> deOctubre 2026</span>
+                    <a href="https://www.bancosangrerioja.org/el-banco-de-sangre/calendario-extracciones/colecta?c=5038">
+                        <i class="fa fa-tint" aria-hidden="true"></i> <strong>UNIR. Universidad Internacional de La Rioja. Avda. de la Paz,137</strong>17:30 -21:00
+                        <br />Logroño<br />
+                    </a>
+        </div>
+    </div>
+</div>
+</body></html>
+"""
+
+# Trimmed from .../calendario-extracciones/colecta?c=5013 — the stop's own
+# detail page, whose embedded map carries its exact coordinates.
+LA_RIOJA_STOP_MAP_HTML = """
+<html><body>
+<div class="col-sm-6">
+<iframe class='embedGoogleMap' width='568' height='489' style='border: 0px solid #000000' src='https://www.google.com/maps?q=42.455000000000000%2C-2.451745000000000&z=14&t=m&output=embed'></iframe>
+</div>
+</body></html>
+"""
+
+# The same page for a stop whose map has no coordinates (the source writes
+# "q=%2C" for it), which falls back to geocoding.
+LA_RIOJA_STOP_NO_MAP_HTML = """
+<html><body>
+<div class="col-sm-6">
+<iframe class='embedGoogleMap' width='568' height='489' style='border: 0px solid #000000' src='https://www.google.com/maps?q=%2C&z=14&t=m&output=embed'></iframe>
+</div>
+</body></html>
+"""

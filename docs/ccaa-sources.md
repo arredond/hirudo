@@ -193,6 +193,28 @@ wired in once its sources are known.
   `sangre` like the fixed spots.
 - Blood levels: **none found** on the site (frontend shows the placeholder).
 
+### La Rioja
+- Fixed point: the Banco de Sangre at the Hospital San Pedro (Logroño), one
+  spot, on <https://www.bancosangrerioja.org/donacion/donde-donar-sangre>.
+  Its coordinates are the map marker's JS variable (`var myLatLngBS = {lat,
+  lng}`), and its hours are the map legend's "Horario:" line — hand-translated
+  into `opening_hours_fijos.json` like the other fixed points.
+- Mobile points: the monthly calendar at
+  <https://www.bancosangrerioja.org/el-banco-de-sangre/calendario-extracciones>
+  (server-rendered; `?f=MM-YYYY`). It publishes only the current and the next
+  month, so the ETL asks for those two. Each stop links to its detail page
+  `.../colecta?c=<id>`, whose embedded Google Map (`maps?q=<lat>%2C<lng>`)
+  gives the exact coordinates. Some stops' maps carry none (`q=%2C`), so
+  those are geocoded from their address through the geocoding cache.
+- Blood levels: <https://www.bancosangrerioja.org/> "Estado de las reservas",
+  one blood-bag image per type whose filename ends in the level
+  (`estado-0-neg-2.png`). The page's legend pairs `estado-1` "Dona hoy",
+  `-2` "Dona en 2 ó 3 días", `-3` "Dona en tu próxima colecta", mapped to
+  red, orange and green (levels 1, 2, 3).
+- Plasma (aféresis) is booked by appointment at the Banco
+  (<https://www.bancosangrerioja.org/donacion/donacion-aferesis>); the flag is
+  left unset, as for the other regions' fixed points.
+
 ## Not yet researched
 
 - Andalucía

@@ -14,6 +14,7 @@ export const REGIONS = [
   'Comunidad Foral de Navarra',
   'Comunidad Valenciana',
   'Galicia',
+  'La Rioja',
   'País Vasco',
 ]
 
