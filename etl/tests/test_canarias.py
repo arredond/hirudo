@@ -113,6 +113,7 @@ def test_fetch_all_rows_pages_with_the_paginator_request_until_total():
     assert len(rows) == 8
     paginator_call = responses.calls[-1].request
     assert paginator_call.url == canarias.URL_RESULTS
+    assert isinstance(paginator_call.body, str)
     body = urllib.parse.parse_qs(paginator_call.body)
     assert body["results:dataView_first"] == ["4"]
     assert body["javax.faces.ViewState"] == ["RESULTS-VS"]

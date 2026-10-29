@@ -56,9 +56,9 @@ def scrape_mobile_points() -> pd.DataFrame:
     df = geocode.geocode_missing_coords(df, "address_direccion")
 
     df["name"] = "Equipo móvil en " + df["lugar"]
-    df["opening_hours"] = df.apply(
+    df["opening_hours"] = points.apply_rows(
+        df,
         lambda row: opening_hours.parse_mobile_hours(row["fecha"], row["horario"]),
-        axis=1,
     )
     df["region"] = REGION
     return df[output_cols + ["latitude", "longitude"]]

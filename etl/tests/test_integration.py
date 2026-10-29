@@ -36,6 +36,7 @@ def test_fixed_points_list_row_has_expected_fields():
     html = crawl.fetch_points_html(crawl.URL_FIXED_POINTS)
     soup = BeautifulSoup(html, "lxml")
     panel = soup.find("div", {"class": "panelResultados"})
+    assert panel is not None
     rows = [crawl.extract_fixed_point_general(r) for r in panel.find_all("tr")]
     first = next(r for r in rows if r is not None)
     assert "name" in first
@@ -185,4 +186,4 @@ def test_geocode_known_madrid_address():
     assert lng is not None and lat is not None
     assert 40.3 < lat < 40.5
     assert -3.8 < lng < -3.6
-    assert score >= 4
+    assert score is not None and score >= 4

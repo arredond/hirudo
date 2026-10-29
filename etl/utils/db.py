@@ -1,6 +1,7 @@
 """Utility functions to interact with a PostGIS enabled Postgres database"""
 
 import os
+from typing import Any, Literal, cast
 
 import geopandas as gpd
 import pandas as pd
@@ -25,7 +26,7 @@ def get_pg_engine():
 def to_db(
     dataframe: gpd.GeoDataFrame | pd.DataFrame,
     table_name: str,
-    if_exists: str = "replace",
+    if_exists: Literal["replace", "append"] = "replace",
 ):
     """Upload a (Geo)DataFrame to a table in the database.
 
@@ -36,7 +37,11 @@ def to_db(
     """
     pg_engine = get_pg_engine()
     if isinstance(dataframe, gpd.GeoDataFrame):
-        dataframe.to_postgis(table_name, pg_engine, if_exists=if_exists, index=False)
+        # geopandas' type stubs describe SQLAlchemy engines with a protocol
+        # that SQLAlchemy 2's real Engine doesn't match, hence the cast.
+        dataframe.to_postgis(
+            table_name, cast(Any, pg_engine), if_exists=if_exists, index=False
+        )
     elif isinstance(dataframe, pd.DataFrame):
         dataframe.to_sql(table_name, pg_engine, if_exists=if_exists, index=False)
     else:

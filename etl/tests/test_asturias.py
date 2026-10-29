@@ -183,6 +183,7 @@ def test_parse_spot_keeps_abbreviations_in_the_venue():
         "https://donasturias.org/eventos/salinas-2/",
     )
 
+    assert spot is not None
     assert spot["lugar"] == "Avda. Juan Sitges, frente Real Balneario"
     assert spot["direccion"] == "Avda. Juan Sitges, frente Real Balneario."
 
@@ -298,6 +299,7 @@ def draw_gauge(needle_angle, needle_length: float = 0.9) -> Image.Image:
     width, height = GAUGE_SIZE
     image = Image.new("RGB", GAUGE_SIZE, (247, 247, 247))
     pixels = image.load()
+    assert pixels is not None
     hub_x, hub_y = (width - 1) / 2, (height - 1) / 2
     rim = min(width, height) / 2 * asturias.GAUGE_RIM_FRACTION
 
@@ -347,7 +349,10 @@ def png_bytes(image: Image.Image) -> bytes:
 def test_gauge_level_reads_the_band_under_the_needle(
     needle_angle, expected_status, expected_level
 ):
-    status, level, _ = asturias.gauge_level(draw_gauge(needle_angle))
+    reading = asturias.gauge_level(draw_gauge(needle_angle))
+
+    assert reading is not None
+    status, level, _ = reading
 
     assert status == expected_status
     assert level == expected_level
@@ -398,10 +403,12 @@ def test_scrape_blood_levels_reads_every_gauge_on_the_homepage():
     }
     responses.add(responses.GET, asturias.URL_BASE, body=ASTURIAS_HOME_HTML)
     for filename, needle in needles.items():
-        url = re.search(
+        match = re.search(
             r'https://donasturias\.org/wp-content/uploads/[^"]*/' + re.escape(filename),
             ASTURIAS_HOME_HTML,
-        ).group(0)
+        )
+        assert match is not None
+        url = match.group(0)
         responses.add(
             responses.GET,
             url,

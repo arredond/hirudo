@@ -19,6 +19,7 @@ import urllib.parse
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from utils.crawl import crawl
 
 URL_BASE = "https://www.bancsang.net/"
 URL_FIXED_POINTS = urllib.parse.urljoin(URL_BASE, "es/donaciones/sangre/donde/")
@@ -83,7 +84,7 @@ def parse_hospital_ids(soup: BeautifulSoup) -> list[str]:
     """List the fixed-point hospital ids linked from the "Dónde donar" page."""
     ids = []
     for link in soup.find_all("a", href=True):
-        match = HOSPITAL_ID_RE.search(link["href"])
+        match = HOSPITAL_ID_RE.search(crawl.attribute(link, "href"))
         if match and match.group(1) not in ids:
             ids.append(match.group(1))
     return ids
@@ -97,7 +98,7 @@ def parse_hospital_info(soup: BeautifulSoup) -> dict:
     regular schedule from one-off notices, which matters when translating
     it by hand into opening_hours_fijos.json).
     """
-    name = soup.find("h1").get_text(strip=True)
+    name = crawl.required(soup.find("h1"), "hospital name").get_text(strip=True)
 
     horario = None
     horario_block = section_after_heading(soup, "Horario")
@@ -174,7 +175,9 @@ def parse_mobile_cards(soup: BeautifulSoup) -> list[dict]:
             continue
         lines = [line.strip() for line in place.get_text("\n").split("\n")]
         lines = [line for line in lines if line]
-        hrefs = [link["href"] for link in card.find_all("a", href=True)]
+        hrefs = [
+            crawl.attribute(link, "href") for link in card.find_all("a", href=True)
+        ]
         sangre_href = next((href for href in hrefs if "/sangre/" in href), None)
         plasma_href = next((href for href in hrefs if "/plasma/" in href), None)
         booking_href = sangre_href or plasma_href

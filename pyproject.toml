@@ -14,12 +14,12 @@ dependencies = [
     "here-location-services>=0.4.0",
     "html5lib>=1.1",
     "lxml>=6.1.1",
+    "numpy>=2.5.2",
     "opening-hours-py>=2.1.4",
     "pandas>=3.0.5",
     "pillow>=13.0.0",
     "psycopg2-binary>=2.9.12",
     "python-dotenv>=1.2.2",
-    "ruff>=0.16.3",
     "sqlalchemy>=2.0.52",
     "tqdm>=4.70.0",
     "unidecode>=1.4.0",
@@ -27,12 +27,19 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.7.0",
+    "pyrefly>=1.4.0",
     "pytest>=9.1.1",
     "pytest-mock>=3.15.1",
     "responses>=0.26.3",
+    "ruff>=0.17.3",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["etl/tests"]
 addopts = "-m 'not integration'"
 markers = ["integration: hits real external URLs; run with -m integration"]
+
+[tool.pyrefly]
+project-includes = ["etl", "main.py"]
+search-path = ["etl"]

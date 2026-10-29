@@ -14,6 +14,7 @@ import urllib.parse
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from utils.crawl import crawl
 
 URL_BASE = "https://bancosangrearagon.org/"
 URL_MOBILE_POINTS = urllib.parse.urljoin(URL_BASE, "extracciones/")
@@ -48,16 +49,20 @@ def parse_fixed_points(soup: BeautifulSoup) -> list[dict]:
     It's an <h4> per province followed by a <ul> with one <li> per center,
     each holding the center's name in a <strong> and the rest as free text.
     """
-    block = soup.find("div", class_="puntos-fijos")
+    block = crawl.required(
+        soup.find("div", class_="puntos-fijos"), '"Puntos fijos" block'
+    )
     points = []
     for heading in block.find_all("h4"):
         province = heading.get_text(strip=True).title()
-        for item in heading.find_next_sibling("ul").find_all("li"):
-            name = item.find("strong").get_text(" ", strip=True)
-            item.find("strong").extract()
+        centres = crawl.required(heading.find_next_sibling("ul"), "centre list")
+        for item in centres.find_all("li"):
+            strong = crawl.required(item.find("strong"), "centre name")
+            name = strong.get_text(" ", strip=True)
+            strong.extract()
             text = " ".join(item.get_text(" ", strip=True).split())
             match = FIXED_POINT_RE.match(text)
-            point = {"name": name, "localidad": province}
+            point: dict = {"name": name, "localidad": province}
             if match:
                 point.update(
                     {

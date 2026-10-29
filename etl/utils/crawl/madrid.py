@@ -6,6 +6,7 @@ from io import StringIO
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from utils.crawl import crawl
 
 URL_BASE = "https://donarsangre.sanidadmadrid.org/"
 URL_FIXED_POINTS = urllib.parse.urljoin(URL_BASE, "fijos.aspx")
@@ -64,9 +65,9 @@ def extract_fixed_point_details(url):
     """
     response = SESSION.get(url)
     soup = BeautifulSoup(response.text, features="lxml")
-    card = soup.find("div", {"class": "card-body"})
+    card = crawl.required(soup.find("div", {"class": "card-body"}), "details card")
 
-    details = {}
+    details: dict = {}
     col_divs = card.find_all("div", class_="col-form-label")
     for i in range(0, len(col_divs) - 1, 2):
         key = col_divs[i].text.strip().rstrip(":")
@@ -74,7 +75,7 @@ def extract_fixed_point_details(url):
         details[key] = val
 
     gmaps_link = soup.find("a", {"id": "ctl00_ContenedorContenidoSeccion_linkGoogle"})
-    gmaps_url = gmaps_link.attrs["href"]
+    gmaps_url = crawl.attribute(crawl.required(gmaps_link, "Google Maps link"), "href")
     lat, lon = extract_gmaps_lat_lon(gmaps_url)
     details["gmaps_url"] = gmaps_url
     details["latitude"] = lat
@@ -101,7 +102,9 @@ def fetch_points_html(url: str) -> str:
         "__VIEWSTATEENCRYPTED",
         "__EVENTVALIDATION",
     ]:
-        data[key] = first_response.find("input", {"id": key}).attrs["value"]
+        data[key] = crawl.attribute(
+            crawl.required(first_response.find("input", {"id": key}), key), "value"
+        )
 
     return SESSION.post(url, data).text
 
@@ -117,7 +120,9 @@ def scrape_fixed_points() -> pd.DataFrame:
     html = fetch_points_html(url=URL_FIXED_POINTS)
     soup = BeautifulSoup(html, features="lxml")
 
-    panel = soup.find("div", {"class": "panelResultados"})
+    panel = crawl.required(
+        soup.find("div", {"class": "panelResultados"}), "results panel"
+    )
     fixed_points = []
     for row in panel.find_all("tr"):
         general = extract_fixed_point_general(row)
@@ -145,11 +150,14 @@ def scrape_blood_levels() -> pd.DataFrame:
     soup = BeautifulSoup(html, features="lxml")
 
     blood_levels = []
-    for item in soup.find("ul", {"class": "semafor-list"}).find_all("li"):
-        heading = item.find("h3")
+    semaphore = crawl.required(
+        soup.find("ul", {"class": "semafor-list"}), "blood level list"
+    )
+    for item in semaphore.find_all("li"):
+        heading = crawl.required(item.find("h3"), "blood type heading")
         background_class = next(
             css_class
-            for css_class in heading["class"]
+            for css_class in heading.get_attribute_list("class")
             if css_class in BLOOD_LEVEL_STATUS
         )
         status, level = BLOOD_LEVEL_STATUS[background_class]
@@ -158,7 +166,7 @@ def scrape_blood_levels() -> pd.DataFrame:
                 "blood_type": heading.text.strip(),
                 "status": status,
                 "level": level,
-                "label": item.find("p").text.strip(),
+                "label": crawl.required(item.find("p"), "level label").text.strip(),
             }
         )
 

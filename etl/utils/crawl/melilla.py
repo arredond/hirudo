@@ -13,6 +13,7 @@ import re
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from utils.crawl import crawl
 
 URL_FIXED_POINTS = (
     "https://ingesa.sanidad.gob.es/melilla/Area-Sanitaria/Centros-de-Donaci-n.html"
@@ -47,7 +48,8 @@ def parse_fixed_point(soup: BeautifulSoup) -> dict:
     label = soup.find("strong", string=SPOT_LABEL_RE)
     if label is None:
         raise ValueError(f"No Centro de Transfusión entry on {URL_FIXED_POINTS}")
-    lines = [normalize_whitespace(line) for line in label.parent.stripped_strings]
+    paragraph = crawl.required(label.parent, "Centro de Transfusión paragraph")
+    lines = [normalize_whitespace(line) for line in paragraph.stripped_strings]
 
     try:
         address_line = next(line for line in lines if ADDRESS_RE.match(line))

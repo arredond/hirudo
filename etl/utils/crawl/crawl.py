@@ -6,6 +6,7 @@ import tempfile
 
 import certifi
 import requests
+from bs4 import Tag
 
 # A maps.app.goo.gl short link's first redirect (before Google's consent
 # flow) already carries the place's coordinates: a precise pin as
@@ -30,6 +31,28 @@ SESSION.headers["User-Agent"] = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 )
+
+
+def required[T](value: T | None, description: str) -> T:
+    """Return `value`, raising if a lookup the page layout guarantees is missing.
+
+    For BeautifulSoup `find`/`select_one` results and regex matches: a missing
+    element means the source changed its markup, so fail loudly naming what
+    was expected instead of with an AttributeError on None further down.
+    """
+    if value is None:
+        raise ValueError(f"Expected {description} not found; did the page change?")
+    return value
+
+
+def attribute(tag: Tag, name: str) -> str:
+    """A tag's attribute as a string.
+
+    BeautifulSoup types attribute values as possibly multi-valued (a list, as
+    for "class"); single-valued ones like "href" or "src" are plain strings.
+    """
+    value = tag[name]
+    return value if isinstance(value, str) else " ".join(value)
 
 
 def gmaps_url_from_coords(row) -> str:

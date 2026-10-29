@@ -5,10 +5,7 @@ import { haversine } from '../lib/geo'
 
 // Accent-insensitive, case-insensitive match against name/address/locality.
 function normalize(str) {
-  return (str ?? '')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
+  return (str ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 }
 
 function matchesQuery(point, query) {
@@ -32,7 +29,8 @@ function LocationTooltip() {
         </svg>
         {open && (
           <div className="absolute left-0 top-6 z-30 w-56 bg-gray-900 text-white text-xs font-normal normal-case rounded-xl p-3 shadow-xl leading-relaxed text-left">
-            Las distancias se calculan desde el centro del mapa. Para medidas más precisas, comparte tu ubicación cuando el navegador te lo solicite.
+            Las distancias se calculan desde el centro del mapa. Para medidas más precisas, comparte
+            tu ubicación cuando el navegador te lo solicite.
             <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-gray-900 rotate-45" />
           </div>
         )}
@@ -42,7 +40,15 @@ function LocationTooltip() {
   )
 }
 
-export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, onSelectPoint, onClose, refPoint, locationGranted }) {
+export default function ListPanel({
+  fixedPoints,
+  mobilePoints,
+  selectedPoint,
+  onSelectPoint,
+  onClose,
+  refPoint,
+  locationGranted,
+}) {
   const [query, setQuery] = useState('')
   const scrollRef = useRef(null)
   const selectedRef = useRef(null)
@@ -91,7 +97,14 @@ export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, on
           onClick={onClose}
           className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <polyline points="15 18 9 12 15 6" />
           </svg>
           Ocultar lista
@@ -124,7 +137,14 @@ export default function ListPanel({ fixedPoints, mobilePoints, selectedPoint, on
               aria-label="Borrar búsqueda"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>

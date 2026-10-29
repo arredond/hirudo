@@ -21,7 +21,7 @@ import urllib.parse
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from utils.crawl import comunidad_valenciana
+from utils.crawl import comunidad_valenciana, crawl
 
 URL_BASE = "https://adona.es/es/"
 URL_MOBILE_POINTS = urllib.parse.urljoin(URL_BASE, "calendario-unidad-movil")
@@ -91,14 +91,19 @@ def parse_contact_page(html: str) -> dict:
     soup = BeautifulSoup(html, features="lxml")
     point = {}
     for box in soup.select("div.box-services-2"):
-        icon = box.select_one("i")
+        icon = crawl.required(box.select_one("i"), "info box icon")
         field = next(
-            (INFO_BOX_ICONS[name] for name in icon["class"] if name in INFO_BOX_ICONS),
+            (
+                INFO_BOX_ICONS[name]
+                for name in icon.get_attribute_list("class")
+                if name in INFO_BOX_ICONS
+            ),
             None,
         )
-        text = " ".join(box.select_one("div.box-right").get_text(" ").split())
+        content = crawl.required(box.select_one("div.box-right"), "info box text")
+        text = " ".join(content.get_text(" ").split())
         if field == "direccion":
-            match = ADDRESS_RE.match(text)
+            match = crawl.required(ADDRESS_RE.match(text), "address")
             point["direccion"] = match["direccion"].strip()
             point["localidad"] = title_town(match["localidad"].strip())
         elif field == "telefono":

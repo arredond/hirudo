@@ -12,6 +12,7 @@ from io import StringIO
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from utils.crawl import crawl
 
 URL_BASE = "https://sanidad.castillalamancha.es/"
 URL_FIXED_POINTS = urllib.parse.urljoin(
@@ -102,20 +103,20 @@ def parse_fixed_points(soup: BeautifulSoup) -> list[dict]:
         if row.find("div", class_="views-accordion-header")
     ]
 
-    points = []
+    points: list[dict] = []
     locality_counts: dict[str, int] = {}
     for row in rows:
-        locality = row.find("div", class_="views-accordion-header").get_text(strip=True)
+        locality = crawl.required(
+            row.find("div", class_="views-accordion-header"), "locality header"
+        ).get_text(strip=True)
         locality_counts[locality] = locality_counts.get(locality, 0) + 1
 
         direccion_field = row.find("div", class_="views-field-field-direccion")
+        direccion_p = direccion_field.find("p") if direccion_field else None
         direccion = None
-        if direccion_field and direccion_field.find("p"):
+        if direccion_p:
             direccion = (
-                direccion_field.find("p")
-                .get_text(" ", strip=True)
-                .removeprefix("Dirección:")
-                .strip()
+                direccion_p.get_text(" ", strip=True).removeprefix("Dirección:").strip()
             )
 
         horario_lines = []
@@ -131,12 +132,10 @@ def parse_fixed_points(soup: BeautifulSoup) -> list[dict]:
 
         telefono = None
         telefono_field = row.find("div", class_="views-field-field-telefonos-contacto")
-        if telefono_field and telefono_field.find("p"):
+        telefono_p = telefono_field.find("p") if telefono_field else None
+        if telefono_p:
             telefono = (
-                telefono_field.find("p")
-                .get_text(" ", strip=True)
-                .removeprefix("Teléfono:")
-                .strip()
+                telefono_p.get_text(" ", strip=True).removeprefix("Teléfono:").strip()
             )
 
         points.append(
@@ -184,9 +183,10 @@ def scrape_mobile_points_province(province: str) -> pd.DataFrame:
             page_frames.append(df)
 
         next_link = soup.find("li", class_="pager-next")
+        next_anchor = next_link.find("a") if next_link else None
         url = (
-            urllib.parse.urljoin(url, next_link.find("a")["href"])
-            if next_link and next_link.find("a")
+            urllib.parse.urljoin(url, crawl.attribute(next_anchor, "href"))
+            if next_anchor
             else None
         )
 

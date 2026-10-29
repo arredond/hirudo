@@ -38,7 +38,23 @@ const InfoIcon = () => (
 )
 
 export default function Popup({ point, onClose }) {
-  const { isMobile, name, address, locality, hours, openingHours, region, mapsUrl, infoUrl, roomLocation, donorInfo, notes, zipCode, donationTypes, appointmentRequired } = getPointInfo(point)
+  const {
+    isMobile,
+    name,
+    address,
+    locality,
+    hours,
+    openingHours,
+    region,
+    mapsUrl,
+    infoUrl,
+    roomLocation,
+    donorInfo,
+    notes,
+    zipCode,
+    donationTypes,
+    appointmentRequired,
+  } = getPointInfo(point)
   const closedPermanently = isPermanentlyClosed(openingHours)
   const closedTemporarily = isTemporarilyClosed(openingHours)
 
@@ -48,7 +64,9 @@ export default function Popup({ point, onClose }) {
     .map(([type]) => type)
 
   return (
-    <div className={`absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 max-h-[calc(100%-2rem)] overflow-y-auto bg-white rounded-2xl shadow-xl ${closedTemporarily ? 'opacity-75' : ''}`}>
+    <div
+      className={`absolute bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-80 z-20 max-h-[calc(100%-2rem)] overflow-y-auto bg-white rounded-2xl shadow-xl ${closedTemporarily ? 'opacity-75' : ''}`}
+    >
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -81,7 +99,14 @@ export default function Popup({ point, onClose }) {
             className="ml-3 shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
             aria-label="Cerrar"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -90,7 +115,9 @@ export default function Popup({ point, onClose }) {
 
         {appointmentRequired && (
           <div className="flex items-start gap-2 mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
-            <span className="mt-0.5 shrink-0 text-amber-500"><WarningIcon /></span>
+            <span className="mt-0.5 shrink-0 text-amber-500">
+              <WarningIcon />
+            </span>
             <span>Requiere cita previa</span>
           </div>
         )}
@@ -100,14 +127,14 @@ export default function Popup({ point, onClose }) {
           {roomLocation && <Row icon={<PinIcon />}>{roomLocation}</Row>}
           {hours && <Row icon={<ClockIcon />}>{hours}</Row>}
           {donorInfo && <Row icon={<InfoIcon />}>{donorInfo}</Row>}
-          {notes && (
-            <p className="text-xs text-gray-500 pl-6 leading-relaxed">{notes}</p>
-          )}
+          {notes && <p className="text-xs text-gray-500 pl-6 leading-relaxed">{notes}</p>}
         </div>
       </div>
 
       {(mapsUrl || infoUrl) && (
-        <div className={`px-5 pb-5 grid gap-2 ${mapsUrl && infoUrl ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        <div
+          className={`px-5 pb-5 grid gap-2 ${mapsUrl && infoUrl ? 'grid-cols-2' : 'grid-cols-1'}`}
+        >
           {mapsUrl && (
             <a
               href={mapsUrl}

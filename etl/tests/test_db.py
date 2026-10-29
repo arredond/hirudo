@@ -1,5 +1,7 @@
 """Tests for db.py — column formatting, GeoDataFrame construction, and uploads."""
 
+from typing import Any
+
 import geopandas as gpd
 import pandas as pd
 import pytest
@@ -48,6 +50,7 @@ def test_gdf_from_df_creates_geometry():
     assert "geometry" in gdf.columns
     assert "latitude" not in gdf.columns
     assert "longitude" not in gdf.columns
+    assert gdf.crs is not None
     assert gdf.crs.to_epsg() == 4326
     assert len(gdf) == 2
 
@@ -101,4 +104,5 @@ def test_to_db_forwards_if_exists_for_geodataframe(mocker):
 def test_to_db_rejects_non_dataframe(mocker):
     mocker.patch("utils.db.get_pg_engine", return_value="ENGINE")
     with pytest.raises(TypeError):
-        to_db({"not": "a frame"}, "some_table")
+        not_a_frame: Any = {"not": "a frame"}
+        to_db(not_a_frame, "some_table")

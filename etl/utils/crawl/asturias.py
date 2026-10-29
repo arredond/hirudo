@@ -23,11 +23,12 @@ import math
 import re
 import urllib.parse
 
+import numpy as np
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from PIL import Image
-from utils.crawl import comunidad_valenciana
+from utils.crawl import comunidad_valenciana, crawl
 
 URL_BASE = "https://donasturias.org/"
 URL_FIXED_POINTS = urllib.parse.urljoin(URL_BASE, "puntos-fijos/")
@@ -112,7 +113,7 @@ def coordinates_from_embed(src: str) -> tuple[float, float] | tuple[None, None]:
     return None, None
 
 
-def parse_fixed_point(heading: BeautifulSoup) -> dict:
+def parse_fixed_point(heading: Tag) -> dict:
     """Parse one fixed centre: its <h5> name and the paragraphs up to the next.
 
     The paragraphs run address, schedule (one or more lines), an image and a
@@ -124,7 +125,7 @@ def parse_fixed_point(heading: BeautifulSoup) -> dict:
             break
         iframe = sibling.find("iframe")
         if iframe is not None:
-            src = iframe.get("src")
+            src = crawl.attribute(iframe, "src") if iframe.has_attr("src") else None
         text = clean_text(sibling.get_text(" "))
         if text and sibling.find("img") is None and iframe is None:
             texts.append(text)
@@ -246,7 +247,12 @@ def gauge_blood_type(filename: str) -> str | None:
     return ("0" if group == "O" else group) + ("+" if rh_positive else "-")
 
 
-def is_needle_pixel(rgb: tuple) -> bool:
+def rgb_pixels(image: Image.Image) -> list[list[list[int]]]:
+    """The image's (red, green, blue) values as plain ints, indexed [y][x]."""
+    return np.asarray(image.convert("RGB")).tolist()
+
+
+def is_needle_pixel(rgb: list[int]) -> bool:
     """A needle is a red-orange line: strong red, little green and blue."""
     red, green, blue = rgb
     return red > 150 and green < 120 and blue < 110 and red - green > 90
@@ -254,12 +260,12 @@ def is_needle_pixel(rgb: tuple) -> bool:
 
 def find_hub(image: Image.Image) -> tuple[float, float]:
     """Centre of the gauge's blue hub; falls back to the image's centre."""
-    pixels = image.load()
+    pixels = rgb_pixels(image)
     width, height = image.size
     xs, ys = [], []
     for y in range(height):
         for x in range(width):
-            red, green, blue = pixels[x, y]
+            red, green, blue = pixels[y][x]
             if blue > red + 60 and blue > green + 30:
                 xs.append(x)
                 ys.append(y)
@@ -280,7 +286,7 @@ def needle_angle(image: Image.Image, hub: tuple[float, float], rim: float):
     the needle colour runs continuously from near the hub; the longest run
     is the needle, averaged over the neighbouring rays that run as far.
     """
-    pixels = image.load()
+    pixels = rgb_pixels(image)
     width, height = image.size
     hub_x, hub_y = hub
     start, end = NEEDLE_START * rim, NEEDLE_END * rim
@@ -295,7 +301,7 @@ def needle_angle(image: Image.Image, hub: tuple[float, float], rim: float):
             y = round(hub_y - radius * math.sin(theta))
             if not (0 <= x < width and 0 <= y < height):
                 break
-            if is_needle_pixel(pixels[x, y]):
+            if is_needle_pixel(pixels[y][x]):
                 last_hit = radius
             elif radius - (start if last_hit is None else last_hit) > 2.0:
                 break
@@ -339,13 +345,13 @@ def gauge_level(image: Image.Image):
     if angle is None:
         return None
 
-    pixels = image.load()
+    pixels = rgb_pixels(image)
     votes = []
     for offset in (-2, 0, 2):
         theta = math.radians(angle + offset)
         x = round(hub[0] + RIM_SAMPLE * rim * math.cos(theta))
         y = round(hub[1] - RIM_SAMPLE * rim * math.sin(theta))
-        red, green, blue = (channel / 255 for channel in pixels[x, y])
+        red, green, blue = (channel / 255 for channel in pixels[y][x])
         hue, saturation, _ = colorsys.rgb_to_hsv(red, green, blue)
         if saturation > 0.5:
             votes.append(band_for_hue(hue * 360))
@@ -376,15 +382,16 @@ def parse_gauge_images(gauges: list[tuple[str, Image.Image]]) -> list[dict]:
 def scrape_blood_levels() -> pd.DataFrame:
     """Scrape the "Estado de las reservas de hematíes" gauges from the homepage."""
     soup = BeautifulSoup(SESSION.get(URL_BASE).text, features="lxml")
-    gauges = []
+    gauges: list[tuple[str, Image.Image]] = []
     seen = set()
     for img in soup.find_all("img", src=True):
-        filename = img["src"].rsplit("/", 1)[-1]
+        src = crawl.attribute(img, "src")
+        filename = src.rsplit("/", 1)[-1]
         blood_type = gauge_blood_type(filename)
         if blood_type is None or blood_type in seen:
             continue
         seen.add(blood_type)
-        image_url = urllib.parse.urljoin(URL_BASE, img["src"])
+        image_url = urllib.parse.urljoin(URL_BASE, src)
         image = Image.open(io.BytesIO(SESSION.get(image_url).content))
         gauges.append((blood_type, image))
     return pd.DataFrame(

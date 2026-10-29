@@ -158,7 +158,7 @@ def parse_rows(table_html: str, campaign: str) -> list[dict]:
 def search_results_page(campaign: str) -> tuple[str, str]:
     """Run an unfiltered search and return (results HTML, ViewState)."""
     home = SESSION.get(URL_SEARCH).text
-    view_state = VIEW_STATE_RE.search(home).group(1)
+    view_state = crawl.required(VIEW_STATE_RE.search(home), "ViewState").group(1)
     SESSION.post(
         URL_SEARCH,
         data={
@@ -172,7 +172,7 @@ def search_results_page(campaign: str) -> tuple[str, str]:
         allow_redirects=False,
     )
     results = SESSION.get(URL_RESULTS).text
-    return results, VIEW_STATE_RE.search(results).group(1)
+    return results, crawl.required(VIEW_STATE_RE.search(results), "ViewState").group(1)
 
 
 def fetch_page(first: int, view_state: str) -> tuple[str, str]:
@@ -199,7 +199,9 @@ def fetch_page(first: int, view_state: str) -> tuple[str, str]:
         },
         headers=PARTIAL_HEADERS,
     )
-    table = TABLE_UPDATE_RE.search(response.text).group(1)
+    table = crawl.required(
+        TABLE_UPDATE_RE.search(response.text), "results table update"
+    ).group(1)
     new_view_state = VIEW_STATE_UPDATE_RE.search(response.text)
     return table, new_view_state.group(1) if new_view_state else view_state
 

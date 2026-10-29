@@ -9,9 +9,15 @@ single day, so they are parsed here from their raw 'Fecha'/'Horario' strings.
 import logging
 import re
 
-from opening_hours import OpeningHours, ParserError
+import opening_hours
+from opening_hours import OpeningHours
 
 log = logging.getLogger(__name__)
+
+# What OpeningHours raises on an invalid string. The package's type stub
+# doesn't declare it (it documents SyntaxError, which is never raised), so
+# it's read from the module's namespace rather than imported by name.
+ParserError: type[Exception] = vars(opening_hours)["ParserError"]
 
 MONTH_ABBREVIATIONS = [
     "Jan",

@@ -4,7 +4,7 @@ Raw page parsing lives in utils/crawl/andalucia.py.
 """
 
 import pandas as pd
-from utils import geocode, opening_hours
+from utils import geocode, opening_hours, points
 from utils.crawl import andalucia, crawl
 
 REGION = "Andalucía"
@@ -67,9 +67,9 @@ def scrape_mobile_points() -> pd.DataFrame:
 
     df["name"] = "Equipo móvil en " + df["lugar"] + ", " + df["localidad"]
     df["direccion"] = df["lugar"]
-    df["opening_hours"] = df.apply(
+    df["opening_hours"] = points.apply_rows(
+        df,
         lambda row: opening_hours.parse_mobile_hours(row["fecha"], row["horario"]),
-        axis=1,
     )
     df["plasma"] = df["plasma_only"].where(df["plasma_only"])
     df["sangre"] = (~df["plasma_only"]).where(df["plasma_only"])

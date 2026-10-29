@@ -37,14 +37,24 @@ export default function MedulaInfoCard({ region }) {
           aria-label="Ocultar"
           className="-mt-1 -mr-1 p-1 text-gray-400 hover:text-gray-700 transition-colors"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>
       <p className="mt-1.5 text-sm text-gray-700">{info.summary}</p>
-      <p className="mt-1.5 text-xs text-gray-500">Para registrarte necesitas tener entre 18 y 40 años.</p>
+      <p className="mt-1.5 text-xs text-gray-500">
+        Para registrarte necesitas tener entre 18 y 40 años.
+      </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {info.formUrl && (
           <a

@@ -24,7 +24,7 @@ import urllib.parse
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from utils.crawl import comunidad_valenciana
+from utils.crawl import comunidad_valenciana, crawl
 
 URL_BASE = "https://donantesdesangre.eus/"
 URL_POINTS = urllib.parse.urljoin(URL_BASE, "donde-donar/")
@@ -90,7 +90,7 @@ def parse_day_listing(html: str, date: datetime.date) -> list[dict]:
         texts = container.find_all("span", class_="lugar")
         link = container.find("a", class_="direccion")
         hours = TIME_RANGE_RE.search(container.get_text(" "))
-        coords = GMAPS_PLACE_RE.search(link["href"]) if link else None
+        coords = GMAPS_PLACE_RE.search(crawl.attribute(link, "href")) if link else None
         if len(texts) < 2 or not hours:
             continue
         open_h, open_m, close_h, close_m = hours.groups()
@@ -212,7 +212,7 @@ def scrape_blood_levels() -> pd.DataFrame:
     soup = BeautifulSoup(response.text, features="lxml")
     blood_levels = []
     for img in soup.select("img.bolsa_sangre"):
-        filename = img["src"].rsplit("/", 1)[-1]
+        filename = crawl.attribute(img, "src").rsplit("/", 1)[-1]
         if filename not in BLOOD_LEVEL_STATUS:
             continue
         status, level, label = BLOOD_LEVEL_STATUS[filename]

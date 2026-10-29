@@ -83,8 +83,10 @@ def scrape_fixed_points() -> pd.DataFrame:
     """
     html = SESSION.get(URL_FIXED_POINTS).text
     soup = BeautifulSoup(html, features="lxml")
-    coords = BANCO_COORDS_RE.search(html)
-    legend = normalize_whitespace(soup.find(id="leyendaMapaBS").get_text(" "))
+    coords = crawl.required(BANCO_COORDS_RE.search(html), "map marker coordinates")
+    legend = normalize_whitespace(
+        crawl.required(soup.find(id="leyendaMapaBS"), "map legend").get_text(" ")
+    )
     horario = legend.split("Horario:", 1)[1].strip()
     return pd.DataFrame(
         [
@@ -197,7 +199,7 @@ def scrape_blood_levels() -> pd.DataFrame:
     soup = BeautifulSoup(SESSION.get(URL_BASE).text, features="lxml")
     blood_levels = []
     for img in soup.select(".estadosReservas img"):
-        match = BLOOD_LEVEL_IMAGE_RE.search(img["src"])
+        match = BLOOD_LEVEL_IMAGE_RE.search(crawl.attribute(img, "src"))
         if not match:
             continue
         blood_group, rhesus, level_digit = match.groups()

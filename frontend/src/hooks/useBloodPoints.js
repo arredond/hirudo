@@ -12,12 +12,14 @@ export function useBloodPoints(selectedDate) {
       const features = geojson?.features ?? []
       // Deduplicate by name — the DB can have duplicate rows from past ETL runs
       const seen = new Set()
-      setFixedPoints(features.filter(f => {
-        const key = f.properties?.name
-        if (seen.has(key)) return false
-        seen.add(key)
-        return true
-      }))
+      setFixedPoints(
+        features.filter(f => {
+          const key = f.properties?.name
+          if (seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+      )
     })
   }, [])
 

@@ -20,7 +20,7 @@ import urllib.parse
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from utils.crawl import comunidad_valenciana
+from utils.crawl import comunidad_valenciana, crawl
 
 URL_BASE = "https://www.donasang.org/"
 URL_HOME = urllib.parse.urljoin(URL_BASE, "es_index.php")
@@ -127,12 +127,16 @@ def scrape_fixed_points() -> pd.DataFrame:
     soup = BeautifulSoup(SESSION.get(URL_FIXED_POINTS).text, features="lxml")
     rows = []
     for item in soup.select("#centresFixos ul li"):
-        link = item.find("h4").find("a")
+        link = crawl.required(
+            crawl.required(item.find("h4"), "centre heading").find("a"), "centre link"
+        )
         name = normalize_whitespace(link.get_text())
-        url = urllib.parse.urljoin(URL_BASE, link["href"])
+        url = urllib.parse.urljoin(URL_BASE, crawl.attribute(link, "href"))
         lines = [
             normalize_whitespace(line)
-            for line in item.find("p").get_text("\n").split("\n")
+            for line in crawl.required(item.find("p"), "centre details")
+            .get_text("\n")
+            .split("\n")
             if line.strip()
         ]
         horario = None
@@ -189,7 +193,7 @@ def parse_stop(item, date: datetime.date) -> dict:
         ),
         "fecha": date.strftime("%d/%m/%Y"),
         "horario": normalize_hours(item.find("span", class_="hores").get_text()),
-        "url": urllib.parse.urljoin(URL_BASE, link["href"]),
+        "url": urllib.parse.urljoin(URL_BASE, crawl.attribute(link, "href")),
         "aferesis": bool(APHERESIS_RE.search(lugar)),
     }
 
@@ -199,7 +203,9 @@ def parse_calendar(html: str) -> list[tuple[datetime.date, list[dict]]]:
     soup = BeautifulSoup(html, features="lxml")
     days = []
     for day in soup.select("#colPunts #dies > li"):
-        date = parse_spanish_date(day.find("h2").get_text())
+        date = parse_spanish_date(
+            crawl.required(day.find("h2"), "day heading").get_text()
+        )
         if date is None:
             continue
         stops = [parse_stop(item, date) for item in day.select("ul.llistatPobles > li")]
@@ -250,10 +256,10 @@ def scrape_mobile_points(today: datetime.date | None = None) -> pd.DataFrame:
 
     coordinates_by_spot = {}
     coordinates = []
-    for row in df.itertuples():
-        spot = (row.lugar, row.localidad, row.direccion)
+    for row in df.to_dict("records"):
+        spot = (row["lugar"], row["localidad"], row["direccion"])
         if spot not in coordinates_by_spot:
-            coordinates_by_spot[spot] = fetch_coordinates(row.url)
+            coordinates_by_spot[spot] = fetch_coordinates(row["url"])
         coordinates.append(coordinates_by_spot[spot])
     df[["latitude", "longitude"]] = pd.DataFrame(
         coordinates, index=df.index, columns=["latitude", "longitude"]
@@ -266,7 +272,7 @@ def scrape_blood_levels() -> pd.DataFrame:
     soup = BeautifulSoup(SESSION.get(URL_HOME).text, features="lxml")
     blood_levels = []
     for img in soup.select("#nivells li img"):
-        match = BLOOD_LEVEL_IMAGE_RE.search(img["src"])
+        match = BLOOD_LEVEL_IMAGE_RE.search(crawl.attribute(img, "src"))
         if not match:
             continue
         level_digit, blood_group, rhesus = match.groups()

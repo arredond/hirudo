@@ -14,6 +14,9 @@ const HOLIDAY_STATE_NAMES = {
   'Principado de Asturias': 'Asturias',
 }
 
+// Typed as `any`: opening_hours' types demand lat/lon, but they're only needed
+// for sunrise/sunset rules, which no point uses.
+/** @returns {any} */
 function nominatimObjectFor(region) {
   const state = HOLIDAY_STATE_NAMES[region] ?? region
   return { address: { country_code: 'es', ...(state ? { state } : {}) } }
@@ -32,8 +35,12 @@ function wallClockIn(date, timeZone) {
     new Intl.DateTimeFormat('en-US', {
       timeZone,
       hourCycle: 'h23',
-      year: 'numeric', month: 'numeric', day: 'numeric',
-      hour: 'numeric', minute: 'numeric', second: 'numeric',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
     })
       .formatToParts(date)
       .map(({ type, value }) => [type, Number(value)])

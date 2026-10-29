@@ -11,6 +11,13 @@ uv run ruff format etl/
 uv run ruff check etl/
 ```
 
+## Checks
+
+`pre-commit` runs these on every commit (install once with `uv run pre-commit install`; run all with `uv run pre-commit run --all-files`):
+
+- Python: `uv run ruff format`, `uv run ruff check`, `uv run pyrefly check` (no baseline; keep it at zero errors). For BeautifulSoup lookups and regex matches the page guarantees, use `crawl.required(...)`; for attribute values, `crawl.attribute(tag, name)`. For row-wise maps that may return None, use `points.apply_rows(df, func)` (pandas' type hints reject None-returning `df.apply(..., axis=1)`).
+- Frontend (from `frontend/`): `npm run format` (prettier), `npm run lint` (oxlint, warnings fail), `npm run typecheck` (tsc over the JS via `checkJs`; use JSDoc for types).
+
 ## Code style
 
 - All code, variable names, function names, and docstrings must be in English.

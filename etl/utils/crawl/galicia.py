@@ -17,10 +17,12 @@ import io
 import re
 import urllib.parse
 
+import numpy as np
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from PIL import Image
+from utils.crawl import crawl
 
 URL_BASE = "https://ados.sergas.gal/"
 URL_FIXED_POINTS = urllib.parse.urljoin(URL_BASE, "cartafol/ADOS-locais")
@@ -182,7 +184,7 @@ def parse_mobile_points(soup: BeautifulSoup) -> list[dict]:
     """
     stops = []
     for area in soup.select("details.group-details"):
-        area_name = clean_text(area.summary.get_text())
+        area_name = clean_text(crawl.required(area.summary, "area summary").get_text())
         for header in area.select("div.date-header"):
             fecha = clean_text(header.get_text()).split(",")[-1].strip()
             table = header.find_next_sibling("div", class_="table-wrapper")
@@ -198,8 +200,16 @@ def parse_mobile_points(soup: BeautifulSoup) -> list[dict]:
                 lugar_tag = cells[1].find("strong")
                 lugar = clean_text((lugar_tag or cells[1]).get_text())
                 for item in cells[2].select("div.location-item"):
-                    location = clean_text(item.select_one(".location-name").get_text())
-                    horario = clean_text(item.select_one(".schedule-time").get_text())
+                    location = clean_text(
+                        crawl.required(
+                            item.select_one(".location-name"), "location name"
+                        ).get_text()
+                    )
+                    horario = clean_text(
+                        crawl.required(
+                            item.select_one(".schedule-time"), "schedule time"
+                        ).get_text()
+                    )
                     if PLACEHOLDER_LOCATION_RE.match(location):
                         continue
                     item_lugar = lugar
@@ -233,7 +243,9 @@ def lit_light_colour(card: Image.Image):
     """Return the (status, level, label) of a card's lit light, or None."""
     hues = [
         hue
-        for hue, saturation, value in card.convert("HSV").get_flattened_data()
+        for hue, saturation, value in np.asarray(card.convert("HSV"))
+        .reshape(-1, 3)
+        .tolist()
         if saturation > LIT_MIN_SATURATION and value > LIT_MIN_VALUE
     ]
     if len(hues) < LIT_MIN_PIXELS:
@@ -282,7 +294,7 @@ def parse_blood_levels_image(image: Image.Image) -> list[dict]:
 def blood_levels_image_url(soup: BeautifulSoup) -> str | None:
     """Find the current semáforo image (its filename carries its date)."""
     img = soup.find("img", src=re.compile(r"/Semaforo_[^/]*\.png$", re.IGNORECASE))
-    return urllib.parse.urljoin(URL_BASE, img["src"]) if img else None
+    return urllib.parse.urljoin(URL_BASE, crawl.attribute(img, "src")) if img else None
 
 
 def scrape_blood_levels() -> pd.DataFrame:

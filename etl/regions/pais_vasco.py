@@ -4,7 +4,7 @@ Raw page parsing lives in utils/crawl/pais_vasco.py.
 """
 
 import pandas as pd
-from utils import opening_hours
+from utils import opening_hours, points
 from utils.crawl import crawl, pais_vasco
 
 REGION = "País Vasco"
@@ -39,9 +39,9 @@ def scrape_mobile_points() -> pd.DataFrame:
     """
     df = pais_vasco.scrape_mobile_points()
     df["name"] = "Equipo móvil en " + df["lugar"]
-    df["opening_hours"] = df.apply(
+    df["opening_hours"] = points.apply_rows(
+        df,
         lambda row: opening_hours.parse_mobile_hours(row["fecha"], row["horario"]),
-        axis=1,
     )
     df["plasma"] = df["plasma_only"]
     df["sangre"] = ~df["plasma_only"]

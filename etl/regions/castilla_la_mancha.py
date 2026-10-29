@@ -55,13 +55,13 @@ def scrape_mobile_points() -> pd.DataFrame:
 
     df["name"] = "Equipo móvil en " + df["lugar"] + ", " + df["localidad"]
     df["direccion"] = df["lugar"]
-    df["opening_hours"] = df.apply(
+    df["opening_hours"] = points.apply_rows(
+        df,
         lambda row: (
             opening_hours.parse_mobile_hours(row["fecha"], row["horario"])
             if pd.notna(row["fecha"])
             else None
         ),
-        axis=1,
     )
     df["url"] = df["province"].apply(castilla_la_mancha.province_url)
     # "Tipo de donación" is either SANGRE or PLASMA — a "(SÓLO PLASMA)" stop

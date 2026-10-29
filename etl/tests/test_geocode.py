@@ -53,6 +53,7 @@ def test_geocode_address_returns_coordinates(mocker):
     mocker.patch.dict("os.environ", {"GOOGLE_MAPS_API_KEY": "fake-key"})
 
     lng, lat, location_type, score = geocode_address("Calle Mayor, Madrid, Spain")
+    assert lng is not None and lat is not None
     assert abs(lng - (-3.7038)) < 1e-4
     assert abs(lat - 40.4168) < 1e-4
     assert location_type == "ROOFTOP"

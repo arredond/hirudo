@@ -5,9 +5,7 @@ export function getPointInfo(point) {
   const isMobile = Boolean(p.fecha)
   return {
     isMobile,
-    name: isMobile
-      ? (p.name ?? '').replace(/^Equipo m[oó]vil en /i, '')
-      : (p.name ?? ''),
+    name: isMobile ? (p.name ?? '').replace(/^Equipo m[oó]vil en /i, '') : (p.name ?? ''),
     // "direccion"/"localidad"/"horario" are consolidated names every region's
     // ETL output uses regardless of how its own source spells them (see
     // FIXED_POINT_COLUMN_ALIASES / LOCATION_COLUMN_ALIASES in

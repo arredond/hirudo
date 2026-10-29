@@ -81,7 +81,7 @@ def parse_fixed_points(table, province: str) -> list[dict]:
     colspan note row is reached.
     """
     points = []
-    current = None
+    current: dict | None = None
     for row in table.find_all("tr"):
         cells = row.find_all(["td", "th"])
         if not cells or cells[0].name == "th":
@@ -113,7 +113,7 @@ def parse_fixed_points(table, province: str) -> list[dict]:
         if len(schedule_cells) >= 2:
             day = schedule_cells[0].get_text(strip=True)
             hours = schedule_cells[1].get_text(strip=True)
-            if day and hours:
+            if day and hours and current is not None:
                 current["schedule"].append(f"{day}: {hours}")
 
     if current:
@@ -147,7 +147,9 @@ def scrape_fixed_points() -> pd.DataFrame:
         url = province_url(province)
         html = SESSION.get(url).text
         soup = BeautifulSoup(html, features="lxml")
-        tables = soup.find("div", {"class": "entry-content"}).find_all("table")
+        tables = crawl.required(
+            soup.find("div", {"class": "entry-content"}), "page content"
+        ).find_all("table")
 
         for table in tables:
             if is_mobile_points_table(table):
@@ -189,7 +191,9 @@ def scrape_mobile_points() -> pd.DataFrame:
     for province in PROVINCES:
         html = SESSION.get(province_url(province)).text
         soup = BeautifulSoup(html, features="lxml")
-        tables = soup.find("div", {"class": "entry-content"}).find_all("table")
+        tables = crawl.required(
+            soup.find("div", {"class": "entry-content"}), "page content"
+        ).find_all("table")
         mobile_tables = [table for table in tables if is_mobile_points_table(table)]
         if not mobile_tables:
             log.warning("No mobile-points table for province: %s", province)
@@ -219,7 +223,9 @@ def scrape_blood_levels() -> pd.DataFrame:
 
     blood_levels = []
     for box in soup.find_all("div", title=re.compile(r"^Nivel ")):
-        level_word, blood_type = box["title"].removeprefix("Nivel ").split(" ", 1)
+        level_word, blood_type = (
+            crawl.attribute(box, "title").removeprefix("Nivel ").split(" ", 1)
+        )
         status, level = BLOOD_LEVEL_STATUS[level_word]
         blood_levels.append(
             {

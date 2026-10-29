@@ -19,7 +19,9 @@ export default function OpenStatusBadge({ openingHours, region }) {
     <span
       className={`inline-flex items-center gap-1.5 text-xs font-medium ${status.isOpen ? 'text-green-600' : 'text-gray-400'}`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${status.isOpen ? 'bg-green-500' : 'bg-gray-400'}`} />
+      <span
+        className={`w-1.5 h-1.5 rounded-full ${status.isOpen ? 'bg-green-500' : 'bg-gray-400'}`}
+      />
       {status.isOpen ? 'Abierto ahora' : 'Cerrado ahora'}
     </span>
   )

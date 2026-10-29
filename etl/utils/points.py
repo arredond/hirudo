@@ -7,11 +7,24 @@ Run job's working directory.
 
 import json
 import logging
+from collections.abc import Callable
+from collections.abc import Set as AbstractSet
+from typing import Any
 
 import pandas as pd
 from utils.crawl import crawl
 
 log = logging.getLogger(__name__)
+
+
+def apply_rows(df: pd.DataFrame, func: Callable[[pd.Series], Any]) -> pd.Series:
+    """Row-wise `df.apply(func, axis=1)` for functions that may return None.
+
+    pandas' type hints reject row functions returning None (e.g. `str | None`),
+    which most address/place/hours builders do. Same rows and resulting dtype
+    as `apply`, and always a Series (even for an empty DataFrame).
+    """
+    return pd.Series([func(row) for _, row in df.iterrows()], index=df.index)
 
 
 def opening_hours_for_fixed_point(row, lookup):
@@ -67,7 +80,9 @@ def load_plasma_fijos() -> dict:
         return json.load(f)
 
 
-def flag_appointments(df: pd.DataFrame, names: set = frozenset()) -> pd.DataFrame:
+def flag_appointments(
+    df: pd.DataFrame, names: AbstractSet[str] = frozenset()
+) -> pd.DataFrame:
     """Set "cita_previa": whether a point only takes donors by appointment.
 
     True when a region's scraper already flagged it, when its name is in

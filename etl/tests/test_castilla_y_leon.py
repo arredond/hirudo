@@ -15,7 +15,9 @@ from tests.conftest import CYL_HOME_PAGE_HTML, CYL_PROVINCE_PAGE_HTML
 
 def _fixed_points_table(html):
     soup = BeautifulSoup(html, "lxml")
-    return soup.find("div", {"class": "entry-content"}).find("table")
+    content = soup.find("div", {"class": "entry-content"})
+    assert content is not None
+    return content.find("table")
 
 
 def test_parse_fixed_points_multi_row_schedule():

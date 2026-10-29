@@ -54,6 +54,7 @@ def test_extract_fixed_point_general_returns_fields():
     </tr>"""
     row = _make_row(html)
     result = extract_fixed_point_general(row)
+    assert result is not None
     assert result["name"] == "Hospital Severo Ochoa"
     assert result["center_id"] == "2544"
     assert result["url"] == URL_BASE + "detalleCentros.aspx?ID=2544"
@@ -167,6 +168,7 @@ def test_scrape_blood_levels_flattens_and_strips_text():
 def test_list_page_parsing():
     soup = BeautifulSoup(LIST_PAGE_HTML, "lxml")
     panel = soup.find("div", {"class": "panelResultados"})
+    assert panel is not None
     rows = panel.find_all("tr")
     results = [extract_fixed_point_general(r) for r in rows]
     data_rows = [r for r in results if r is not None]

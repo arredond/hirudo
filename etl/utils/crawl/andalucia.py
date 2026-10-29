@@ -102,22 +102,30 @@ def parse_fixed_point(soup: BeautifulSoup) -> dict:
     Days the page doesn't list are closed.
     """
     schedule = []
-    for row in soup.select_one("table.center-schedule__table").select("tr"):
+    table = crawl.required(
+        soup.select_one("table.center-schedule__table"), "timetable table"
+    )
+    for row in table.select("tr"):
         day, hours = row.find_all("td")
         ranges = [item.get_text(" ", strip=True) for item in hours.select("li")]
         schedule.append((day.get_text(strip=True), " | ".join(ranges)))
 
-    postal = soup.select_one(".center-address__address-postal")
-    direccion = postal.select_one(".field--name-field-direccion").get_text(
-        " ", strip=True
+    postal = crawl.required(
+        soup.select_one(".center-address__address-postal"), "postal address"
     )
-    codigo_postal = postal.select_one(".field--name-field-codigo-postal").get_text(
-        strip=True
-    )
-    localidad = postal.select_one(".field--name-field-municipio").get_text(strip=True)
+    direccion = crawl.required(
+        postal.select_one(".field--name-field-direccion"), "address field"
+    ).get_text(" ", strip=True)
+    codigo_postal = crawl.required(
+        postal.select_one(".field--name-field-codigo-postal"), "postcode field"
+    ).get_text(strip=True)
+    localidad = crawl.required(
+        postal.select_one(".field--name-field-municipio"), "municipality field"
+    ).get_text(strip=True)
+    title = crawl.required(soup.select_one(".center-label__title--main"), "title")
 
     return {
-        "name": soup.select_one(".center-label__title--main").get_text(" ", strip=True),
+        "name": title.get_text(" ", strip=True),
         "localidad": crawl.title_name(localidad),
         "direccion": f"{direccion}, {codigo_postal}",
         "horario": "; ".join(f"{day} {hours}" for day, hours in schedule if hours),

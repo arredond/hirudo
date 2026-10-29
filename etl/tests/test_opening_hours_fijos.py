@@ -10,7 +10,8 @@ import json
 from pathlib import Path
 
 import pandas as pd
-from opening_hours import OpeningHours, ParserError
+import utils.opening_hours
+from opening_hours import OpeningHours
 from utils import points
 
 LOOKUP_PATH = Path(__file__).parent.parent / "utils" / "opening_hours_fijos.json"
@@ -23,7 +24,7 @@ def test_all_lookup_entries_are_valid_opening_hours_strings():
     for key, value in OPENING_HOURS_FIJOS.items():
         try:
             OpeningHours(value)
-        except ParserError as e:
+        except utils.opening_hours.ParserError as e:
             invalid[key] = str(e)
 
     assert not invalid, f"Invalid opening_hours strings: {invalid}"

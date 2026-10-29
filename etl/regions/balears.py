@@ -50,11 +50,11 @@ def scrape_mobile_points() -> pd.DataFrame:
         return pd.DataFrame(columns=output_cols + ["latitude", "longitude"])
 
     df["name"] = "Equipo móvil en " + df["lugar"]
-    df["opening_hours"] = df.apply(
+    df["opening_hours"] = points.apply_rows(
+        df,
         lambda row: opening_hours.parse_mobile_hours(
             row["fecha"], row["horario"] or ""
         ),
-        axis=1,
     )
     df["plasma"] = df["aferesis"].where(df["aferesis"])
     df["sangre"] = (~df["aferesis"]).where(df["aferesis"])

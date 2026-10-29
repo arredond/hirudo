@@ -50,22 +50,22 @@ def scrape_mobile_points() -> pd.DataFrame:
     geocoding_cache = geocode.refresh_places_cache(
         set(df["place_query"]), geocode.load_geocoding_cache(), PLACES_BOUNDS
     )
-    df["place_lugar"] = df.apply(
+    df["place_lugar"] = points.apply_rows(
+        df,
         lambda row: geocode.place_candidate(
             row["place_query"],
             row["localidad"],
             geocoding_cache,
             PLACES_BOUNDS,
         ),
-        axis=1,
     )
     df = geocode.geocode_points(df, geocoding_cache, ["address_lugar", "place_lugar"])
 
     df["name"] = "Equipo móvil en " + df["localidad"] + " (" + df["lugar"] + ")"
     df["direccion"] = None
-    df["opening_hours"] = df.apply(
+    df["opening_hours"] = points.apply_rows(
+        df,
         lambda row: opening_hours.parse_mobile_hours(row["fecha"], row["horario"]),
-        axis=1,
     )
     df["plasma"] = True
     df["sangre"] = True

@@ -57,9 +57,9 @@ def scrape_mobile_points() -> pd.DataFrame:
     df = geocode.geocode_mobile_points(df, geocode.load_geocoding_cache(), REGION)
 
     df["name"] = "Equipo móvil en " + df["lugar"]
-    df["opening_hours"] = df.apply(
+    df["opening_hours"] = points.apply_rows(
+        df,
         lambda row: opening_hours.parse_mobile_hours(row["fecha"], row["horario"]),
-        axis=1,
     )
     df["url"] = df.apply(crawl.gmaps_url_from_coords, axis=1)
     df["region"] = REGION

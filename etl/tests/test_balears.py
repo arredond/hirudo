@@ -170,7 +170,9 @@ def test_scrape_mobile_points_stops_at_window_end_and_fetches_each_spot_once():
     # The third call to the calendar (page 3) never happens: page 2 is past
     # the window.
     calendar_pages = [
-        call.request.url for call in responses.calls if "punts.php" in call.request.url
+        call.request.url
+        for call in responses.calls
+        if call.request.url and "punts.php" in call.request.url
     ]
     assert calendar_pages == [
         balears.URL_CALENDAR + "?PAGE=1",

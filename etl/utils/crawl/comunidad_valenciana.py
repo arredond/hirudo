@@ -235,12 +235,12 @@ def parse_schedule(soup: BeautifulSoup, today: datetime.date) -> list[dict]:
         heading = table.find_previous_sibling("p", class_="subtitulo2")
         date = infer_date(heading.get_text(strip=True), today) if heading else None
         for tr in table.find_all("tr"):
-            cells = {}
+            cells: dict[str, str | None] = {}
             for td in tr.find_all("td"):
                 column = next(
                     (
                         c
-                        for c in td.get("class", [])
+                        for c in td.get_attribute_list("class")
                         if c in {"poblacion", "ubicacion", "horario"}
                     ),
                     None,
@@ -371,8 +371,8 @@ def scrape_mobile_points(today: datetime.date | None = None) -> pd.DataFrame:
         mobile = schedule[~schedule["ubicacion"].isin(fixed_ubicaciones)]
         parts = pd.DataFrame(
             [
-                split_ubicacion(row.ubicacion, row.poblacion)
-                for row in mobile.itertuples()
+                split_ubicacion(row["ubicacion"], row["poblacion"])
+                for row in mobile.to_dict("records")
             ],
             columns=["venue", "direccion", "restriction"],
             index=mobile.index,

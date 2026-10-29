@@ -16,7 +16,7 @@ function useOutsideClick(onOutside) {
 
 // One clickable red word in the title (donation type or region), opening a
 // dropdown to override it manually — see TitleDropdown in HeaderTitle below.
-function TitleDropdown({ label, value, options, renderOption, onSelect }) {
+function TitleDropdown({ label, value, options, renderOption = option => option, onSelect }) {
   const [open, setOpen] = useState(false)
   const ref = useOutsideClick(() => setOpen(false))
 
@@ -43,7 +43,7 @@ function TitleDropdown({ label, value, options, renderOption, onSelect }) {
                 option === value ? 'font-semibold' : ''
               }`}
             >
-              {renderOption ? renderOption(option) : option}
+              {renderOption(option)}
             </button>
           ))}
         </div>
@@ -75,7 +75,15 @@ function RegionInfoLink({ region, donationType }) {
       aria-label={title}
       className="inline-flex align-middle ml-1.5 -mt-0.5 text-gray-700 hover:text-red-600 transition-colors"
     >
-      <svg className="w-[0.8em] h-[0.8em]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        className="w-[0.8em] h-[0.8em]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="12" cy="12" r="10" />
         <line x1="12" y1="16" x2="12" y2="12" />
         <line x1="12" y1="8" x2="12.01" y2="8" />
@@ -88,7 +96,12 @@ function RegionInfoLink({ region, donationType }) {
 // the donation-type filter and the region the map is currently centered on
 // (see nearestRegion in lib/regions.js), and are independently clickable to
 // override either one directly from the title instead.
-export default function HeaderTitle({ donationType, onSelectDonationType, region, onSelectRegion }) {
+export default function HeaderTitle({
+  donationType,
+  onSelectDonationType,
+  region,
+  onSelectRegion,
+}) {
   return (
     <div className="text-base sm:text-2xl font-bold tracking-tight leading-tight min-w-0">
       <span className="text-black">dónde donar </span>

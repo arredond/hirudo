@@ -81,6 +81,7 @@ def test_parse_event_reads_dotted_times():
 
     point = navarra.parse_event(event)
 
+    assert point is not None
     assert point["localidad"] == "Los Arcos"
     assert point["horario"] == "17:00 a 21:00"
 
@@ -159,6 +160,7 @@ def test_scrape_mobile_points_requests_a_unix_window_from_today():
     df = navarra.scrape_mobile_points(TODAY)
 
     query = responses.calls[0].request.url
+    assert query is not None
     start = int(query.split("start=")[1].split("&")[0])
     end = int(query.split("end=")[1].split("&")[0])
     assert start == 1793142000  # 2026-10-28 00:00 Europe/Madrid

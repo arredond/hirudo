@@ -37,7 +37,8 @@ export function useBloodLevels(region) {
       const latestByType = new Map()
       rows.forEach(row => {
         const bloodType = row.blood_type.replace('0', 'O')
-        if (!latestByType.has(bloodType)) latestByType.set(bloodType, { ...row, blood_type: bloodType })
+        if (!latestByType.has(bloodType))
+          latestByType.set(bloodType, { ...row, blood_type: bloodType })
       })
       const levels = BLOOD_TYPE_ORDER.map(bloodType => latestByType.get(bloodType)).filter(Boolean)
       cache.set(region, levels)

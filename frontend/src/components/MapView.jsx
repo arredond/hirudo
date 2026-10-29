@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import maplibregl from 'maplibre-gl'
 import { isPermanentlyClosed, isTemporarilyClosed } from '../lib/openingHours'
 
+/** @type {[number, number]} */
 const MADRID_CENTER = [-3.7, 40.4]
 const INITIAL_ZOOM = 10
 
@@ -82,7 +83,14 @@ function buildMarkers(features, isFixed, map, onSelect, selectedPoint) {
 }
 
 const MapView = forwardRef(function MapView(
-  { fixedPoints, mobilePoints, selectedPoint, onSelectPoint, onUserLocation, onCenterChange },
+  /** @type {Record<string, any>} */ {
+    fixedPoints,
+    mobilePoints,
+    selectedPoint,
+    onSelectPoint,
+    onUserLocation,
+    onCenterChange,
+  },
   ref
 ) {
   const containerRef = useRef(null)
@@ -101,7 +109,10 @@ const MapView = forwardRef(function MapView(
         map.flyTo({ center: coords[0], zoom: options.maxZoom ?? 14, duration: 600 })
         return
       }
-      const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]))
+      const bounds = coords.reduce(
+        (b, c) => b.extend(c),
+        new maplibregl.LngLatBounds(coords[0], coords[0])
+      )
       map.fitBounds(bounds, { padding: 60, maxZoom: 15, duration: 600, ...options })
     },
   }))
@@ -137,7 +148,7 @@ const MapView = forwardRef(function MapView(
       try {
         const status = await navigator.permissions?.query({ name: 'geolocation' })
         if (status?.state === 'granted') geolocate.trigger()
-      } catch (_) {}
+      } catch {}
     })
 
     map.on('click', () => onSelectPoint(null))
@@ -159,7 +170,13 @@ const MapView = forwardRef(function MapView(
   useEffect(() => {
     if (!mapRef.current) return
     mobileRef.current.forEach(({ marker }) => marker.remove())
-    mobileRef.current = buildMarkers(mobilePoints, false, mapRef.current, onSelectPoint, selectedPoint)
+    mobileRef.current = buildMarkers(
+      mobilePoints,
+      false,
+      mapRef.current,
+      onSelectPoint,
+      selectedPoint
+    )
   }, [mobilePoints])
 
   // Update marker styles when selection changes without recreating markers

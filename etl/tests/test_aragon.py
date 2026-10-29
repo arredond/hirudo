@@ -135,4 +135,6 @@ def test_scrape_mobile_points_follows_next_rest_url():
         "Amazon Data Huesca",
     ]
     assert len(responses.calls) == 2
-    assert "start_date=" in responses.calls[0].request.url
+    url = responses.calls[0].request.url
+    assert url is not None
+    assert "start_date=" in url

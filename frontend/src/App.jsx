@@ -16,9 +16,9 @@ import { medulaInfo, takesMedula } from './lib/medula'
 dayjs.locale('es')
 
 export default function App() {
-  // Defaults: "Abierto ahora" tab (selectedDate = null, see DateNav) and
-  // "sangre" as the donation type (picked from the header title).
-  const [selectedDate, setSelectedDate] = useState(null)
+  // Defaults: the date tab depends on the local time (see defaultSelectedDate)
+  // and "sangre" is the donation type (picked from the header title).
+  const [selectedDate, setSelectedDate] = useState(defaultSelectedDate)
   const [selectedPoint, setSelectedPoint] = useState(null)
   const [showList, setShowList] = useState(false)
   // Single-select, not independent toggles: every point takes whole blood, but
@@ -55,7 +55,8 @@ export default function App() {
   const filterByOpenNow = features =>
     showOnlyOpenNow
       ? features.filter(
-          f => getOpenStatus(f.properties?.opening_hours, now, f.properties?.region)?.isOpen === true
+          f =>
+            getOpenStatus(f.properties?.opening_hours, now, f.properties?.region)?.isOpen === true
         )
       : features
 
@@ -147,9 +148,7 @@ export default function App() {
             onUserLocation={setUserLocation}
             onCenterChange={setMapCenter}
           />
-          {selectedPoint && (
-            <Popup point={selectedPoint} onClose={() => setSelectedPoint(null)} />
-          )}
+          {selectedPoint && <Popup point={selectedPoint} onClose={() => setSelectedPoint(null)} />}
           {/* An empty "Abierto ahora" map (e.g. late at night) otherwise looks
               exactly like a broken one — say so, and offer today's full list.
               Only once both point sets have loaded, so it doesn't flash. */}
@@ -160,7 +159,9 @@ export default function App() {
             visibleFixedPoints.length + visibleMobilePoints.length === 0 && (
               <div className="absolute inset-0 z-10 flex items-center justify-center p-4 pointer-events-none">
                 <div className="pointer-events-auto bg-white rounded-2xl shadow-md px-5 py-4 max-w-xs text-center">
-                  <p className="text-sm font-semibold text-gray-900">Ahora mismo no hay ningún punto abierto</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    Ahora mismo no hay ningún punto abierto
+                  </p>
                   <button
                     onClick={() => setSelectedDate(dayjs())}
                     className="mt-3 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
@@ -185,7 +186,13 @@ export default function App() {
             // just DateNav + the "Mostrar lista" button, silently blocking clicks
             // on the map underneath the empty space below them.
             className={`flex flex-col gap-3 pointer-events-auto min-w-0 max-w-[calc(100%-3.5rem)] md:max-w-none ${showList ? 'md:h-full' : ''}`}
-            style={listWidth ? { '--list-width': `${listWidth}px` } : undefined}
+            style={
+              listWidth
+                ? /** @type {import('react').CSSProperties} */ ({
+                    '--list-width': `${listWidth}px`,
+                  })
+                : undefined
+            }
           >
             <DateNav ref={dateNavRef} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
             {showList ? (
@@ -203,7 +210,14 @@ export default function App() {
                 onClick={() => setShowList(true)}
                 className="self-start bg-white rounded-full px-4 py-2 shadow-md text-sm font-medium flex items-center gap-2 hover:bg-gray-50 transition-colors"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <line x1="3" y1="6" x2="21" y2="6" />
                   <line x1="3" y1="12" x2="21" y2="12" />
                   <line x1="3" y1="18" x2="21" y2="18" />
@@ -226,4 +240,14 @@ export default function App() {
       </div>
     </div>
   )
+}
+
+// Opening tab by local time: before 9:00 almost nothing is open yet but the
+// user will likely go later that day ("Hoy"); from 21:00 everything is closed,
+// so show tomorrow ("Mañana"); otherwise "Abierto ahora" (selectedDate = null).
+function defaultSelectedDate() {
+  const now = dayjs()
+  if (now.hour() < 9) return now
+  if (now.hour() >= 21) return now.add(1, 'day')
+  return null
 }

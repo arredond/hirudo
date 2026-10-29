@@ -4,6 +4,7 @@ import difflib
 import logging
 import os
 import re
+from typing import Any
 
 import pandas as pd
 import unidecode
@@ -57,7 +58,9 @@ def geocode_address(full_address, postal_code=None, locality=None):
         "APPROXIMATE": 4,
     }
 
-    gmaps = Client(os.environ["GOOGLE_MAPS_API_KEY"])
+    # googlemaps attaches its API methods to Client at import time, which type
+    # checkers can't see.
+    gmaps: Any = Client(os.environ["GOOGLE_MAPS_API_KEY"])
 
     components = {"country": "ES"}
     if postal_code:
@@ -93,7 +96,9 @@ def find_place(query: str, location_bias: str):
     """
     from googlemaps import Client
 
-    gmaps = Client(os.environ["GOOGLE_MAPS_API_KEY"])
+    # googlemaps attaches its API methods to Client at import time, which type
+    # checkers can't see.
+    gmaps: Any = Client(os.environ["GOOGLE_MAPS_API_KEY"])
     response = gmaps.find_place(
         query,
         "textquery",
@@ -368,7 +373,12 @@ def geocode_points(
         address = row[best_column]
         if pd.isna(address) or address not in scored.index:
             return pd.Series({"longitude": None, "latitude": None})
-        return scored.loc[address, ["longitude", "latitude"]]
+        return pd.Series(
+            {
+                "longitude": scored.at[address, "longitude"],
+                "latitude": scored.at[address, "latitude"],
+            }
+        )
 
     coords = df.apply(best_candidate, axis=1)
     return pd.concat([df, coords], axis=1)

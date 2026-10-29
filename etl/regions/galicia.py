@@ -88,14 +88,14 @@ def scrape_mobile_points() -> pd.DataFrame:
     geocoding_cache = geocode.refresh_places_cache(
         set(df["place_query"]), geocode.load_geocoding_cache(), PLACES_BOUNDS
     )
-    df["place_venue"] = df.apply(
+    df["place_venue"] = points.apply_rows(
+        df,
         lambda row: geocode.place_candidate(
             row["place_query"],
             f"{row['lugar_clean']}/{row['concello']}",
             geocoding_cache,
             PLACES_BOUNDS,
         ),
-        axis=1,
     )
     df["best_query"] = df["place_venue"].fillna(df["address_place"])
     df = geocode.geocode_points(df, geocoding_cache, "best_query")
@@ -107,9 +107,9 @@ def scrape_mobile_points() -> pd.DataFrame:
     df["name"] = "Equipo móvil en " + df["lugar"].apply(title_name)
     df.loc[df["provisional"], "name"] += " (provisional)"
     df["localidad"] = df["concello"]
-    df["opening_hours"] = df.apply(
+    df["opening_hours"] = points.apply_rows(
+        df,
         lambda row: opening_hours.parse_mobile_hours(row["fecha"], row["horario"]),
-        axis=1,
     )
     df["medula"] = False
     df["region"] = REGION
