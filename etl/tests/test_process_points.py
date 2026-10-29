@@ -265,6 +265,36 @@ def test_process_fixed_points_stamps_region(mocker):
     mocker.patch(
         "utils.crawl.melilla.scrape_fixed_points", return_value=scraped_melilla
     )
+    mocker.patch(
+        "regions.extremadura.load_fixed_points",
+        return_value=pd.DataFrame(
+            {
+                "name": ["Banco de Sangre de Extremadura"],
+                "localidad": ["Mérida"],
+                "direccion": ["Ctra. Valverde de Mérida, s/n, 06800 Mérida, Badajoz"],
+                "horario": ["Lunes a viernes de 9:00 a 14:00"],
+                "latitude": [38.921607],
+                "longitude": [-6.306349],
+                "url": ["https://saludextremadura.ses.es/bancodesangre/"],
+            }
+        ),
+    )
+    mocker.patch(
+        "utils.crawl.murcia.scrape_fixed_points",
+        return_value=pd.DataFrame(
+            {
+                "name": ["Centro Regional de Hemodonación"],
+                "localidad": ["Murcia"],
+                "direccion": [None],
+                "horario": ["Lunes a viernes de 8:30 a 20:30 horas."],
+                "latitude": [37.983067],
+                "longitude": [-1.121929],
+                "url": [
+                    "https://www.murciasalud.es/web/centro-regional-de-hemodonacion"
+                ],
+            }
+        ),
+    )
 
     mocker.patch(
         "utils.crawl.balears.scrape_fixed_points",
@@ -315,6 +345,8 @@ def test_process_fixed_points_stamps_region(mocker):
         "Canarias",
         "Melilla",
         "Illes Balears",
+        "Región de Murcia",
+        "Extremadura",
     }
 
 
@@ -665,6 +697,23 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         ),
     )
     mocker.patch(
+        "utils.crawl.murcia.scrape_mobile_points",
+        return_value=pd.DataFrame(
+            {
+                "lugar": ["Mula (Centro de Salud)"],
+                "localidad": ["Mula"],
+                "direccion": ["Senda de la Morera, 12"],
+                "fecha": ["29/10/2026"],
+                "horario": ["17:00-21:00"],
+                "latitude": [38.03744],
+                "longitude": [-1.491812],
+                "url": [
+                    "https://www.murciasalud.es/web/centro-regional-de-hemodonacion/calendario-de-colectas"
+                ],
+            }
+        ),
+    )
+    mocker.patch(
         "utils.crawl.balears.scrape_mobile_points",
         return_value=pd.DataFrame(
             {
@@ -712,6 +761,7 @@ def test_process_mobile_points_stamps_region_and_keeps_it_in_output(mocker):
         "Principado de Asturias",
         "Canarias",
         "Illes Balears",
+        "Región de Murcia",
     }
 
 

@@ -1252,3 +1252,184 @@ CANARIAS_PARTIAL_RESPONSE_XML = (
     + """]]></update><update id="j_id1:javax.faces.ViewState:0"><![CDATA[PARTIAL-VS]]></update></changes></partial-response>
 """
 )
+
+# murciasalud.es homepage, trimmed: three fixed spots (one with a note after
+# its "Localización" link, one also listed in the calendar) with their map
+# popups, and three blood-level cards
+# (green, orange, and one whose image isn't mapped to a colour).
+MURCIA_HOME_HTML = """
+<html><body>
+<div id="crh-niveles-reservas" class="container">
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="journal-content-article">
+        <div class="rounded-top">
+          <div class="crh-grupos font-weight-bold rounded-top">
+            0+
+          </div>
+          <div class="bg-white mx-auto p-4 nivel-reserva">
+            <img src="/documents/58881/58939/Donaci%C3%B3n+en+pr%C3%B3xima+colecta.svg/f4994e16-6f3e-1703-b6e8-a868b6ec1f0e?t=1655817941415" alt="no urgente" class="mw-100 border-0" />
+          </div>
+        </div>
+        <div class="nivel">
+          Dona de manera habitual
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3">
+      <div class="journal-content-article">
+        <div class="rounded-top">
+          <div class="crh-grupos font-weight-bold rounded-top">A-</div>
+          <div class="bg-white mx-auto p-4 nivel-reserva">
+            <img src="/documents/58881/58939/Donaci%C3%B3n+en+d%C3%ADas.svg/e936c691-7811-de15-d9b2-8d77ae813930?t=1655817942715" alt="urgente" />
+          </div>
+        </div>
+        <div class="nivel">Donación en 2/3 días</div>
+      </div>
+    </div>
+    <div class="col-lg-3">
+      <div class="journal-content-article">
+        <div class="rounded-top">
+          <div class="crh-grupos font-weight-bold rounded-top">AB-</div>
+          <div class="bg-white mx-auto p-4 nivel-reserva">
+            <img src="/documents/58881/58939/Otro+nivel.svg/0000?t=1" alt="desconocido" />
+          </div>
+        </div>
+        <div class="nivel">Algo nuevo</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="punto-donacion-fijo">
+  <div>
+    <p class="font-weight-semibold titulo-punto-donacion mt-0 mb-3">
+      <svg class="lexicon-icon"></svg>&nbsp;Murcia&nbsp;- Centro Regional de Hemodonación
+    </p>
+  </div>
+  <div>
+    <p class="info-punto-donacion mt-0 mb-0">
+      <a href="tel:+34968341990"><span class="font-weight-semibold info-contacto">
+        <svg></svg>&nbsp;968 341 990&nbsp;</span></a>
+      <span class="info-disponibilidad"> <div><div id="jxjm__reloj"><svg></svg></div>
+        </div>&nbsp;Lunes a viernes de 8:30 a 20:30 horas. Agosto de 8:30 a 14:30 horas. Si quiere Donar Plasma, Llame o escriba al 650452788 para pedir cita&nbsp;</span>
+      <span class="font-weight-semibold">
+        <a href="javascript:smsCRHToggleMapa('sxwd__')">Localización</a>&nbsp;
+      </span>
+    </p>
+  </div>
+</div>
+<div id="sxwd__" class="d-none">
+  <a href="javascript:smsCRHToggleMapa('sxwd__')">Cerrar</a>
+  <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d786.18!2d-1.121929!3d37.983067!3m2!1i1024!2i768!4f13.1"></iframe>
+</div>
+<div class="punto-donacion-fijo">
+  <div>
+    <p class="font-weight-semibold titulo-punto-donacion mt-0 mb-3">
+      <svg></svg>&nbsp;Cartagena&nbsp;- Hospital Santa María del Rosell
+    </p>
+  </div>
+  <div>
+    <p class="info-punto-donacion mt-0 mb-0">
+      <a href="tel:+34968341990"><span class="font-weight-semibold info-contacto">&nbsp;968 34 19 90&nbsp;</span></a>
+      <span class="info-disponibilidad">&nbsp;Lunes y miércoles de 15:00 a 21:00 horas.&nbsp;</span>
+      <span class="font-weight-semibold">
+        <a href="javascript:smsCRHToggleMapa('iowi__')">Localización</a>&nbsp;
+          Parking en la puerta&nbsp;
+      </span>
+    </p>
+  </div>
+</div>
+<div id="iowi__" class="d-none">
+  <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1580.38!2d-0.97662!3d37.607575!3m2!1i1024"></iframe>
+</div>
+<div class="punto-donacion-fijo">
+  <div>
+    <p class="font-weight-semibold titulo-punto-donacion mt-0 mb-3">&nbsp;Yecla&nbsp;- Hospital Virgen del Castillo</p>
+  </div>
+  <div>
+    <p class="info-punto-donacion mt-0 mb-0">
+      <span class="info-disponibilidad">&nbsp;Último jueves de cada mes.&nbsp;</span>
+      <span class="font-weight-semibold"><a href="javascript:smsCRHToggleMapa('vsuw__')">Localización</a></span>
+    </p>
+  </div>
+</div>
+</body></html>
+"""
+
+# murciasalud.es collection calendar, trimmed: a day already past and a day
+# with two stops (one whose town is all caps, one with no map coordinates).
+MURCIA_CALENDAR_HTML = """
+<html><body>
+<div class="container">
+  <div class="w-100">
+    <p class="text-center mt-3">
+      <svg class="lexicon-icon"></svg>&nbsp;Miércoles,&nbsp;
+      <span class="font-weight-semibold site-type-color">28 de Octubre</span>&nbsp;
+      de 2026
+    </p>
+    <div class="mt-3 d-flex flex-wrap">
+      <div class="d-flex col-md-3 flex-column">
+        <div class="font-weight-semibold text-center m-1">
+          <p class="m-0">Ayer</p>
+        </div>
+        <div><div>17:00 - 21:00</div></div>
+      </div>
+    </div>
+    <p class="text-center mt-3">
+      <svg class="lexicon-icon"></svg>&nbsp;Jueves,&nbsp;
+      <span class="font-weight-semibold site-type-color">29 de Octubre</span>&nbsp;
+      de 2026
+    </p>
+    <div class="mt-3 d-flex flex-wrap flex-row text-center justify-content-center">
+      <div class="d-flex col-md-3 flex-column mw-100 mx-2 mt-3">
+        <div class="font-weight-semibold text-center m-1">
+          <p class="m-0">El Mosca by Logista</p>
+          <p class="m-0">Edificio Oficinas Centrales</p>
+        </div>
+        <div>
+          <div>
+            <div class="m-2"><div class="sms-regular-icon"><svg></svg></div></div>
+            09:30 - 14:00
+          </div>
+          <div>
+            <a href="javascript:smsCRHToggleMapa('cwsl___mapa')">Ver plano</a>
+          </div>
+        </div>
+        <div id="cwsl___info" class="d-none">
+          <span>Carr de Madrid, Km 381</span><br />
+          <span>30500</span><br />
+          <span>Molina de Segura</span><br />
+        </div>
+        <a id="cwsl___info_toggle" href="javascript:smsCRHToggleExtraInfo('cwsl___info', 'cwsl___info_toggle')">Más información</a>
+      </div>
+      <div class="modal-mapa-punto-donacion d-none" id="cwsl___mapa">
+        <a href="javascript:smsCRHToggleMapa('cwsl___mapa')">Cerrar</a>
+        <div class="contenedor-mapa-punto-donacion">
+          <iframe src="about:blank" data-src="https://maps.google.com/maps?q=38.09713331083521,-1.2273591143223488&hl=es&z=20&amp;output=embed"></iframe>
+        </div>
+      </div>
+      <div class="d-flex col-md-3 flex-column mw-100 mx-2 mt-3">
+        <div class="font-weight-semibold text-center m-1">
+          <p class="m-0">CEIP Pasico Campillo</p>
+          <p class="m-0">Colegio</p>
+        </div>
+        <div>
+          <div>17:00 - 21:00</div>
+          <div>
+            <a href="javascript:smsCRHToggleMapa('rczg___mapa')">Ver plano</a>
+          </div>
+        </div>
+        <div id="rczg___info" class="d-none">
+          <span>Ctra Almenara s/n</span><br />
+          <span>30813</span><br />
+          <span>CAMPILLO - LORCA</span><br />
+        </div>
+      </div>
+      <div class="modal-mapa-punto-donacion d-none" id="rczg___mapa">
+        <iframe src="about:blank" data-src="https://maps.google.com/maps?q=&hl=es"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>
+"""

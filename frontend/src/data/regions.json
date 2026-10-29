@@ -136,6 +136,18 @@
       "phone": "900 102 688"
     }
   },
+  "Extremadura": {
+    "links": {
+      "sangre": "https://saludextremadura.ses.es/bancodesangre/",
+      "medula": "https://admo.es/hazte-donante/"
+    },
+    "medula": {
+      "where": "none",
+      "summary": "Inscríbete en el formulario de ADMO Extremadura o llámales: te darán cita en un hospital de la región para sacarte una muestra de sangre.",
+      "phone": "924 271 646",
+      "formUrl": "https://admo.es/hazte-donante/"
+    }
+  },
   "Galicia": {
     "links": {
       "sangre": "https://ados.sergas.gal/",
@@ -211,6 +223,18 @@
       "where": "none",
       "summary": "Llama al Centro Comunitario de Sangre y Tejidos y te explicarán los pasos.",
       "phone": "985 232 426"
+    }
+  },
+  "Región de Murcia": {
+    "links": {
+      "sangre": "https://www.murciasalud.es/web/centro-regional-de-hemodonacion",
+      "plasma": "https://www.murciasalud.es/web/centro-regional-de-hemodonacion/donacion-de-plasma",
+      "medula": "https://www.murciasalud.es/web/centro-regional-de-hemodonacion/quiero-donar"
+    },
+    "medula": {
+      "where": "all",
+      "summary": "Puedes registrarte en el Centro Regional de Hemodonación (Murcia o Cartagena) o en cualquier unidad móvil: díselo al médico y te sacarán una muestra de sangre, aunque no dones.",
+      "phone": "968 341 990"
     }
   }
 }

@@ -357,31 +357,72 @@ Points that only take donors by appointment can likewise be listed by hand in
   (`frontend/src/lib/openingHours.js`), not Atlantic/Canary time. Canarian
   points are therefore shown an hour off when viewed from the Peninsula.
 
-## Blocked
-
 ### Región de Murcia
 - Source: <https://www.murciasalud.es/web/centro-regional-de-hemodonacion>
-  (blood levels and "Fijos" tab) and `.../calendario-de-colectas` (mobile).
-  Every spot links a Google Map, so no geocoding would be needed.
-- **Blocked (2026-10-28):** murciasalud.es serves a Radware bot-check captcha
-  to every non-browser request, so the Cloud Run job can't fetch it. Not
-  worked around. Revisit if the CRH offers a feed/open-data export or lifts
-  the check for these pages.
-- Second look (2026-10-28, in a real browser): levels, the Fijos/Móviles
-  lists and the calendar are all server-rendered in the page HTML — no
-  XHR/JSON endpoint, PDF or iCal behind them, so there's no side door. Plain
-  requests to every page (and RSS) 302 to the Radware challenge
-  (validate.perfdrive.com). The map links are JS toggles
-  (`javascript:smsCRHToggleMapa`), not plain URLs. `/sitemap.xml` is open
-  but lists no donation pages; datos.carm.es / opendata.carm.es didn't
-  resolve or connect.
+  (blood levels and the "Fijos" tab) and `.../calendario-de-colectas` (about
+  a month of mobile stops, grouped by day). All server-rendered Liferay.
+- **Radware Bot Manager** fronts the whole site: plain HTTP clients (requests,
+  curl) get redirected to a captcha on validate.perfdrive.com whatever their
+  User-Agent; it scores the TLS fingerprint, not the UA. Fetched with
+  `curl_cffi` impersonating Chrome's TLS handshake, which gets the real pages
+  (2026-10-29). robots.txt allows crawling with `Crawl-delay: 10`, which the
+  crawler honours; the homepage is fetched once and shared by fixed points
+  and blood levels, so a run makes two requests. If Radware serves the
+  captcha anyway, the crawler logs a warning and returns no Murcia rows
+  instead of failing the ETL. Untested from Cloud Run's egress IPs yet.
+- Coordinates: every map link is a JS popup (`smsCRHToggleMapa('<id>')`)
+  whose element `<id>` holds the map iframe. Fixed spots' iframes are Google
+  Maps embeds (`!2d<lon>!3d<lat>`); mobile stops' are lazy-loaded via
+  `data-src="https://maps.google.com/maps?q=<lat>,<lon>"`. Nothing is
+  geocoded.
+- Fixed points' hours are free text, hand-translated into
+  `opening_hours_fijos.json`. Only the CRH (Murcia) and Cartagena are kept as
+  fixed points: Yecla ("Último jueves de cada mes") and Lorca ("Primer y
+  tercer jueves", with vague winter/summer hours) only open on given days,
+  which the calendar already lists with exact hours, so they're skipped from
+  the "Fijos" tab (`FIXED_POINTS_IN_CALENDAR`) and shown as mobile stops
+  only. The CRH and Cartagena take plasma by appointment (their hours text
+  says so), flagged `plasma`.
+- Blood levels: one card per type with an image whose filename gives the
+  level: `Donación en próxima colecta.svg` green (#39b54a), `Donación en
+  días.svg` orange (#fbb03b), `Donación urgente.svg` red (#ed1c24); the
+  orange and red ones were found on a 2022 Wayback Machine snapshot. The alt
+  can't tell orange from red (both "urgente"), so it isn't used. The label
+  under each image is kept as-is ("Dona de manera habitual", "Donación en
+  2/3 días"). An unknown image is logged and that type skipped.
+- Médula: register at the CRH (Murcia or Cartagena) or any mobile unit, with
+  or without donating blood (`.../quiero-donar`, "Quiero ser donante de
+  médula") — `where: "all"` in `frontend/src/data/regions.json`.
+- Public holidays: opening_hours.js lists Murcia's under both "Murcia" (San
+  José) and "Región de Murcia" (Jueves Santo, Día de la Región). The app
+  passes the region name as-is, so it gets the latter set. San José is
+  likely a local holiday of Murcia city only, which is fine to miss
+  (municipal holidays are out of scope).
 
-### Extremadura
+### Extremadura (placeholder)
 - Source: <https://saludextremadura.ses.es/bancodesangre/> — reachable
   (200), but a client-rendered SPA: the server HTML is an empty shell and
   `build/bundle.js` names no data endpoints (`/bancodesangre/rest/` is 403,
   guessed paths return the shell). Next step: load the page in a browser and
   capture its XHR requests to find the JSON API it uses.
+- **Until then (2026-10-29), placeholders:** the two main fixed points are
+  entered by hand in `etl/utils/extremadura_fijos.json` (name, address,
+  phone, coordinates, note), loaded by `etl/regions/extremadura.py` — no
+  crawl module, nothing geocoded. Hours are in `opening_hours_fijos.json`:
+  Banco de Sangre de Extremadura (Mérida) Mo-Fr 09:00-14:00, Hospital de
+  Mérida Mo-Fr 10:00-13:00. The hospital's note says to register first at the
+  Hermandad de Donantes de Sangre de Mérida (924 370 703, appointment
+  recommended). It's worded without "cita previa" so `flag_appointments`
+  doesn't mark it appointment-only. No mobile points or blood levels.
+- Médula: ADMO Extremadura books it (<https://admo.es/hazte-donante/>, 924
+  271 646). Fill in its form or call, and they give you an appointment at one
+  of the region's hospitals for the sample — `where: "none"` in
+  `frontend/src/data/regions.json`.
+
+## Blocked
+
+None right now (Extremadura's scraping is still blocked, but it has
+hand-entered placeholders above).
 
 ## Not yet researched
 

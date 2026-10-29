@@ -26,10 +26,12 @@ from regions import (
     castilla_y_leon,
     cataluna,
     comunidad_valenciana,
+    extremadura,
     galicia,
     la_rioja,
     madrid,
     melilla,
+    murcia,
     navarra,
     pais_vasco,
 )
@@ -62,6 +64,8 @@ REGIONS = [
     melilla,
     balears,
     canarias,
+    murcia,
+    extremadura,
 ]
 
 

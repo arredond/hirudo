@@ -24,11 +24,13 @@ export function regionLink(region, donationType) {
 
 // regionBoundaries.json holds just these regions' real polygons, trimmed
 // from codeforgermany/click_that_hood's spain-communities.geojson (public
-// domain-ish community dataset) down to ~70KB (Cataluña's coastline islets
+// domain-ish community dataset) down to ~115KB (Cataluña's coastline islets
 // dropped and its outline simplified, Llívia kept; Galicia's sliver holes
 // dropped, its islets too except Arousa; País Vasco's islets dropped, its
-// Treviño and Villaverde enclave holes kept). An earlier version of this
-// module guessed the region from whichever fixed point was nearest instead —
+// Treviño and Villaverde enclave holes kept; Región de Murcia's sliver holes
+// and its Mar Menor and coastal islets dropped; Extremadura as-is). An
+// earlier version of this module guessed the region from whichever fixed
+// point was nearest instead —
 // but that's biased by point *density*, not the real border: Madrid's 32
 // fixed points vs. Castilla y León's 10, spread over a much bigger area,
 // bulged Madrid's detected area well past its actual (small) territory. Real

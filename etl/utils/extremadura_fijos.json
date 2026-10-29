@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Banco de Sangre de Extremadura",
+    "localidad": "Mérida",
+    "direccion": "Ctra. Valverde de Mérida, s/n, 06800 Mérida, Badajoz",
+    "telefono": "924 314 686",
+    "horario": "Lunes a viernes de 9:00 a 14:00",
+    "observaciones": null,
+    "latitude": 38.921607,
+    "longitude": -6.306349,
+    "url": "https://saludextremadura.ses.es/bancodesangre/"
+  },
+  {
+    "name": "Hospital de Mérida",
+    "localidad": "Mérida",
+    "direccion": "Av. Don Antonio Campos Hoyos, 26, 06800 Mérida, Badajoz",
+    "telefono": "924 370 703",
+    "horario": "Lunes a viernes de 10:00 a 13:00",
+    "observaciones": "Ubicación: planta baja, bloque del hospital. Pasa primero por la Hermandad de Donantes de Sangre de Mérida para el registro; el teléfono es el de la Hermandad, y se recomienda llamar antes para pedir cita.",
+    "latitude": 38.912367,
+    "longitude": -6.36356,
+    "url": "https://saludextremadura.ses.es/bancodesangre/"
+  }
+]
